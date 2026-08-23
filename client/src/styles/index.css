@@ -2541,12 +2541,33 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   opacity: 0;
   transition: opacity 1.1s ease;
 }
+.slideshow__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .slideshow__slide--active {
   opacity: 1;
+}
+
+/* Grouped mode — each slide is a horizontal strip of 2-3 shots that shows
+   together, matching the lookbook-style layout on brands like hathkargha. */
+.slideshow--grouped .slideshow__slide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+  background: var(--ink);
+}
+@media (max-width: 720px) {
+  /* On phones, three-across strips become unreadable — fall back to just the
+     first photo per group (using CSS, no data change). */
+  .slideshow--grouped .slideshow__slide img:not(:first-child) {
+    display: none;
+  }
 }
 .slideshow__dots {
   position: absolute;

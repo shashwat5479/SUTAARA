@@ -5,19 +5,40 @@ import ProductCard from '../components/ProductCard.jsx';
 import Slideshow from '../components/Slideshow.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
-// Clean rotating slideshow of saree photography for the homepage hero.
+// Grouped slideshow — each slide shows 3 shots of the same piece side by
+// side, then swaps to the next piece's 3 shots. Matches the lookbook-style
+// hero used by hathkargha and similar brands.
 const HERO_SLIDES = [
-  '/products/mauve-kalamkari-peacock-1.jpg',
-  '/products/peach-leheriya-organza-1.jpg',
-  '/products/maroon-patola-ikat-1.jpg',
-  '/products/green-gold-leheriya-1.jpg',
-  '/products/peach-madhubani-1.jpg',
-  '/products/magenta-emerald-set-1.jpg',
-  '/products/lavender-bird-chiffon-1.jpg',
-  '/products/mustard-elephant-chanderi-1.jpg',
-  '/products/mustard-turquoise-set-1.jpg',
-  '/products/rose-emerald-suit-1.jpg',
-  '/products/red-ajrakh-suit-1.jpg',
+  [
+    '/products/mauve-kalamkari-peacock-1.jpg',
+    '/products/mauve-kalamkari-peacock-3.jpg',
+    '/products/mauve-kalamkari-peacock-5.jpg',
+  ],
+  [
+    '/products/peach-leheriya-organza-1.jpg',
+    '/products/peach-leheriya-organza-3.jpg',
+    '/products/peach-leheriya-organza-5.jpg',
+  ],
+  [
+    '/products/maroon-patola-ikat-1.jpg',
+    '/products/maroon-patola-ikat-2.jpg',
+    '/products/red-ajrakh-suit-1.jpg',
+  ],
+  [
+    '/products/green-gold-leheriya-1.jpg',
+    '/products/green-gold-leheriya-3.jpg',
+    '/products/green-gold-leheriya-5.jpg',
+  ],
+  [
+    '/products/peach-madhubani-1.jpg',
+    '/products/peach-madhubani-2.jpg',
+    '/products/peach-madhubani-3.jpg',
+  ],
+  [
+    '/products/magenta-emerald-set-1.jpg',
+    '/products/magenta-emerald-set-2.jpg',
+    '/products/rose-emerald-suit-1.jpg',
+  ],
 ];
 
 const CATEGORIES = [
