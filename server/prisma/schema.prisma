@@ -1,0 +1,252 @@
+// Sutaara — PostgreSQL schema (Prisma)
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" for local dev, "rhel-openssl-3.0.x" is the engine Vercel's
+  // Node serverless runtime needs — without this, prisma generate locally
+  // won't produce a binary that works once deployed.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Only needed if DATABASE_URL points at a pooled connection (e.g. Neon's
+  // pooled string, or PgBouncer) — `prisma migrate` needs a direct,
+  // non-pooled connection. Safe to leave DIRECT_URL unset/equal to
+  // DATABASE_URL if you're not using a pooler.
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum PaymentMethod {
+  cod
+  online
+}
+
+// Mirrors the automated order lifecycle from the feature brief:
+// placed -> confirmed -> processing -> packed -> shipped -> out_for_delivery -> delivered
+// plus cancellation / return / refund branches.
+enum OrderStatus {
+  pending
+  confirmed
+  processing
+  packed
+  shipped
+  out_for_delivery
+  delivered
+  cancelled
+  return_requested
+  return_approved
+  refund_initiated
+  refunded
+}
+
+enum DiscountType {
+  percent
+  flat
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  // Null for accounts created via Google Sign-In that never set a password.
+  password  String?
+  // Set only for accounts created/linked through Google Sign-In.
+  googleId  String?   @unique
+  authProvider String @default("password") // "password" | "google"
+  // False until the person proves they own the address by entering the code
+  // we email them. Google accounts are true immediately — Google has already
+  // verified the address. Password accounts cannot log in until this is true,
+  // which is what stops sign-ups with addresses the person doesn't own.
+  emailVerified Boolean @default(false)
+  avatar    String    @default("")
+  role      Role      @default(user)
+  phone     String    @default("")
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Saved addresses — the original app only stored one address per order;
+// this lets a logged-in customer keep several and pick one at checkout.
+model Address {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  label     String   @default("Home")
+  fullName  String
+  phone     String
+  line1     String
+  line2     String   @default("")
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Product {
+  id           String      @id @default(uuid())
+  name         String
+  slug         String      @unique
+  category     String
+  fabric       String      @default("")
+  occasion     String      @default("")
+  color        String      @default("")
+  price        Int
+  mrp          Int         @default(0)
+  images       String[]
+  description  String      @default("")
+  care         String      @default("")
+  blouseNote   String      @default("")
+  stock        Int         @default(10)
+  rating       Float       @default(4.7)
+  numReviews   Int         @default(0)
+  featured     Boolean     @default(false)
+  isNewArrival Boolean     @default(false)
+  orderItems   OrderItem[]
+  reviews      Review[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([category])
+  @@index([featured])
+  @@index([isNewArrival])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  rating    Int
+  title     String   @default("")
+  body      String   @default("")
+  verified  Boolean  @default(false)
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Coupon {
+  id            String       @id @default(uuid())
+  code          String       @unique
+  discountType  DiscountType
+  value         Int
+  minOrderValue Int          @default(0)
+  maxDiscount   Int?
+  usageLimit    Int?
+  timesUsed     Int          @default(0)
+  expiresAt     DateTime?
+  active        Boolean      @default(true)
+  orders        Order[]
+  createdAt     DateTime     @default(now())
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique // human-facing sequential id, e.g. SUT-000123
+  user           User        @relation(fields: [userId], references: [id])
+  userId         String
+  items          OrderItem[]
+  statusHistory  StatusEvent[]
+
+  // shipping snapshot (kept flat so it survives even if the address is later edited/deleted)
+  fullName  String
+  phone     String
+  line1     String
+  line2     String @default("")
+  city      String
+  state     String
+  pincode   String
+
+  paymentMethod PaymentMethod @default(cod)
+  itemsPrice    Int
+  shippingPrice Int           @default(0)
+  discountPrice Int           @default(0)
+  taxPrice      Int           @default(0)
+  totalPrice    Int
+
+  coupon   Coupon? @relation(fields: [couponId], references: [id])
+  couponId String?
+
+  isPaid Boolean   @default(false)
+  paidAt DateTime?
+
+  status OrderStatus @default(pending)
+
+  // Invoice
+  invoiceNumber String? @unique
+  invoicedAt    DateTime?
+
+  // Shipping / courier — populated by the pluggable shipping provider once a real
+  // courier API key is configured (see server/src/services/shipping.js)
+  awbNumber     String?
+  courierName   String?
+  trackingUrl   String?
+  shippedAt     DateTime?
+  estDelivery   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  name      String
+  slug      String
+  image     String  @default("")
+  price     Int
+  qty       Int     @default(1)
+
+  @@index([orderId])
+}
+
+// Append-only audit trail backing the "Order Status" timeline on the tracking page
+model StatusEvent {
+  id        String      @id @default(uuid())
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  status    OrderStatus
+  note      String      @default("")
+  createdAt DateTime    @default(now())
+
+  @@index([orderId])
+}
+
+// One-time codes for email verification. Rows are short-lived: a code expires
+// after 10 minutes, and the row is deleted the moment it's used successfully.
+// The code itself is stored hashed, never in plain text, so a database leak
+// doesn't hand over working verification codes.
+model EmailOtp {
+  id        String   @id @default(uuid())
+  email     String
+  codeHash  String
+  purpose   String   @default("verify_email")
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}

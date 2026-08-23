@@ -1,0 +1,34 @@
+{
+  "name": "sutaara",
+  "version": "2.0.0",
+  "description": "Sutaara single-project deploy (Vite client + Express/Prisma API)",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "prisma generate --schema=server/prisma/schema.prisma && npm install --prefix client && npm run build --prefix client"
+  },
+  "prisma": {
+    "schema": "server/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.19.1",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "google-auth-library": "^9.14.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.14",
+    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.15.0",
+    "prisma": "^5.19.1",
+    "qrcode": "^1.5.4"
+  }
+}

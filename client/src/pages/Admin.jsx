@@ -1,0 +1,400 @@
+import { useEffect, useState } from 'react';
+import { api } from '../api/client.js';
+import { useToast } from '../context/ToastContext.jsx';
+import { inr } from '../utils/format.js';
+
+const EMPTY = {
+  name: '',
+  category: 'saree',
+  fabric: '',
+  occasion: '',
+  color: '',
+  price: '',
+  mrp: '',
+  images: ['', '', '', '', '', ''],
+  description: '',
+  care: '',
+  blouseNote: '',
+  stock: 10,
+  featured: false,
+  isNewArrival: false,
+};
+
+const CATEGORIES = [
+  { value: 'saree', label: 'Saree' },
+  { value: 'suit', label: 'Suit Set' },
+  { value: 'blouse', label: 'Blouse' },
+  { value: 'dupatta', label: 'Dupatta' },
+  { value: 'potli', label: 'Potli / Bag' },
+];
+
+// Fabric suggestions per category — a datalist, not a hard restriction, so
+// you can still type a fabric that isn't in the list.
+const FABRICS = [
+  'Banarasi Silk', 'Silk', 'Cotton', 'Mul Cotton', 'Chanderi', 'Linen',
+  'Tissue', 'Organza', 'Maheshwari', 'Kota', 'Modal', 'Georgette',
+  'Chiffon', 'Net', 'Velvet', 'Brocade', 'Ajrakh Cotton', 'Cotton Silk',
+];
+const OCCASIONS = ['Wedding', 'Festive', 'Party', 'Everyday', 'Daywear'];
+
+const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+
+function ProductForm({ initial, onDone, onCancel }) {
+  const toast = useToast();
+  const [form, setForm] = useState(() => {
+    if (!initial) return EMPTY;
+    // Pad the stored image list out to six slots so the form always shows
+    // six inputs regardless of how many the product actually has.
+    const imgs = [...(initial.images || [])];
+    while (imgs.length < 6) imgs.push('');
+    return { ...initial, images: imgs.slice(0, 6) };
+  });
+  const [busy, setBusy] = useState(false);
+
+  const set = (k) => (e) =>
+    setForm((f) => ({
+      ...f,
+      [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
+    }));
+
+  const setImage = (i) => (e) =>
+    setForm((f) => {
+      const images = [...f.images];
+      images[i] = e.target.value;
+      return { ...f, images };
+    });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    // Drop empty slots — a product with two photos shouldn't store four
+    // empty strings and render broken thumbnails on the product page.
+    const images = form.images.map((s) => s.trim()).filter(Boolean);
+    if (images.length === 0) {
+      toast('Add at least one image path');
+      return;
+    }
+    setBusy(true);
+    try {
+      // Only send the fields the API knows about. Spreading `...form` for an
+      // edit would include Prisma metadata (id, createdAt, reviews, etc.)
+      // fetched with the product, which the update endpoint rejects.
+      const payload = {
+        name: form.name.trim(),
+        category: form.category,
+        fabric: form.fabric.trim(),
+        occasion: form.occasion.trim(),
+        color: form.color.trim(),
+        price: Number(form.price),
+        mrp: Number(form.mrp) || 0,
+        stock: Number(form.stock) || 0,
+        images,
+        description: form.description.trim(),
+        care: form.care.trim(),
+        blouseNote: form.blouseNote.trim(),
+        featured: !!form.featured,
+        isNewArrival: !!form.isNewArrival,
+      };
+      if (initial) {
+        await api.updateProduct(initial._id, payload);
+        toast('Product updated');
+      } else {
+        await api.createProduct(payload);
+        toast('Product created');
+      }
+      onDone();
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="checkout__panel admin-form">
+      <h3>{initial ? 'Edit product' : 'New product'}</h3>
+
+      <div className="field">
+        <label>Name</label>
+        <input value={form.name} onChange={set('name')} required placeholder="Peacock Teal Banarasi Silk Saree" />
+      </div>
+
+      <p className="admin-form__legend">Specifications</p>
+      <div className="field__row">
+        <div className="field">
+          <label>Category</label>
+          <select value={form.category} onChange={set('category')}>
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>Fabric</label>
+          <input list="fabric-list" value={form.fabric} onChange={set('fabric')} placeholder="Banarasi Silk" />
+          <datalist id="fabric-list">
+            {FABRICS.map((f) => <option key={f} value={f} />)}
+          </datalist>
+        </div>
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Occasion</label>
+          <input list="occasion-list" value={form.occasion} onChange={set('occasion')} placeholder="Wedding" />
+          <datalist id="occasion-list">
+            {OCCASIONS.map((o) => <option key={o} value={o} />)}
+          </datalist>
+        </div>
+        <div className="field">
+          <label>Colour</label>
+          <input value={form.color} onChange={set('color')} placeholder="Teal" />
+        </div>
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Price (₹)</label>
+          <input type="number" min="0" value={form.price} onChange={set('price')} required />
+        </div>
+        <div className="field">
+          <label>MRP (₹)</label>
+          <input type="number" min="0" value={form.mrp} onChange={set('mrp')} />
+        </div>
+        <div className="field">
+          <label>Stock</label>
+          <input type="number" min="0" value={form.stock} onChange={set('stock')} />
+        </div>
+      </div>
+
+      <p className="admin-form__legend">
+        Photos <span>— up to 6. The first is the main image shown on listings.</span>
+      </p>
+      <div className="admin-images">
+        {form.images.map((src, i) => (
+          <div className="admin-images__slot" key={i}>
+            <div className="admin-images__preview">
+              {src.trim() ? (
+                <img
+                  src={src.trim()}
+                  alt=""
+                  onError={(e) => { e.currentTarget.style.opacity = '0.15'; }}
+                  onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
+                />
+              ) : (
+                <span>{i === 0 ? 'Main' : i + 1}</span>
+              )}
+            </div>
+            <input
+              value={src}
+              onChange={setImage(i)}
+              placeholder={i === 0 ? '/products/main.jpg' : `/products/photo-${i + 1}.jpg`}
+            />
+          </div>
+        ))}
+      </div>
+
+      <p className="admin-form__legend">Details</p>
+      <div className="field">
+        <label>Description</label>
+        <textarea rows="3" value={form.description} onChange={set('description')} />
+      </div>
+      <div className="field">
+        <label>Care instructions</label>
+        <textarea rows="2" value={form.care} onChange={set('care')} />
+      </div>
+      <div className="field">
+        <label>Note (blouse piece, set contents, length…)</label>
+        <input value={form.blouseNote} onChange={set('blouseNote')} placeholder="Comes with an unstitched blouse piece (0.8m)." />
+      </div>
+
+      <div style={{ display: 'flex', gap: 20, margin: '4px 0 18px' }}>
+        <label className="filter-opt">
+          <input type="checkbox" checked={form.featured} onChange={set('featured')} /> Featured
+        </label>
+        <label className="filter-opt">
+          <input type="checkbox" checked={form.isNewArrival} onChange={set('isNewArrival')} /> New arrival
+        </label>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12 }}>
+        <button className="btn btn--primary" disabled={busy}>
+          {busy ? 'Saving…' : initial ? 'Update' : 'Create'}
+        </button>
+        <button type="button" className="btn btn--ghost" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ProductsTab() {
+  const toast = useToast();
+  const [products, setProducts] = useState([]);
+  const [editing, setEditing] = useState(null); // product | 'new' | null
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    api
+      .getProducts({ limit: 60, sort: 'newest' })
+      .then((res) => setProducts(res.products))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const del = async (p) => {
+    if (!window.confirm(`Delete “${p.name}”?`)) return;
+    try {
+      await api.deleteProduct(p._id);
+      toast('Product deleted');
+      load();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  if (editing) {
+    return (
+      <ProductForm
+        initial={editing === 'new' ? null : editing}
+        onCancel={() => setEditing(null)}
+        onDone={() => {
+          setEditing(null);
+          load();
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+        <span className="shop__count">{products.length} products</span>
+        <button className="btn btn--primary btn--sm" onClick={() => setEditing('new')}>
+          + New product
+        </button>
+      </div>
+      {loading ? (
+        <div className="loader"><div className="spinner" /></div>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p._id}>
+                <td><img src={p.images?.[0]} alt="" /></td>
+                <td>{p.name}</td>
+                <td style={{ textTransform: 'capitalize' }}>{p.category}</td>
+                <td>{inr(p.price)}</td>
+                <td>{p.stock}</td>
+                <td className="table__actions">
+                  <button onClick={() => setEditing(p)}>Edit</button>
+                  <button onClick={() => del(p)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </>
+  );
+}
+
+function OrdersTab() {
+  const toast = useToast();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    api.getAllOrders().then(setOrders).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const changeStatus = async (id, status) => {
+    try {
+      await api.updateOrderStatus(id, status);
+      setOrders((cur) => cur.map((o) => (o._id === id ? { ...o, status } : o)));
+      toast('Order updated');
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+  if (orders.length === 0) return <div className="empty"><h3>No orders yet</h3></div>;
+
+  return (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orders.map((o) => (
+          <tr key={o._id}>
+            <td style={{ fontFamily: 'monospace' }}>#{o._id.slice(-8)}</td>
+            <td>{o.user?.name || '—'}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{o.user?.email}</span></td>
+            <td>{o.items.reduce((n, i) => n + i.qty, 0)}</td>
+            <td>{inr(o.totalPrice)}</td>
+            <td style={{ textTransform: 'uppercase', fontSize: '0.78rem' }}>{o.paymentMethod}</td>
+            <td>
+              <select
+                className="select"
+                value={o.status}
+                onChange={(e) => changeStatus(o._id, e.target.value)}
+                style={{ padding: '6px 28px 6px 10px' }}
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+export default function Admin() {
+  const [tab, setTab] = useState('products');
+  return (
+    <>
+      <div className="page-head">
+        <h1>Admin Dashboard</h1>
+        <div className="crumbs">Manage products &amp; orders</div>
+      </div>
+      <section className="section--tight">
+        <div className="container">
+          <div className="admin-tabs">
+            <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
+              Products
+            </button>
+            <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
+              Orders
+            </button>
+          </div>
+          {tab === 'products' ? <ProductsTab /> : <OrdersTab />}
+        </div>
+      </section>
+    </>
+  );
+}
