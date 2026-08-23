@@ -257,8 +257,16 @@ export default function Header() {
         className={`header ${floating ? 'header--floating' : ''}`}
         onMouseLeave={scheduleClose}
       >
-        {/* utility row — quiet tagline on the left, actions on the right */}
-        <div className="container header__utility">
+        {/* utility row — quiet tagline on the left, actions on the right.
+            Entering this row closes any open mega menu immediately: without
+            this, moving the cursor from a nav item up to Search/Wishlist/Bag
+            never fires the header's onMouseLeave (still inside the header),
+            so the menu would hang open until the cursor left the whole
+            header — including the icons. */}
+        <div
+          className="container header__utility"
+          onMouseEnter={() => setActiveMega(null)}
+        >
           <span className="header__tagline">Handcrafted in Prayagraj, worn everywhere</span>
           <div className="header__actions">
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
@@ -293,7 +301,12 @@ export default function Header() {
             ))}
           </nav>
 
-          <Brand />
+          <span
+            onMouseEnter={() => setActiveMega(null)}
+            style={{ display: 'contents' }}
+          >
+            <Brand />
+          </span>
 
           <nav className="nav nav--right">
             {NAV_RIGHT.map((item) => (
