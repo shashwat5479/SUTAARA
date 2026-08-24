@@ -438,6 +438,138 @@ function AppointmentsTab() {
   );
 }
 
+function StudioEventTab() {
+  const toast = useToast();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    title: '', subtitle: '', description: '', location: '', address: '',
+    startDate: '', endDate: '', hours: '', phone: '', heroImage: '', active: true,
+  });
+
+  const load = () => {
+    setLoading(true);
+    api.getAllStudioEvents()
+      .then((list) => {
+        const ev = list && list[0];
+        if (ev) {
+          setEvent(ev);
+          setForm({
+            title: ev.title || '',
+            subtitle: ev.subtitle || '',
+            description: ev.description || '',
+            location: ev.location || '',
+            address: ev.address || '',
+            startDate: ev.startDate ? ev.startDate.slice(0, 10) : '',
+            endDate: ev.endDate ? ev.endDate.slice(0, 10) : '',
+            hours: ev.hours || '',
+            phone: ev.phone || '',
+            heroImage: ev.heroImage || '',
+            active: ev.active,
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const set = (k) => (e) =>
+    setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (event) {
+        const updated = await api.updateStudioEvent(event._id, form);
+        setEvent(updated);
+      } else {
+        const created = await api.createStudioEvent(form);
+        setEvent(created);
+      }
+      toast('Studio event saved');
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <form onSubmit={save} className="checkout__panel admin-form" style={{ maxWidth: 720 }}>
+      <h3>Studio / Exhibition event</h3>
+      <p className="admin-form__legend">
+        Shown on the public <strong>/studio</strong> page. Leave fields blank to hide them.
+      </p>
+
+      <div className="field">
+        <label>Title</label>
+        <input value={form.title} onChange={set('title')} placeholder="Festive Exhibition — Lucknow" required />
+      </div>
+      <div className="field">
+        <label>Subtitle</label>
+        <input value={form.subtitle} onChange={set('subtitle')} placeholder="Meet the makers, feel the fabric." />
+      </div>
+      <div className="field">
+        <label>Description</label>
+        <textarea rows="4" value={form.description} onChange={set('description')} placeholder="Full details about the event..." />
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Start date</label>
+          <input type="date" value={form.startDate} onChange={set('startDate')} />
+        </div>
+        <div className="field">
+          <label>End date</label>
+          <input type="date" value={form.endDate} onChange={set('endDate')} />
+        </div>
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Location</label>
+          <input value={form.location} onChange={set('location')} placeholder="Lucknow, Uttar Pradesh" />
+        </div>
+        <div className="field">
+          <label>Hours</label>
+          <input value={form.hours} onChange={set('hours')} placeholder="11 AM - 7 PM" />
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Address</label>
+        <input value={form.address} onChange={set('address')} placeholder="Full studio address" />
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Phone</label>
+          <input value={form.phone} onChange={set('phone')} placeholder="+91 ..." />
+        </div>
+        <div className="field">
+          <label>Hero image path</label>
+          <input value={form.heroImage} onChange={set('heroImage')} placeholder="/products/mauve-kalamkari-peacock-1.jpg" />
+        </div>
+      </div>
+
+      <div style={{ margin: '4px 0 18px' }}>
+        <label className="filter-opt">
+          <input type="checkbox" checked={form.active} onChange={set('active')} /> Show this event on the studio page
+        </label>
+      </div>
+
+      <button className="btn btn--primary" disabled={busy}>
+        {busy ? 'Saving…' : event ? 'Update event' : 'Create event'}
+      </button>
+    </form>
+  );
+}
+
 export default function Admin() {
   const [tab, setTab] = useState('products');
   return (
@@ -458,8 +590,11 @@ export default function Admin() {
             <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
               Studio Appointments
             </button>
+            <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
+              Studio Event
+            </button>
           </div>
-          {tab === 'products' ? <ProductsTab /> : tab === 'orders' ? <OrdersTab /> : <AppointmentsTab />}
+          {tab === 'products' ? <ProductsTab /> : tab === 'orders' ? <OrdersTab /> : tab === 'appointments' ? <AppointmentsTab /> : <StudioEventTab />}
         </div>
       </section>
     </>

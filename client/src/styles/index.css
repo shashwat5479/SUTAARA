@@ -3200,3 +3200,104 @@ body {
   .exhibit__nav--prev { left: 2%; }
   .exhibit__nav--next { right: 2%; }
 }
+
+/* ---------- Studio page: animated saree hero + event info ---------- */
+.studio-hero {
+  position: relative;
+  min-height: 460px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.studio-hero__bg { position: absolute; inset: 0; z-index: -1; }
+.studio-hero__layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 1.6s ease, transform 6s ease;
+}
+.studio-hero__layer.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+.studio-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(20,14,10,0.82) 0%, rgba(20,14,10,0.5) 55%, rgba(20,14,10,0.35) 100%),
+    linear-gradient(to top, rgba(20,14,10,0.55), rgba(20,14,10,0.1));
+}
+.studio-hero__inner {
+  position: relative;
+  padding: 90px 0;
+  color: #fff;
+  max-width: 640px;
+}
+.studio-hero__inner h1 {
+  color: #fff;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.08;
+  margin: 8px 0 14px;
+}
+.studio-hero__sub {
+  color: rgba(255,255,255,0.9);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 520px;
+  margin-bottom: 26px;
+}
+.studio-hero__cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.studio-info {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  align-items: start;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 4px);
+  padding: 38px;
+}
+.studio-info__desc {
+  color: var(--ink-soft);
+  line-height: 1.75;
+  white-space: pre-line;
+}
+.studio-info__facts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--ivory-2);
+  border-radius: var(--radius, 4px);
+  padding: 22px 24px;
+}
+.studio-fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.studio-fact:last-child { border-bottom: none; }
+.studio-fact__k {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding-top: 2px;
+}
+.studio-fact__v {
+  text-align: right;
+  color: var(--ink);
+  font-size: 0.94rem;
+  max-width: 62%;
+}
+
+@media (max-width: 780px) {
+  .studio-info { grid-template-columns: 1fr; padding: 26px; }
+  .studio-hero__inner { padding: 64px 0; }
+}

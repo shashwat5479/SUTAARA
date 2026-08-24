@@ -71,6 +71,20 @@ export const api = {
   getAllOrders: () => request('/orders', { auth: true }),
   updateOrderStatus: (id, status) =>
     request(`/orders/${id}/status`, { method: 'PUT', body: { status }, auth: true }),
+
+  // studio appointments
+  createAppointment: (body) => request('/appointments', { method: 'POST', body, auth: !!getToken() }),
+  getMyAppointments: () => request('/appointments/mine', { auth: true }),
+  getAllAppointments: () => request('/appointments', { auth: true }),
+  updateAppointmentStatus: (id, status) =>
+    request(`/appointments/${id}/status`, { method: 'PUT', body: { status }, auth: true }),
+
+  // studio event / exhibition info (admin-controlled)
+  getStudioEvent: () => request('/studio-event'),
+  getAllStudioEvents: () => request('/studio-event/all', { auth: true }),
+  createStudioEvent: (body) => request('/studio-event', { method: 'POST', body, auth: true }),
+  updateStudioEvent: (id, body) => request(`/studio-event/${id}`, { method: 'PUT', body, auth: true }),
+  deleteStudioEvent: (id) => request(`/studio-event/${id}`, { method: 'DELETE', auth: true }),
 };
 
 export { getToken };

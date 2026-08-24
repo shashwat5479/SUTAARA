@@ -281,3 +281,24 @@ model Appointment {
   @@index([status])
   @@index([preferredDate])
 }
+
+// Studio event / exhibition info shown on the /studio page. A single "active"
+// row drives what customers see; the admin edits it from the dashboard. Kept
+// as a table (not hard-coded) so dates, location and copy can change without
+// a redeploy.
+model StudioEvent {
+  id          String   @id @default(uuid())
+  title       String   @default("Visit the Sutaara Studio")
+  subtitle    String   @default("")
+  description String   @default("")
+  location    String   @default("Lucknow, Uttar Pradesh")
+  address     String   @default("")
+  startDate   DateTime?
+  endDate     DateTime?
+  hours       String   @default("11 AM - 7 PM")
+  phone       String   @default("")
+  heroImage   String   @default("")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
