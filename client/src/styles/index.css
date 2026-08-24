@@ -2972,3 +2972,231 @@ body {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.55; }
 }
+/* ---------- Exhibition coverflow carousel ---------- */
+.exhibit {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius, 4px);
+  padding: 54px 0 34px;
+  isolation: isolate;
+}
+.exhibit__bg {
+  position: absolute;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(34px) brightness(0.55) saturate(1.1);
+  transform: scale(1.1);
+  z-index: -2;
+  animation: exhibit-bg-fade 0.7s ease;
+}
+@keyframes exhibit-bg-fade {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+.exhibit__bg-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, rgba(20,14,10,0.15) 0%, rgba(20,14,10,0.6) 100%);
+}
+.exhibit__stage {
+  position: relative;
+  height: 420px;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+}
+.exhibit__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  height: 360px;
+  margin: -180px 0 0 -130px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 22px 50px rgba(0,0,0,0.45);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
+  transform-style: preserve-3d;
+  background: #1a1310;
+}
+.exhibit__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+}
+.exhibit__card.is-active {
+  cursor: default;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+}
+.exhibit__card.is-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px var(--gold-soft, #cdae76);
+  border-radius: 6px;
+  pointer-events: none;
+}
+.exhibit__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 40px 20px 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0));
+  color: #fff;
+}
+.exhibit__caption h3 {
+  font-size: 1.35rem;
+  line-height: 1.15;
+  margin: 0 0 4px;
+  color: #fff;
+}
+.exhibit__caption p {
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  color: var(--gold-soft, #cdae76);
+  margin: 0;
+}
+.exhibit__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,250,243,0.9);
+  color: var(--ink, #2b211c);
+  font-size: 1.7rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+  transition: background 0.2s, transform 0.2s;
+}
+.exhibit__nav:hover { background: #fff; transform: translateY(-50%) scale(1.06); }
+.exhibit__nav--prev { left: 4%; }
+.exhibit__nav--next { right: 4%; }
+.exhibit__expand {
+  position: absolute;
+  right: 5%;
+  bottom: 6%;
+  z-index: 20;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,250,243,0.9);
+  color: var(--ink, #2b211c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+  transition: background 0.2s, transform 0.2s;
+}
+.exhibit__expand:hover { background: #fff; transform: scale(1.06); }
+.exhibit__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 26px;
+}
+.exhibit__dots button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.exhibit__dots button.is-active {
+  background: var(--gold-soft, #cdae76);
+  transform: scale(1.3);
+}
+
+/* fullscreen lightbox */
+.exhibit-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(12,8,6,0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  animation: exhibit-lb-in 0.25s ease;
+}
+@keyframes exhibit-lb-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.exhibit-lightbox figure {
+  margin: 0;
+  max-width: min(90vw, 640px);
+  text-align: center;
+}
+.exhibit-lightbox figure img {
+  max-width: 100%;
+  max-height: 76vh;
+  border-radius: 6px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.exhibit-lightbox figcaption {
+  color: #fff;
+  margin-top: 18px;
+}
+.exhibit-lightbox figcaption h3 { color: #fff; margin: 0 0 4px; }
+.exhibit-lightbox figcaption p {
+  color: var(--gold-soft, #cdae76);
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+}
+.exhibit-lightbox__close {
+  position: absolute;
+  top: 22px;
+  right: 28px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.4rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.exhibit-lightbox__close:hover { opacity: 1; }
+.exhibit-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.exhibit-lightbox__nav:hover { background: rgba(255,255,255,0.25); }
+.exhibit-lightbox__nav--prev { left: 3%; }
+.exhibit-lightbox__nav--next { right: 3%; }
+
+@media (max-width: 640px) {
+  .exhibit__stage { height: 360px; }
+  .exhibit__card { width: 210px; height: 290px; margin: -145px 0 0 -105px; }
+  .exhibit__nav--prev { left: 2%; }
+  .exhibit__nav--next { right: 2%; }
+}

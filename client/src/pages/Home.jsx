@@ -3,7 +3,19 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Slideshow from '../components/Slideshow.jsx';
+import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+
+// Pieces shown in the exhibition coverflow. Each points at a real product
+// image; the `to` link opens that piece (falls back to the shop otherwise).
+const EXHIBITION_SLIDES = [
+  { id: 'e1', img: '/products/mauve-kalamkari-peacock-3.jpg', title: 'Kalamkari Peacock',  subtitle: 'Hand-painted saree', to: '/shop?category=saree' },
+  { id: 'e2', img: '/products/maroon-patola-ikat-1.jpg',      title: 'Patola Ikat',         subtitle: 'Festive edit',       to: '/shop?category=saree' },
+  { id: 'e3', img: '/products/green-gold-leheriya-1.jpg',     title: 'Green–Gold Leheriya', subtitle: 'Zari &amp; tissue',      to: '/shop?category=saree' },
+  { id: 'e4', img: '/products/magenta-emerald-set-1.jpg',     title: 'Magenta Emerald Set', subtitle: 'Suit set',           to: '/shop?category=suit' },
+  { id: 'e5', img: '/products/peach-leheriya-organza-3.jpg',  title: 'Peach Organza',       subtitle: 'Everyday drape',     to: '/shop?category=saree' },
+  { id: 'e6', img: '/products/red-ajrakh-suit-1.jpg',         title: 'Red Ajrakh',          subtitle: 'Ajrakh cotton',      to: '/shop?category=suit' },
+];
 
 // Grouped slideshow — each slide shows 3 shots of the same piece side by
 // side, then swaps to the next piece's 3 shots. Matches the lookbook-style
@@ -262,25 +274,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EXHIBITION BANNER */}
+      {/* EXHIBITION — coverflow carousel of festive pieces */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <div className="banner">
-            <img src="/products/mauve-kalamkari-peacock-3.jpg" alt="Sutaara festive exhibition" />
-            <div className="banner__scrim" />
-            <div className="banner__inner">
-              <span className="eyebrow" style={{ color: 'var(--gold-soft)' }}>
-                Lucknow Ladies · Festive Exhibition
-              </span>
-              <h2>See the collection in person</h2>
-              <p>Meet the makers, feel the fabric, and find your festive piece.</p>
-              <button
-                className="btn btn--light"
-                onClick={() => toast('We’ll share exhibition dates on WhatsApp soon.')}
-              >
-                Get exhibition updates
-              </button>
-            </div>
+          <div className="section-head">
+            <div className="chapter-mark">Chapter III½ — In the Room</div>
+            <span className="eyebrow">Lucknow Ladies · Festive Exhibition</span>
+            <h2>See the collection in person</h2>
+            <hr className="zari zari--short" />
+          </div>
+
+          <ExhibitionCarousel slides={EXHIBITION_SLIDES} />
+
+          <div className="text-center mt-40" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/shop" className="btn btn--gold">View Exhibition</Link>
+            <button
+              className="btn btn--ghost"
+              onClick={() => toast('We’ll share exhibition dates on WhatsApp soon.')}
+            >
+              Get exhibition updates
+            </button>
           </div>
         </div>
       </section>
