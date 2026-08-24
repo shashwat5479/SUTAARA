@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
 import couponRoutes from './routes/coupons.js';
+import appointmentRoutes from './routes/appointments.js';
 
 // Express app only — no app.listen() and no DB connect call here, so this
 // file can be imported both by the local dev server (src/index.js) and by
@@ -76,6 +77,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

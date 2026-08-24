@@ -52,6 +52,13 @@ enum DiscountType {
   flat
 }
 
+enum AppointmentStatus {
+  requested
+  confirmed
+  completed
+  cancelled
+}
+
 model User {
   id        String    @id @default(uuid())
   name      String
@@ -60,7 +67,7 @@ model User {
   password  String?
   // Set only for accounts created/linked through Google Sign-In.
   googleId  String?   @unique
-  authProvider String @default("password") // "password" | "google"
+  authProvider String @default("password") // "password" | "google" | "demo"
   // False until the person proves they own the address by entering the code
   // we email them. Google accounts are true immediately — Google has already
   // verified the address. Password accounts cannot log in until this is true,
@@ -72,6 +79,7 @@ model User {
   addresses Address[]
   orders    Order[]
   reviews   Review[]
+  appointments Appointment[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -249,4 +257,27 @@ model EmailOtp {
 
   @@index([email])
   @@index([expiresAt])
+}
+
+// Studio appointment bookings — draping consultations, custom stitching
+// fittings, styling sessions, etc. Bookable by anyone (no login required);
+// linked to a User only when the person happened to be signed in at the time.
+model Appointment {
+  id            String            @id @default(uuid())
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId        String?
+  name          String
+  phone         String
+  email         String
+  service       String            // e.g. "Draping consultation", "Custom stitching", "Styling session"
+  preferredDate DateTime
+  preferredTime String            // stored as a slot label, e.g. "11:00 AM"
+  notes         String            @default("")
+  status        AppointmentStatus @default(requested)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([preferredDate])
 }

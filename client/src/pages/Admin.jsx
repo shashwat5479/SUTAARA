@@ -38,6 +38,7 @@ const FABRICS = [
 const OCCASIONS = ['Wedding', 'Festive', 'Party', 'Everyday', 'Daywear'];
 
 const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const APPOINTMENT_STATUSES = ['requested', 'confirmed', 'completed', 'cancelled'];
 
 function ProductForm({ initial, onDone, onCancel }) {
   const toast = useToast();
@@ -374,6 +375,69 @@ function OrdersTab() {
   );
 }
 
+function AppointmentsTab() {
+  const toast = useToast();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    api.getAllAppointments().then(setAppointments).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const changeStatus = async (id, status) => {
+    try {
+      await api.updateAppointmentStatus(id, status);
+      setAppointments((cur) => cur.map((a) => (a._id === id ? { ...a, status } : a)));
+      toast('Appointment updated');
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+  if (appointments.length === 0) return <div className="empty"><h3>No studio appointments yet</h3></div>;
+
+  return (
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Service</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Contact</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {appointments.map((a) => (
+          <tr key={a._id}>
+            <td>{a.name}</td>
+            <td>{a.service}</td>
+            <td>{new Date(a.preferredDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+            <td>{a.preferredTime}</td>
+            <td>{a.phone}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{a.email}</span></td>
+            <td>
+              <select
+                className="select"
+                value={a.status}
+                onChange={(e) => changeStatus(a._id, e.target.value)}
+                style={{ padding: '6px 28px 6px 10px' }}
+              >
+                {APPOINTMENT_STATUSES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export default function Admin() {
   const [tab, setTab] = useState('products');
   return (
@@ -391,8 +455,11 @@ export default function Admin() {
             <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
               Orders
             </button>
+            <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
+              Studio Appointments
+            </button>
           </div>
-          {tab === 'products' ? <ProductsTab /> : <OrdersTab />}
+          {tab === 'products' ? <ProductsTab /> : tab === 'orders' ? <OrdersTab /> : <AppointmentsTab />}
         </div>
       </section>
     </>

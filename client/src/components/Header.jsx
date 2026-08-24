@@ -34,6 +34,7 @@ const NAV_LEFT = [
             { label: 'Blouses', to: '/shop?category=blouse' },
             { label: 'Dupattas', to: '/shop?category=dupatta' },
             { label: 'Potli Bags', to: '/shop?category=potli' },
+            { label: 'Book a Studio Appointment', to: '/studio' },
           ],
         },
         {
@@ -389,6 +390,7 @@ export default function Header() {
                   <Link to="/shop?category=blouse">Blouses</Link>
                   <Link to="/shop?category=dupatta">Dupattas</Link>
                   <Link to="/shop?category=potli">Potli Bags</Link>
+                  <Link to="/studio">Book a Studio Appointment</Link>
                 </nav>
               </div>
 

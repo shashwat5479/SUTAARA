@@ -54,6 +54,13 @@ export function AuthProvider({ children }) {
     return persist(res);
   }, []);
 
+  // "Fake mail" / demo login — instant session with a generated placeholder
+  // email, no password or verification. For quick demos and testing only.
+  const loginDemo = useCallback(async () => {
+    const res = await api.demoLogin();
+    return persist(res);
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('sutaara_token');
     setUser(null);
@@ -73,6 +80,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         loginWithGoogle,
+        loginDemo,
         verifyEmail,
         resendCode,
         logout,

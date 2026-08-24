@@ -1657,6 +1657,19 @@ textarea {
   color: var(--sindoor);
   border-bottom: 1px solid var(--gold);
 }
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--sindoor);
+  border-bottom: 1px solid var(--gold);
+  cursor: pointer;
+}
+.link-btn:hover {
+  color: var(--sindoor-dark);
+}
 .form-error {
   background: rgba(140, 42, 46, 0.08);
   border: 1px solid rgba(140, 42, 46, 0.3);

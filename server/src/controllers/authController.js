@@ -285,6 +285,32 @@ export const googleLogin = asyncHandler(async (req, res) => {
   res.json({ user: publicUser(user), token: signToken(user.id) });
 });
 
+// POST /api/auth/demo-login — creates (or reuses) a throwaway account with a
+// generated placeholder email and signs straight in. No password, no OTP —
+// this is a "skip sign-in" option for demos/testing, not a real identity.
+// Guard it with ALLOW_DEMO_LOGIN so it can be switched off once the site is
+// live and real customers are signing up.
+export const demoLogin = asyncHandler(async (req, res) => {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_LOGIN !== 'true') {
+    res.status(404);
+    throw new Error('Not found');
+  }
+
+  const suffix = crypto.randomBytes(4).toString('hex');
+  const email = `guest-${suffix}@sutaara.demo`;
+
+  const user = await prisma.user.create({
+    data: {
+      name: 'Guest',
+      email,
+      authProvider: 'demo',
+      emailVerified: true,
+    },
+  });
+
+  res.json({ user: publicUser(user), token: signToken(user.id) });
+});
+
 // GET /api/auth/me
 export const getMe = asyncHandler(async (req, res) => {
   res.json({ user: publicUser(req.user) });

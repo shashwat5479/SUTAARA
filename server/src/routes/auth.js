@@ -3,6 +3,7 @@ import {
   register,
   login,
   googleLogin,
+  demoLogin,
   verifyEmail,
   resendCode,
   getMe,
@@ -18,6 +19,7 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/google', googleLogin);
+router.post('/demo-login', demoLogin);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-code', resendCode);
 router.get('/me', protect, getMe);

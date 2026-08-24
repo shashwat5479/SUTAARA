@@ -9,6 +9,7 @@ import Checkout from './pages/Checkout.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Studio from  './pages/Studio.jsx';
 import Account from './pages/Account.jsx';
 import Admin from './pages/Admin.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="studio" element={<Studio />} />
 
         <Route
           path="checkout"
