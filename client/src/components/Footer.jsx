@@ -12,7 +12,7 @@ export default function Footer() {
             </Link>
             <p>
               Hand-painted and hand-woven ethnicwear, made in small batches in Lucknow and
-              Prayagraj. Every piece carries the mark of the hand that made it.
+              Lucknow. Every piece carries the mark of the hand that made it.
             </p>
           </div>
 
@@ -40,7 +40,7 @@ export default function Footer() {
           <div>
             <h4>Reach Us</h4>
             <ul>
-              <li>Prayagraj, Uttar Pradesh</li>
+              <li>Lucknow, Uttar Pradesh</li>
               <li>hello@sutaara.in</li>
               <li>+91 98765 43210</li>
               <li>Instagram · WhatsApp</li>

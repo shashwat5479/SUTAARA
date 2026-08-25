@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
+import BackNav from './BackNav.jsx';
 import CartDrawer from './CartDrawer.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import useScrollReveal from '../hooks/useScrollReveal.js';
@@ -33,6 +34,7 @@ export default function Layout() {
     <>
       <ScrollToTop />
       <Header />
+      <BackNav />
       <main>
         <Outlet />
       </main>

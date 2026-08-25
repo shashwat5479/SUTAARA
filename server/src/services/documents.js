@@ -8,7 +8,7 @@ import { PDFDocument as PDFLib } from 'pdf-lib';
 const STORE = {
   name: 'Sutaara',
   tagline: 'Handcrafted Indian Ethnicwear',
-  address: process.env.STORE_ADDRESS || 'Prayagraj, Uttar Pradesh, India',
+  address: process.env.STORE_ADDRESS || 'Lucknow, Uttar Pradesh, India',
   email: process.env.STORE_EMAIL || 'hello@sutaara.in',
   // GST is optional — leave STORE_GSTIN unset until the business is registered.
   gstin: process.env.STORE_GSTIN || '',

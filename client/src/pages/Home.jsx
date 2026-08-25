@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
-import Slideshow from '../components/Slideshow.jsx';
+import HeroCarousel from '../components/HeroCarousel.jsx';
+import SareeStory from '../components/SareeStory.jsx';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -21,36 +22,12 @@ const EXHIBITION_SLIDES = [
 // side, then swaps to the next piece's 3 shots. Matches the lookbook-style
 // hero used by hathkargha and similar brands.
 const HERO_SLIDES = [
-  [
-    '/products/mauve-kalamkari-peacock-1.jpg',
-    '/products/mauve-kalamkari-peacock-3.jpg',
-    '/products/mauve-kalamkari-peacock-5.jpg',
-  ],
-  [
-    '/products/peach-leheriya-organza-1.jpg',
-    '/products/peach-leheriya-organza-3.jpg',
-    '/products/peach-leheriya-organza-5.jpg',
-  ],
-  [
-    '/products/maroon-patola-ikat-1.jpg',
-    '/products/maroon-patola-ikat-2.jpg',
-    '/products/red-ajrakh-suit-1.jpg',
-  ],
-  [
-    '/products/green-gold-leheriya-1.jpg',
-    '/products/green-gold-leheriya-3.jpg',
-    '/products/green-gold-leheriya-5.jpg',
-  ],
-  [
-    '/products/peach-madhubani-1.jpg',
-    '/products/peach-madhubani-2.jpg',
-    '/products/peach-madhubani-3.jpg',
-  ],
-  [
-    '/products/magenta-emerald-set-1.jpg',
-    '/products/magenta-emerald-set-2.jpg',
-    '/products/rose-emerald-suit-1.jpg',
-  ],
+  { slug: 'mauve-kalamkari-peacock', title: 'Kalamkari Peacock', imgs: ['/products/mauve-kalamkari-peacock-1.jpg', '/products/mauve-kalamkari-peacock-3.jpg', '/products/mauve-kalamkari-peacock-5.jpg'] },
+  { slug: 'peach-leheriya-organza', title: 'Peach Leheriya Organza', imgs: ['/products/peach-leheriya-organza-1.jpg', '/products/peach-leheriya-organza-3.jpg', '/products/peach-leheriya-organza-5.jpg'] },
+  { slug: 'maroon-patola-ikat', title: 'Maroon Patola Ikat', imgs: ['/products/maroon-patola-ikat-1.jpg', '/products/maroon-patola-ikat-2.jpg', '/products/red-ajrakh-suit-1.jpg'] },
+  { slug: 'green-gold-leheriya', title: 'Green–Gold Leheriya', imgs: ['/products/green-gold-leheriya-1.jpg', '/products/green-gold-leheriya-3.jpg', '/products/green-gold-leheriya-5.jpg'] },
+  { slug: 'peach-madhubani', title: 'Peach Madhubani', imgs: ['/products/peach-madhubani-1.jpg', '/products/peach-madhubani-2.jpg', '/products/peach-madhubani-3.jpg'] },
+  { slug: 'magenta-emerald-set', title: 'Magenta Emerald Set', imgs: ['/products/magenta-emerald-set-1.jpg', '/products/magenta-emerald-set-2.jpg', '/products/rose-emerald-suit-1.jpg'] },
 ];
 
 const CATEGORIES = [
@@ -89,10 +66,10 @@ export default function Home() {
 
   return (
     <>
-      {/* HERO — clean rotating slideshow of saree photography, text overlaid */}
+      {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
       <section className="hero">
         <div className="hero__media">
-          <Slideshow images={HERO_SLIDES} />
+          <HeroCarousel slides={HERO_SLIDES} />
         </div>
         <div className="hero__scrim" />
         <div className="container">
@@ -134,7 +111,7 @@ export default function Home() {
             <div className="trust__item"><strong>Hand-painted</strong><span>Artist-made, never printed twice</span></div>
             <div className="trust__item"><strong>Pure fabrics</strong><span>Mul cotton, chiffon, Banarasi silk</span></div>
             <div className="trust__item"><strong>Free shipping</strong><span>On orders above ₹2,999</span></div>
-            <div className="trust__item"><strong>Made in India</strong><span>Lucknow &amp; Prayagraj ateliers</span></div>
+            <div className="trust__item"><strong>Made in India</strong><span>Lucknow atelier</span></div>
           </div>
         </div>
       </section>
@@ -250,27 +227,15 @@ export default function Home() {
         );
       })}
 
-      {/* EDITORIAL BAND */}
+      {/* A SAREE'S STORY — scroll-driven narrative */}
       <section id="our-craft" className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <div className="editorial">
-            <div className="editorial__media">
-              <img className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Oxblood Banarasi silk saree, styled" />
-            </div>
-            <div className="editorial__body">
-              <div className="chapter-mark">Chapter III — A Saree's Story</div>
-              <span className="eyebrow">The story of a saree</span>
-              <h2>Barish &amp; <em>Dhoop</em></h2>
-              <p className="drop-cap">
-                Our signature red mul cotton was born of two seasons at once — light as monsoon
-                air, warm as afternoon sun. Woven to move with you, and to last long enough to be
-                handed down.
-              </p>
-              <Link to="/product/barish-dhoop-red-mul-cotton-saree" className="btn btn--gold">
-                Discover the piece
-              </Link>
-            </div>
+          <div className="section-head">
+            <div className="chapter-mark">Chapter III — A Saree's Story</div>
+            <h2>The story of a saree</h2>
+            <hr className="zari zari--short" />
           </div>
+          <SareeStory />
         </div>
       </section>
 
