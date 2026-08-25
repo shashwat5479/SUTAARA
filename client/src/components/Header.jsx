@@ -268,7 +268,7 @@ export default function Header() {
           className="container header__utility"
           onMouseEnter={() => setActiveMega(null)}
         >
-          <span className="header__tagline">Handcrafted in Prayagraj, worn everywhere</span>
+          <span className="header__tagline">Rooted in craft, Curated for today</span>
           <div className="header__actions">
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
