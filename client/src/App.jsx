@@ -10,6 +10,7 @@ import OrderSuccess from './pages/OrderSuccess.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Studio from './pages/Studio.jsx';
+import Story from './pages/Story.jsx';
 import Account from './pages/Account.jsx';
 import Admin from './pages/Admin.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="studio" element={<Studio />} />
+        <Route path="story" element={<Story />} />
 
         <Route
           path="checkout"

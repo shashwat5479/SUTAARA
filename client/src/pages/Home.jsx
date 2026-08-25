@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import HeroCarousel from '../components/HeroCarousel.jsx';
-import SareeStory from '../components/SareeStory.jsx';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -227,15 +226,27 @@ export default function Home() {
         );
       })}
 
-      {/* A SAREE'S STORY — scroll-driven narrative */}
+      {/* EDITORIAL BAND */}
       <section id="our-craft" className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <div className="section-head">
-            <div className="chapter-mark">Chapter III — A Saree's Story</div>
-            <h2>The story of a saree</h2>
-            <hr className="zari zari--short" />
+          <div className="editorial reveal-item">
+            <div className="editorial__media">
+              <img className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Maroon Patola ikat saree, styled" />
+            </div>
+            <div className="editorial__body">
+              <div className="chapter-mark">Chapter III — A Saree's Story</div>
+              <span className="eyebrow">The story of a saree</span>
+              <h2>Barish &amp; <em>Dhoop</em></h2>
+              <p className="drop-cap">
+                Our signature red mul cotton was born of two seasons at once — light as monsoon
+                air, warm as afternoon sun. Woven to move with you, and to last long enough to be
+                handed down.
+              </p>
+              <Link to="/story" className="btn btn--gold">
+                Discover the Story
+              </Link>
+            </div>
           </div>
-          <SareeStory />
         </div>
       </section>
 

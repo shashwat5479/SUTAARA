@@ -3598,3 +3598,130 @@ body {
   .saree-chapter.in-view .saree-chapter__body { transform: translateY(0); }
   .saree-chapter__media img { min-height: 260px; }
 }
+
+/* ---------- Story page: black cinematic theme ---------- */
+.story-page {
+  background: #14100d;
+  color: #f2e9db;
+}
+
+/* Dark hero */
+.story-hero {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.story-hero__bg {
+  position: absolute;
+  inset: -6%;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.5) saturate(1.05);
+  z-index: -2;
+  animation: story-hero-zoom 14s ease-out forwards;
+}
+@keyframes story-hero-zoom {
+  from { transform: scale(1.12); }
+  to   { transform: scale(1); }
+}
+.story-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, #14100d 2%, rgba(20,16,13,0.35) 55%, rgba(20,16,13,0.55) 100%);
+}
+.story-hero__inner {
+  max-width: 680px;
+  padding: 80px 0;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: story-fade-up 1s ease 0.2s forwards;
+}
+@keyframes story-fade-up {
+  to { opacity: 1; transform: translateY(0); }
+}
+.story-hero__kicker {
+  display: block;
+  font-family: var(--display, serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--gold-soft, #cdae76);
+  margin-bottom: 12px;
+}
+.story-hero__inner h1 {
+  color: #fff;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.08;
+  margin: 0 0 20px;
+}
+.story-hero__inner h1 em { color: var(--gold-soft, #cdae76); font-style: italic; }
+.story-hero__inner p {
+  color: rgba(242,233,219,0.82);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  max-width: 540px;
+  margin-bottom: 28px;
+}
+
+/* Narrative body on dark */
+.story-body {
+  padding: 80px 0 40px;
+  background: #14100d;
+}
+
+/* Dark overrides for the SareeStory component while it lives on the story page */
+.story-body .saree-intro__card {
+  background: #1e1813;
+  border-color: rgba(205,174,118,0.25);
+  box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+}
+.story-body .saree-intro__card h2 { color: #fff; }
+.story-body .saree-intro__card p,
+.story-body .saree-chapter__body p { color: rgba(242,233,219,0.78); }
+.story-body .saree-chapter__body h3 { color: #fff; }
+.story-body .saree-intro__kicker,
+.story-body .saree-chapter__kicker { color: var(--gold-soft, #cdae76); }
+.story-body .saree-chapter__link {
+  color: var(--gold-soft, #cdae76);
+  border-bottom-color: var(--gold, #b08a4b);
+}
+.story-body .saree-chapter__link:hover { color: #fff; }
+
+/* Outro */
+.story-outro {
+  padding: 70px 0 90px;
+  text-align: center;
+  background: #14100d;
+}
+.story-outro h2 {
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 24px;
+}
+.story-outro__cta {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn--ghost-light {
+  background: transparent;
+  border: 1px solid rgba(242,233,219,0.4);
+  color: #f2e9db;
+}
+.btn--ghost-light:hover {
+  border-color: var(--gold-soft, #cdae76);
+  color: #fff;
+}
+
+/* Let the header sit transparent over the dark hero on this page */
+body.theme-dark-page .backnav {
+  background: #14100d;
+  border-bottom-color: rgba(242,233,219,0.12);
+}
+body.theme-dark-page .backnav__btn { color: rgba(242,233,219,0.7); }
+body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }

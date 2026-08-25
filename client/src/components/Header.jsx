@@ -127,7 +127,7 @@ const NAV_RIGHT = [
         {
           title: 'From the journal',
           links: [
-            { label: "A Saree's Story", to: '/#our-craft' },
+            { label: "A Saree's Story", to: '/story' },
             { label: 'Care & keeping', to: '/#care' },
             { label: 'New arrivals', to: '/shop?sort=newest' },
           ],
