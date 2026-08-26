@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import { colorHex } from '../utils/format.js';
@@ -21,6 +21,7 @@ const SORTS = [
 
 export default function Shop() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const [facets, setFacets] = useState({ fabrics: [], occasions: [], colors: [] });
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -43,10 +44,18 @@ export default function Shop() {
     api
       .getProducts({ category, fabric, occasion, color, search, sort, limit: 48 })
       .then((res) => {
-        setProducts(res.products);
-        setTotal(res.total);
+        // Guard against a malformed/failed payload so the grid never tries to
+        // .map() something that isn't an array.
+        setProducts(Array.isArray(res?.products) ? res.products : []);
+        setTotal(res?.total ?? 0);
       })
-      .catch(() => {})
+      .catch(() => {
+        // On any failure (including the API being down), clear the list so the
+        // page shows the Coming Soon / empty state rather than stale results
+        // or a crash.
+        setProducts([]);
+        setTotal(0);
+      })
       .finally(() => setLoading(false));
   }, [category, fabric, occasion, color, search, sort]);
 
@@ -217,18 +226,21 @@ export default function Shop() {
                 // "coming soon" instead of the generic empty state — much
                 // clearer for someone who just clicked "Dupattas" from the menu.
                 (() => {
-                  const onlyCat = filters.category && !filters.fabric && !filters.occasion && !filters.search;
-                  const label = onlyCat ? (CATEGORY_LABEL[filters.category] || 'these pieces') : '';
+                  const onlyCat = category && !fabric && !occasion && !search;
+                  const label = onlyCat ? (CATEGORY_LABEL[category] || 'These pieces') : '';
                   if (onlyCat) {
                     return (
                       <div className="empty coming-soon coming-soon--large">
                         <span className="coming-soon__label">Coming soon</span>
                         <h3>{label} are on the way</h3>
                         <p>
-                          We're finishing the first {label.toLowerCase()} pieces now.
+                          We're finishing the first {label.toLowerCase()} now.
                           Meanwhile, browse everything we have ready today.
                         </p>
-                        <button className="btn btn--primary" onClick={clearAll}>Browse the full collection</button>
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button className="btn btn--ghost" onClick={() => navigate(-1)}>← Go back</button>
+                          <button className="btn btn--primary" onClick={clearAll}>Browse the full collection</button>
+                        </div>
                       </div>
                     );
                   }
@@ -236,7 +248,10 @@ export default function Shop() {
                     <div className="empty">
                       <h3>Nothing here yet</h3>
                       <p>Try removing a filter or browsing the full collection.</p>
-                      <button className="btn btn--primary" onClick={clearAll}>Clear filters</button>
+                      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button className="btn btn--ghost" onClick={() => navigate(-1)}>← Go back</button>
+                        <button className="btn btn--primary" onClick={clearAll}>Clear filters</button>
+                      </div>
                     </div>
                   );
                 })()
