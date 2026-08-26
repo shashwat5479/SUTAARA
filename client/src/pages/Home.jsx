@@ -43,6 +43,8 @@ export default function Home() {
   // One row per category on the homepage, each with its own "view more".
   const [byCategory, setByCategory] = useState({});
   const [diaries, setDiaries] = useState([]);
+  const [heroSlides, setHeroSlides] = useState(null);
+  const [exhibitionSlides, setExhibitionSlides] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
@@ -55,6 +57,11 @@ export default function Home() {
 
     // 5-star reviews for the Sutaara Diaries section (fails quietly if none).
     api.getDiaries().then(setDiaries).catch(() => {});
+
+    // Admin-controlled hero + exhibition slides; fall back to the hardcoded
+    // defaults below if the admin hasn't added any.
+    api.getHeroSlides().then((s) => setHeroSlides(Array.isArray(s) ? s : [])).catch(() => setHeroSlides([]));
+    api.getExhibitionSlides().then((s) => setExhibitionSlides(Array.isArray(s) ? s : [])).catch(() => setExhibitionSlides([]));
 
     // Fetch each category's first few pieces in parallel. Individual failures
     // are swallowed so one empty category can't blank the whole homepage.
@@ -73,7 +80,7 @@ export default function Home() {
       {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
       <section className="hero">
         <div className="hero__media">
-          <HeroCarousel slides={HERO_SLIDES} />
+          <HeroCarousel slides={heroSlides && heroSlides.length ? heroSlides : HERO_SLIDES} />
         </div>
         <div className="hero__scrim" />
         <div className="container">
@@ -265,7 +272,11 @@ export default function Home() {
             <hr className="zari zari--short" />
           </div>
 
-          <ExhibitionCarousel slides={EXHIBITION_SLIDES} />
+          <ExhibitionCarousel slides={
+            exhibitionSlides && exhibitionSlides.length
+              ? exhibitionSlides.map((s) => ({ id: s._id, img: s.image, title: s.title, subtitle: s.subtitle, to: s.link || '/shop' }))
+              : EXHIBITION_SLIDES
+          } />
 
           <div className="text-center mt-40" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/shop" className="btn btn--gold">View Exhibition</Link>

@@ -303,3 +303,31 @@ model StudioEvent {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// Homepage hero slides — admin-controlled. Each slide is one piece shown as a
+// strip of up to 3 photos; clicking opens its product. Falls back to hardcoded
+// slides on the frontend if none exist.
+model HeroSlide {
+  id        String   @id @default(uuid())
+  title     String   @default("")
+  slug      String   @default("")   // product slug the slide links to
+  images    String[]                // up to 3 image URLs
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Exhibition coverflow slides — admin-controlled.
+model ExhibitionSlide {
+  id        String   @id @default(uuid())
+  title     String   @default("")
+  subtitle  String   @default("")
+  image     String   @default("")
+  link      String   @default("")   // where the slide points (e.g. /shop?category=saree)
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

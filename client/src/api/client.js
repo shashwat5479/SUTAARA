@@ -94,6 +94,20 @@ export const api = {
   getAllReviews: () => request('/reviews', { auth: true }),
   setReviewApproval: (id, approved) => request(`/reviews/${id}/approve`, { method: 'PUT', body: { approved }, auth: true }),
   deleteReview: (id) => request(`/reviews/${id}`, { method: 'DELETE', auth: true }),
+
+  // hero slides (admin-controlled homepage hero)
+  getHeroSlides: () => request('/hero'),
+  getAllHeroSlides: () => request('/hero/all', { auth: true }),
+  createHeroSlide: (body) => request('/hero', { method: 'POST', body, auth: true }),
+  updateHeroSlide: (id, body) => request(`/hero/${id}`, { method: 'PUT', body, auth: true }),
+  deleteHeroSlide: (id) => request(`/hero/${id}`, { method: 'DELETE', auth: true }),
+
+  // exhibition slides (admin-controlled)
+  getExhibitionSlides: () => request('/exhibition'),
+  getAllExhibitionSlides: () => request('/exhibition/all', { auth: true }),
+  createExhibitionSlide: (body) => request('/exhibition', { method: 'POST', body, auth: true }),
+  updateExhibitionSlide: (id, body) => request(`/exhibition/${id}`, { method: 'PUT', body, auth: true }),
+  deleteExhibitionSlide: (id) => request(`/exhibition/${id}`, { method: 'DELETE', auth: true }),
 };
 
 export { getToken };

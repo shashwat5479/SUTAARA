@@ -3,6 +3,7 @@ import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
+import { HeroSlidesTab, ExhibitionTab, DiariesTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -567,8 +568,23 @@ export default function Admin() {
             <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
               Studio Event
             </button>
+            <button className={tab === 'hero' ? 'active' : ''} onClick={() => setTab('hero')}>
+              Hero Panel
+            </button>
+            <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
+              Exhibition
+            </button>
+            <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
+              Diaries / Reviews
+            </button>
           </div>
-          {tab === 'products' ? <ProductsTab /> : tab === 'orders' ? <OrdersTab /> : tab === 'appointments' ? <AppointmentsTab /> : <StudioEventTab />}
+          {tab === 'products' ? <ProductsTab />
+            : tab === 'orders' ? <OrdersTab />
+            : tab === 'appointments' ? <AppointmentsTab />
+            : tab === 'event' ? <StudioEventTab />
+            : tab === 'hero' ? <HeroSlidesTab />
+            : tab === 'exhibition' ? <ExhibitionTab />
+            : <DiariesTab />}
         </div>
       </section>
     </>
