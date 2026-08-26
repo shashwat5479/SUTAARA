@@ -157,6 +157,12 @@ export default function ProductDetail() {
                   ))}
                 </div>
               )}
+
+              {product.video && (
+                <div className="pdp__video">
+                  <video src={product.video} controls preload="metadata" playsInline />
+                </div>
+              )}
             </div>
 
             <div className="pdp__info">

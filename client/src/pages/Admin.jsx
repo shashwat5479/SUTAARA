@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { inr } from '../utils/format.js';
+import MediaUploader from '../components/MediaUploader.jsx';
 
 const EMPTY = {
   name: '',
@@ -11,7 +12,8 @@ const EMPTY = {
   color: '',
   price: '',
   mrp: '',
-  images: ['', '', '', '', '', ''],
+  images: [],
+  video: '',
   description: '',
   care: '',
   blouseNote: '',
@@ -44,11 +46,12 @@ function ProductForm({ initial, onDone, onCancel }) {
   const toast = useToast();
   const [form, setForm] = useState(() => {
     if (!initial) return EMPTY;
-    // Pad the stored image list out to six slots so the form always shows
-    // six inputs regardless of how many the product actually has.
-    const imgs = [...(initial.images || [])];
-    while (imgs.length < 6) imgs.push('');
-    return { ...initial, images: imgs.slice(0, 6) };
+    return {
+      ...EMPTY,
+      ...initial,
+      images: Array.isArray(initial.images) ? initial.images : [],
+      video: initial.video || '',
+    };
   });
   const [busy, setBusy] = useState(false);
 
@@ -58,27 +61,19 @@ function ProductForm({ initial, onDone, onCancel }) {
       [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
     }));
 
-  const setImage = (i) => (e) =>
-    setForm((f) => {
-      const images = [...f.images];
-      images[i] = e.target.value;
-      return { ...f, images };
-    });
+  // Called by the MediaUploader with { images, video }.
+  const setMedia = ({ images, video }) =>
+    setForm((f) => ({ ...f, images, video }));
 
   const submit = async (e) => {
     e.preventDefault();
-    // Drop empty slots — a product with two photos shouldn't store four
-    // empty strings and render broken thumbnails on the product page.
-    const images = form.images.map((s) => s.trim()).filter(Boolean);
+    const images = (form.images || []).map((s) => s.trim()).filter(Boolean);
     if (images.length === 0) {
-      toast('Add at least one image path');
+      toast('Add at least one photo');
       return;
     }
     setBusy(true);
     try {
-      // Only send the fields the API knows about. Spreading `...form` for an
-      // edit would include Prisma metadata (id, createdAt, reviews, etc.)
-      // fetched with the product, which the update endpoint rejects.
       const payload = {
         name: form.name.trim(),
         category: form.category,
@@ -89,6 +84,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         mrp: Number(form.mrp) || 0,
         stock: Number(form.stock) || 0,
         images,
+        video: (form.video || '').trim(),
         description: form.description.trim(),
         care: form.care.trim(),
         blouseNote: form.blouseNote.trim(),
@@ -168,31 +164,9 @@ function ProductForm({ initial, onDone, onCancel }) {
       </div>
 
       <p className="admin-form__legend">
-        Photos <span>— up to 6. The first is the main image shown on listings.</span>
+        Photos &amp; video <span>— upload from your gallery. First photo is the main image.</span>
       </p>
-      <div className="admin-images">
-        {form.images.map((src, i) => (
-          <div className="admin-images__slot" key={i}>
-            <div className="admin-images__preview">
-              {src.trim() ? (
-                <img
-                  src={src.trim()}
-                  alt=""
-                  onError={(e) => { e.currentTarget.style.opacity = '0.15'; }}
-                  onLoad={(e) => { e.currentTarget.style.opacity = '1'; }}
-                />
-              ) : (
-                <span>{i === 0 ? 'Main' : i + 1}</span>
-              )}
-            </div>
-            <input
-              value={src}
-              onChange={setImage(i)}
-              placeholder={i === 0 ? '/products/main.jpg' : `/products/photo-${i + 1}.jpg`}
-            />
-          </div>
-        ))}
-      </div>
+      <MediaUploader images={form.images} video={form.video} onChange={setMedia} />
 
       <p className="admin-form__legend">Details</p>
       <div className="field">

@@ -115,6 +115,7 @@ model Product {
   price        Int
   mrp          Int         @default(0)
   images       String[]
+  video        String      @default("")
   description  String      @default("")
   care         String      @default("")
   blouseNote   String      @default("")
