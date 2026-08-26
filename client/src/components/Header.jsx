@@ -210,6 +210,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const closeTimer = useRef(null);
+  const suppressHover = useRef(false);
 
   useEffect(() => {
     const onScroll = () => setFloating(window.scrollY > 8);
@@ -242,6 +243,9 @@ export default function Header() {
   // Small delay on close so moving the cursor from the trigger link down into
   // the panel doesn't snap it shut in the gap between them.
   const openMega = (key) => {
+    // After a nav click, the cursor is still over the item — don't let hover
+    // immediately re-open the slider we just closed by navigating.
+    if (suppressHover.current) return;
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setActiveMega(key);
   };
@@ -249,12 +253,20 @@ export default function Header() {
     closeTimer.current = setTimeout(() => setActiveMega(null), 160);
   };
 
+  // Called on any nav/mega link click: close the slider and block hover from
+  // reopening it until the cursor has had a chance to leave.
+  const closeMegaOnNav = () => {
+    setActiveMega(null);
+    suppressHover.current = true;
+    setTimeout(() => { suppressHover.current = false; }, 500);
+  };
+
   const NavItem = ({ item }) => (
     <span
       className={`nav__trigger ${activeMega === item.key ? 'is-active' : ''}`}
       onMouseEnter={() => openMega(item.key)}
     >
-      <NavLink to={item.to} onClick={() => setActiveMega(null)}>{item.label}</NavLink>
+      <NavLink to={item.to} onClick={closeMegaOnNav}>{item.label}</NavLink>
     </span>
   );
 
@@ -331,7 +343,7 @@ export default function Header() {
         >
           <MegaMenu
             menu={activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null}
-            onLinkClick={() => setActiveMega(null)}
+            onLinkClick={closeMegaOnNav}
           />
         </div>
       </header>

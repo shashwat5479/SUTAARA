@@ -3766,12 +3766,13 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   margin: 30px auto 0;
   perspective: 2200px;
 }
-/* The open book: two fixed leaves side by side */
+/* The open book: two fixed leaves side by side. A hard height keeps every
+   entry the SAME size regardless of review length; long text scrolls. */
 .diary-book__book {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 380px;
+  height: 420px;
   background: #f6efe2;
   border-radius: 6px;
   box-shadow: 0 30px 80px rgba(0,0,0,0.5);
@@ -3780,6 +3781,7 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 .diary-leaf {
   position: relative;
   overflow: hidden;
+  height: 100%;
 }
 .diary-leaf--left { border-radius: 6px 0 0 6px; }
 .diary-leaf--right {
@@ -3787,32 +3789,36 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   display: flex;
   align-items: center;
   padding: 40px 44px;
+  overflow-y: auto;
   background:
-    linear-gradient(to right, rgba(0,0,0,0.06), transparent 8%),
+    /* page curvature: subtle light-to-shadow gradient across the leaf */
+    linear-gradient(to right, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.02) 6%, transparent 14%, rgba(255,255,255,0.25) 92%, rgba(0,0,0,0.05) 100%),
     #f6efe2;
 }
 .diary-leaf--left img {
   width: 100%;
   height: 100%;
-  min-height: 380px;
   object-fit: cover;
   display: block;
 }
-/* soft inner-edge shading near the spine */
+/* page-curvature shading on the image leaf too, near the spine */
 .diary-leaf__edge--left {
   position: absolute;
   top: 0; bottom: 0; right: 0;
-  width: 24px;
-  background: linear-gradient(to left, rgba(0,0,0,0.16), transparent);
+  width: 40px;
+  background: linear-gradient(to left, rgba(0,0,0,0.22), transparent);
   pointer-events: none;
 }
 .diary-book__spine {
   position: absolute;
-  left: 0;
+  left: 50%;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: linear-gradient(to right, rgba(0,0,0,0.18), transparent);
+  width: 3px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, rgba(0,0,0,0.22), rgba(255,255,255,0.15), rgba(0,0,0,0.22));
+  z-index: 6;
+  pointer-events: none;
 }
 
 /* The turning leaf — occupies the RIGHT half and rotates around the spine */
@@ -3839,11 +3845,24 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   display: flex;
   align-items: center;
   padding: 40px 44px;
+  overflow-y: auto;
   border-radius: 0 6px 6px 0;
+  /* curved-paper shading: brighter at the free edge, shadowed at the spine */
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0.02) 8%, transparent 20%, rgba(255,255,255,0.28) 94%, rgba(0,0,0,0.06) 100%),
+    #f6efe2;
 }
 .diary-turn__face--back {
   transform: rotateY(180deg);
   border-radius: 6px 0 0 6px;
+}
+.diary-turn__face--back::after {
+  /* shading on the back (image) side as it curves */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to left, rgba(0,0,0,0.16) 0%, transparent 20%, rgba(255,255,255,0.12) 90%);
+  pointer-events: none;
 }
 .diary-turn__face img {
   position: absolute;
@@ -3891,12 +3910,21 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   font-size: 1.5rem;
   color: var(--ink, #2b211c);
   margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .diary-entry__body {
   color: var(--ink-soft, #5a4d44);
   line-height: 1.8;
   font-style: italic;
   margin-bottom: 20px;
+  /* keep every entry a consistent size — clamp long reviews */
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .diary-entry__meta { display: flex; flex-direction: column; gap: 2px; }
 .diary-entry__name { color: var(--sindoor, #8c2a2e); font-weight: 600; }
