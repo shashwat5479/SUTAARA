@@ -15,6 +15,9 @@
     "seed": "node src/utils/seed.js",
     "seed:destroy": "node src/utils/seed.js --destroy"
   },
+  "prisma": {
+  "seed": "node src/utils/seed.js"
+},
   "dependencies": {
     "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",

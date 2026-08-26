@@ -85,6 +85,15 @@ export const api = {
   createStudioEvent: (body) => request('/studio-event', { method: 'POST', body, auth: true }),
   updateStudioEvent: (id, body) => request(`/studio-event/${id}`, { method: 'PUT', body, auth: true }),
   deleteStudioEvent: (id) => request(`/studio-event/${id}`, { method: 'DELETE', auth: true }),
+
+  // reviews / Sutaara Diaries
+  getDiaries: () => request('/reviews/diaries'),
+  getProductReviews: (productId) => request(`/reviews/product/${productId}`),
+  canReview: (productId) => request(`/reviews/can-review/${productId}`, { auth: true }),
+  createReview: (body) => request('/reviews', { method: 'POST', body, auth: true }),
+  getAllReviews: () => request('/reviews', { auth: true }),
+  setReviewApproval: (id, approved) => request(`/reviews/${id}/approve`, { method: 'PUT', body: { approved }, auth: true }),
+  deleteReview: (id) => request(`/reviews/${id}`, { method: 'DELETE', auth: true }),
 };
 
 export { getToken };

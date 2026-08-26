@@ -6,6 +6,7 @@ import { useWishlist } from '../context/WishlistContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { inr, discountPct, WHATSAPP_NUMBER } from '../utils/format.js';
 import ProductCard from '../components/ProductCard.jsx';
+import ProductReviews from '../components/ProductReviews.jsx';
 import Lightbox from '../components/Lightbox.jsx';
 import { Heart, Minus, Plus, Whatsapp, Truck } from '../components/Icons.jsx';
 
@@ -253,6 +254,12 @@ export default function ProductDetail() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="section--tight" style={{ paddingTop: 0 }}>
+        <div className="container">
+          <ProductReviews productId={product._id} />
         </div>
       </section>
 

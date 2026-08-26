@@ -11,6 +11,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Studio from './pages/Studio.jsx';
 import Story from './pages/Story.jsx';
+import Diaries from './pages/Diaries.jsx';
 import Account from './pages/Account.jsx';
 import Admin from './pages/Admin.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="register" element={<Register />} />
         <Route path="studio" element={<Studio />} />
         <Route path="story" element={<Story />} />
+        <Route path="diaries" element={<Diaries />} />
 
         <Route
           path="checkout"

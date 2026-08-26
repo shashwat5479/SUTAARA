@@ -4,6 +4,7 @@ import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import HeroCarousel from '../components/HeroCarousel.jsx';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
+import DiaryBook from '../components/DiaryBook.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
 // Pieces shown in the exhibition coverflow. Each points at a real product
@@ -41,6 +42,7 @@ export default function Home() {
   const [arrivals, setArrivals] = useState([]);
   // One row per category on the homepage, each with its own "view more".
   const [byCategory, setByCategory] = useState({});
+  const [diaries, setDiaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
@@ -50,6 +52,9 @@ export default function Home() {
       .then((res) => setArrivals(res.products))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // 5-star reviews for the Sutaara Diaries section (fails quietly if none).
+    api.getDiaries().then(setDiaries).catch(() => {});
 
     // Fetch each category's first few pieces in parallel. Individual failures
     // are swallowed so one empty category can't blank the whole homepage.
@@ -270,6 +275,26 @@ export default function Home() {
             >
               Get exhibition updates
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* SUTAARA DIARIES — 5-star customer reviews as an open book */}
+      <section className="diaries-section">
+        <div className="diaries-section__bg" />
+        <div className="diaries-section__scrim" />
+        <div className="container">
+          <div className="section-head section-head--light">
+            <div className="chapter-mark">Chapter III½ — In Their Words</div>
+            <span className="eyebrow" style={{ color: 'var(--gold-soft)' }}>Sutaara Diaries</span>
+            <h2>Stories our customers wrote</h2>
+            <hr className="zari zari--short" />
+          </div>
+
+          <DiaryBook reviews={diaries} />
+
+          <div className="text-center mt-40">
+            <Link to="/diaries" className="btn btn--gold">Open the Diary</Link>
           </div>
         </div>
       </section>

@@ -362,6 +362,45 @@ async function run() {
     }
   }
 
+  // ----- Seed "Sutaara Diaries" reviews -----
+  // Real reviews require a verified purchase, but until customers arrive we
+  // seed a handful of 5-star reviews so the Diaries section isn't empty. Each
+  // is attached to a throwaway reviewer account and a real product.
+  const dbProducts = await prisma.product.findMany({ select: { id: true, slug: true } });
+  const bySlug = Object.fromEntries(dbProducts.map((p) => [p.slug, p.id]));
+
+  const seedReviews = [
+    { slug: 'mauve-kalamkari-peacock', name: 'Ananya R.', title: 'A dream to drape', body: 'The hand-painted peacocks are even more stunning in person. I wore it to my sister\u2019s wedding and could not stop getting compliments. You can feel the craft in every inch.' },
+    { slug: 'maroon-patola-ikat', name: 'Devika S.', title: 'Heirloom quality', body: 'This is the kind of saree you pass down. The ikat work is flawless and the colour is so rich. Worth every rupee.' },
+    { slug: 'green-gold-leheriya', name: 'Meera K.', title: 'Absolutely radiant', body: 'The green and gold together are magical under light. Lightweight, easy to carry all evening, and the zari border is gorgeous.' },
+    { slug: 'peach-leheriya-organza', name: 'Sana P.', title: 'My new favourite', body: 'So soft and airy. Perfect for a daytime function. The peach shade is exactly like the photos \u2014 delicate and elegant.' },
+    { slug: 'magenta-emerald-set', name: 'Ritika M.', title: 'Stitched to perfection', body: 'The suit set fit beautifully and the colour combination is regal. Sutaara\u2019s finishing is top-notch.' },
+    { slug: 'peach-madhubani', name: 'Aditi V.', title: 'Wearable art', body: 'Every motif tells a story. I have never owned anything with this much detail. Felt special the moment I put it on.' },
+    { slug: 'red-ajrakh-suit', name: 'Nisha T.', title: 'Timeless and comfortable', body: 'The ajrakh print is classic and the cotton breathes so well. My go-to for festive brunches now.' },
+    { slug: 'rose-emerald-suit', name: 'Kavya B.', title: 'Elegant beyond words', body: 'Received it well-packed and on time. The rose and emerald pairing is stunning and the fabric feels premium.' },
+  ];
+
+  let seededCount = 0;
+  for (const r of seedReviews) {
+    const productId = bySlug[r.slug];
+    if (!productId) continue;
+    const email = `diary-${r.slug}@sutaara.demo`;
+    let reviewer = await prisma.user.findUnique({ where: { email } });
+    if (!reviewer) {
+      reviewer = await prisma.user.create({
+        data: { name: r.name, email, authProvider: 'demo', emailVerified: true },
+      });
+    }
+    const exists = await prisma.review.findFirst({ where: { productId, userId: reviewer.id } });
+    if (!exists) {
+      await prisma.review.create({
+        data: { productId, userId: reviewer.id, rating: 5, title: r.title, body: r.body, verified: true, approved: true },
+      });
+      seededCount += 1;
+    }
+  }
+  console.log(`Seeded ${seededCount} diary reviews.`);
+
   await prisma.$disconnect();
   console.log('Seed complete.');
   process.exit(0);

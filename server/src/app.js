@@ -12,6 +12,7 @@ import orderRoutes from './routes/orders.js';
 import couponRoutes from './routes/coupons.js';
 import appointmentRoutes from './routes/appointments.js';
 import studioEventRoutes from './routes/studioEvent.js';
+import reviewRoutes from './routes/reviews.js';
 
 // Express app only — no app.listen() and no DB connect call here, so this
 // file can be imported both by the local dev server (src/index.js) and by
@@ -80,6 +81,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/studio-event', studioEventRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

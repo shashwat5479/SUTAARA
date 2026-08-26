@@ -29,7 +29,7 @@ export default function useScrollReveal() {
           }
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0, rootMargin: '0px 0px -10% 0px' }
     );
 
     const scan = () => {
@@ -40,12 +40,24 @@ export default function useScrollReveal() {
 
     scan();
 
+    // Failsafe: if for any reason the observer hasn't revealed an element
+    // shortly after load (some mobile browsers fire inconsistently), force
+    // anything already on-screen or above the fold to show, so a section can
+    // never stay permanently invisible.
+    const failsafe = setTimeout(() => {
+      document.querySelectorAll(SELECTOR).forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight * 1.2) el.classList.add('in-view');
+      });
+    }, 700);
+
     // Content that loads after mount (product rows, category rows) needs
     // picking up too.
     const mo = new MutationObserver(scan);
     mo.observe(document.body, { childList: true, subtree: true });
 
     return () => {
+      clearTimeout(failsafe);
       observer.disconnect();
       mo.disconnect();
     };

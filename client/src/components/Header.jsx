@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -208,6 +208,7 @@ export default function Header() {
   const [activeMega, setActiveMega] = useState(null);
   const [q, setQ] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const closeTimer = useRef(null);
 
   useEffect(() => {
@@ -215,6 +216,13 @@ export default function Header() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Whenever the route changes, close the mega menu and mobile drawer — this
+  // guarantees the hover slider goes away once a page actually opens.
+  useEffect(() => {
+    setActiveMega(null);
+    setMenuOpen(false);
+  }, [location.pathname, location.search]);
 
   // Lock background scroll while the mobile drawer is open
   useEffect(() => {
@@ -246,7 +254,7 @@ export default function Header() {
       className={`nav__trigger ${activeMega === item.key ? 'is-active' : ''}`}
       onMouseEnter={() => openMega(item.key)}
     >
-      <NavLink to={item.to}>{item.label}</NavLink>
+      <NavLink to={item.to} onClick={() => setActiveMega(null)}>{item.label}</NavLink>
     </span>
   );
 
@@ -397,13 +405,23 @@ export default function Header() {
               <div className="mmenu__section">
                 <span className="mmenu__label">Discover</span>
                 <nav>
-                  <Link to="/#our-craft">Our Craft &amp; Stories</Link>
+                  <Link to="/story">A Saree's Story</Link>
+                  <Link to="/diaries">Sutaara Diaries</Link>
+                  <Link to="/studio">Visit the Studio</Link>
+                  <Link to="/#our-craft">Our Craft</Link>
+                  <Link to="/#care">Care &amp; Keeping</Link>
                 </nav>
               </div>
 
               <div className="mmenu__section">
                 <span className="mmenu__label">Account</span>
                 <nav className="mmenu__iconlinks">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setSearchOpen(true); }}
+                  >
+                    <Search /> Search
+                  </button>
                   <Link to="/wishlist">
                     <Heart /> Wishlist
                     {wishCount > 0 && <span className="badge">{wishCount}</span>}
