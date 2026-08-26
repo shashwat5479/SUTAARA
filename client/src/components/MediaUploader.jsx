@@ -3,6 +3,36 @@ import { useState, useRef, useCallback } from 'react';
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drmpijecc';
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sutaara_unsigned';
 
+// Compress/resize a large image in the browser before upload. Keeps quality
+// high (max 2400px on the long edge, 0.85 JPEG quality) so large gallery
+// photos upload fast without visible loss. Small images pass through untouched.
+async function compressImage(file) {
+  // Only compress raster images; leave GIFs/SVGs and already-small files alone.
+  if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+  if (file.size < 500 * 1024) return file; // under 0.5MB — not worth it
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const MAX = 2400;
+    let { width, height } = bitmap;
+    if (width > MAX || height > MAX) {
+      const scale = MAX / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
+    if (!blob || blob.size >= file.size) return file; // no gain — keep original
+    return new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' });
+  } catch {
+    return file; // if anything fails, upload the original
+  }
+}
+
 // Uploads one file straight to Cloudinary (browser → Cloudinary, not via our
 // server). Reports progress via onProgress. `resourceType` is 'image' or
 // 'video' — Cloudinary's /auto/ endpoint detects it, but being explicit lets
@@ -49,7 +79,15 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
 
   const handleImageFiles = useCallback(async (files) => {
     setError('');
-    const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    let list = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (list.length === 0) return;
+
+    // Enforce a 25MB per-image cap (before compression).
+    const tooBig = list.filter((f) => f.size > 25 * 1024 * 1024);
+    if (tooBig.length) {
+      setError(`${tooBig.length} image(s) over 25MB were skipped. Please use smaller photos.`);
+      list = list.filter((f) => f.size <= 25 * 1024 * 1024);
+    }
     if (list.length === 0) return;
 
     const jobs = list.map((f) => ({ id: `${f.name}-${Date.now()}-${Math.random()}`, name: f.name, pct: 0, kind: 'image' }));
@@ -58,7 +96,9 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
     const uploaded = [];
     for (let i = 0; i < list.length; i += 1) {
       try {
-        const urlStr = await uploadToCloudinary(list[i], {
+        // Compress large photos in-browser first — faster upload, no visible loss.
+        const toUpload = await compressImage(list[i]);
+        const urlStr = await uploadToCloudinary(toUpload, {
           onProgress: (pct) => setUploading((u) => u.map((j) => (j.id === jobs[i].id ? { ...j, pct } : j))),
         });
         uploaded.push(urlStr);
@@ -135,7 +175,7 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
         />
         <div className="uploader__zone-inner">
           <strong>Add photos</strong>
-          <span>Tap to choose from gallery, or drag &amp; drop. First photo is the main image.</span>
+          <span>Tap to choose from gallery, or drag &amp; drop. Up to 25MB each — large photos are auto-compressed. First photo is the main image.</span>
         </div>
       </div>
 

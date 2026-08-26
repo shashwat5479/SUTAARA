@@ -3,12 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 // Swipeable hero band. Each slide is one piece shown as a strip of photos;
 // clicking any photo opens that product. Arrows + swipe + auto-advance.
-export default function HeroCarousel({ slides, interval = 4800 }) {
+export default function HeroCarousel({ slides = [], interval = 4800 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const navigate = useNavigate();
   const touchX = useRef(null);
-  const count = slides.length;
+
+  // Defend against malformed slides (e.g. an admin slide missing images) so a
+  // single bad entry can never crash the homepage. Accept either `imgs` or
+  // `images`, drop slides with no photos.
+  const safe = (Array.isArray(slides) ? slides : [])
+    .map((s) => ({
+      slug: (s && s.slug) || 'shop',
+      title: (s && s.title) || '',
+      imgs: Array.isArray(s && s.imgs) ? s.imgs.filter(Boolean)
+        : Array.isArray(s && s.images) ? s.images.filter(Boolean) : [],
+    }))
+    .filter((s) => s.imgs.length > 0);
+  const count = safe.length;
 
   const go = useCallback((dir) => setIndex((i) => (i + dir + count) % count), [count]);
 
@@ -26,6 +38,8 @@ export default function HeroCarousel({ slides, interval = 4800 }) {
     touchX.current = null;
   };
 
+  if (count === 0) return null;
+
   return (
     <div
       className="hero-carousel"
@@ -34,7 +48,7 @@ export default function HeroCarousel({ slides, interval = 4800 }) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {slides.map((slide, i) => (
+      {safe.map((slide, i) => (
         <div
           key={slide.slug}
           className={`hero-carousel__slide ${i === index ? 'is-active' : ''}`}
@@ -61,7 +75,7 @@ export default function HeroCarousel({ slides, interval = 4800 }) {
           <button className="hero-carousel__nav hero-carousel__nav--prev" aria-label="Previous" onClick={() => go(-1)}>‹</button>
           <button className="hero-carousel__nav hero-carousel__nav--next" aria-label="Next" onClick={() => go(1)}>›</button>
           <div className="hero-carousel__dots">
-            {slides.map((_, i) => (
+            {safe.map((_, i) => (
               <button key={i} className={i === index ? 'is-active' : ''} aria-label={`Slide ${i + 1}`} onClick={() => setIndex(i)} />
             ))}
           </div>

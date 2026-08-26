@@ -80,7 +80,12 @@ export default function Home() {
       {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
       <section className="hero">
         <div className="hero__media">
-          <HeroCarousel slides={heroSlides && heroSlides.length ? heroSlides : HERO_SLIDES} />
+          <HeroCarousel slides={
+            heroSlides && heroSlides.length
+              ? heroSlides.map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [] }))
+                  .filter((s) => s.imgs.length > 0)
+              : HERO_SLIDES
+          } />
         </div>
         <div className="hero__scrim" />
         <div className="container">
