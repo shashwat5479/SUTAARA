@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, DiariesTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -546,45 +547,64 @@ function StudioEventTab() {
 }
 
 export default function Admin() {
-  const [tab, setTab] = useState('products');
+  const { isContentAdmin, isSuperAdmin, role } = useAuth();
+  // Staff see only Orders (+ read-only products). Admins & super-admins get the
+  // content/UI tabs. Super-admins additionally get the Team tab.
+  const [tab, setTab] = useState(isContentAdmin ? 'products' : 'orders');
+
+  const roleLabel = role === 'superadmin' ? 'Super Admin' : role === 'admin' ? 'Admin' : 'Staff';
+
   return (
     <>
       <div className="page-head">
         <h1>Admin Dashboard</h1>
-        <div className="crumbs">Manage products &amp; orders</div>
+        <div className="crumbs">Signed in as {roleLabel}</div>
       </div>
       <section className="section--tight">
         <div className="container">
           <div className="admin-tabs">
-            <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
-              Products
-            </button>
+            {isContentAdmin && (
+              <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
+                Products
+              </button>
+            )}
             <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
               Orders
             </button>
             <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
               Studio Appointments
             </button>
-            <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
-              Studio Event
-            </button>
-            <button className={tab === 'hero' ? 'active' : ''} onClick={() => setTab('hero')}>
-              Hero Panel
-            </button>
-            <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
-              Exhibition
-            </button>
-            <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
-              Diaries / Reviews
-            </button>
+            {isContentAdmin && (
+              <>
+                <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
+                  Studio Event
+                </button>
+                <button className={tab === 'hero' ? 'active' : ''} onClick={() => setTab('hero')}>
+                  Hero Panel
+                </button>
+                <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
+                  Exhibition
+                </button>
+                <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
+                  Diaries / Reviews
+                </button>
+              </>
+            )}
+            {isSuperAdmin && (
+              <button className={tab === 'team' ? 'active' : ''} onClick={() => setTab('team')}>
+                Team
+              </button>
+            )}
           </div>
-          {tab === 'products' ? <ProductsTab />
+          {tab === 'products' && isContentAdmin ? <ProductsTab />
             : tab === 'orders' ? <OrdersTab />
             : tab === 'appointments' ? <AppointmentsTab />
-            : tab === 'event' ? <StudioEventTab />
-            : tab === 'hero' ? <HeroSlidesTab />
-            : tab === 'exhibition' ? <ExhibitionTab />
-            : <DiariesTab />}
+            : tab === 'event' && isContentAdmin ? <StudioEventTab />
+            : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
+            : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
+            : tab === 'diaries' && isContentAdmin ? <DiariesTab />
+            : tab === 'team' && isSuperAdmin ? <TeamTab />
+            : <OrdersTab />}
         </div>
       </section>
     </>

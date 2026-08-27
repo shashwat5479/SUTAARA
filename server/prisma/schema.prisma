@@ -21,7 +21,9 @@ datasource db {
 
 enum Role {
   user
+  staff
   admin
+  superadmin
 }
 
 enum PaymentMethod {

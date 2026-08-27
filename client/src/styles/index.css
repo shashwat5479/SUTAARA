@@ -4161,3 +4161,6 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   display: block;
   background: #000;
 }
+
+/* compact select for admin tables */
+.select--sm { padding: 5px 8px; font-size: 0.85rem; min-width: 90px; }

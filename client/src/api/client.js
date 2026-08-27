@@ -108,6 +108,13 @@ export const api = {
   createExhibitionSlide: (body) => request('/exhibition', { method: 'POST', body, auth: true }),
   updateExhibitionSlide: (id, body) => request(`/exhibition/${id}`, { method: 'PUT', body, auth: true }),
   deleteExhibitionSlide: (id) => request(`/exhibition/${id}`, { method: 'DELETE', auth: true }),
+
+  // team / staff accounts (super admin only)
+  getStaff: () => request('/admin/users', { auth: true }),
+  createStaffAccount: (body) => request('/admin/users', { method: 'POST', body, auth: true }),
+  changeStaffRole: (id, role) => request(`/admin/users/${id}/role`, { method: 'PUT', body: { role }, auth: true }),
+  resetStaffPassword: (id, password) => request(`/admin/users/${id}/password`, { method: 'PUT', body: { password }, auth: true }),
+  removeStaffAccount: (id) => request(`/admin/users/${id}`, { method: 'DELETE', auth: true }),
 };
 
 export { getToken };

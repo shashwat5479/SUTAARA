@@ -85,7 +85,10 @@ export function AuthProvider({ children }) {
         resendCode,
         logout,
         updateProfile,
-        isAdmin: user?.role === 'admin',
+        isAdmin: ['staff', 'admin', 'superadmin'].includes(user?.role),
+        isContentAdmin: ['admin', 'superadmin'].includes(user?.role),
+        isSuperAdmin: user?.role === 'superadmin',
+        role: user?.role || 'user',
       }}
     >
       {children}

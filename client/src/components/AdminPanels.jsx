@@ -249,3 +249,109 @@ export function DiariesTab() {
     </table>
   );
 }
+
+/* ---------------- Team tab (super admin: manage staff/admin accounts) ---------------- */
+export function TeamTab() {
+  const toast = useToast();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'staff' });
+  const [busy, setBusy] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    api.getStaff().then(setUsers).catch((e) => toast(e.message)).finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api.createStaffAccount(form);
+      toast('Account created');
+      setForm({ name: '', email: '', password: '', role: 'staff' });
+      setShowForm(false);
+      load();
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  const resetPw = async (u) => {
+    const pw = window.prompt(`Set a new password for ${u.name} (min 8 chars):`);
+    if (!pw) return;
+    try { await api.resetStaffPassword(u._id, pw); toast('Password reset'); }
+    catch (err) { toast(err.message); }
+  };
+
+  const changeRole = async (u, role) => {
+    try { await api.changeStaffRole(u._id, role); toast('Role updated'); load(); }
+    catch (err) { toast(err.message); }
+  };
+
+  const remove = async (u) => {
+    if (!window.confirm(`Remove ${u.name}'s admin access? They become a normal customer.`)) return;
+    try { await api.removeStaffAccount(u._id); toast('Access removed'); load(); }
+    catch (err) { toast(err.message); }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+        <span className="shop__count">{users.length} team members</span>
+        <button className="btn btn--primary btn--sm" onClick={() => setShowForm((s) => !s)}>
+          {showForm ? 'Cancel' : '+ New team member'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={create} className="checkout__panel admin-form" style={{ maxWidth: 520, marginBottom: 24 }}>
+          <h3>Create staff or admin account</h3>
+          <div className="field"><label>Name</label><input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required /></div>
+          <div className="field"><label>Email</label><input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required /></div>
+          <div className="field"><label>Temporary password (min 8)</label><input value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} /></div>
+          <div className="field">
+            <label>Role</label>
+            <select className="select" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}>
+              <option value="staff">Staff — orders only</option>
+              <option value="admin">Admin — products, orders &amp; site content</option>
+            </select>
+          </div>
+          <button className="btn btn--primary" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</button>
+        </form>
+      )}
+
+      <table className="table">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u._id}>
+              <td>{u.name}</td>
+              <td>{u.email}</td>
+              <td>
+                {u.role === 'superadmin' ? (
+                  <span className="rv-verified">Super Admin</span>
+                ) : (
+                  <select className="select select--sm" value={u.role} onChange={(e) => changeRole(u, e.target.value)}>
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                )}
+              </td>
+              <td className="table__actions">
+                {u.role !== 'superadmin' && (
+                  <>
+                    <button onClick={() => resetPw(u)}>Reset password</button>
+                    <button onClick={() => remove(u)}>Remove</button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
