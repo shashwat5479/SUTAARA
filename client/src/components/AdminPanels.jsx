@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import MediaUploader from './MediaUploader.jsx';
 
 /* ---------------- Hero slides tab ---------------- */
@@ -253,11 +254,32 @@ export function DiariesTab() {
 /* ---------------- Team tab (super admin: manage staff/admin accounts) ---------------- */
 export function TeamTab() {
   const toast = useToast();
+  const { user, updateProfile } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'staff' });
   const [busy, setBusy] = useState(false);
+
+  // Super admin's own account (change login email / password)
+  const [selfOpen, setSelfOpen] = useState(false);
+  const [self, setSelf] = useState({ email: user?.email || '', password: '' });
+  const [selfBusy, setSelfBusy] = useState(false);
+
+  const saveSelf = async (e) => {
+    e.preventDefault();
+    setSelfBusy(true);
+    try {
+      const payload = {};
+      if (self.email && self.email !== user?.email) payload.email = self.email;
+      if (self.password) payload.password = self.password;
+      if (Object.keys(payload).length === 0) { toast('Nothing to change'); setSelfBusy(false); return; }
+      await updateProfile(payload);
+      toast('Your account was updated');
+      setSelf((s) => ({ ...s, password: '' }));
+      setSelfOpen(false);
+    } catch (err) { toast(err.message); } finally { setSelfBusy(false); }
+  };
 
   const load = () => {
     setLoading(true);
@@ -299,6 +321,26 @@ export function TeamTab() {
 
   return (
     <>
+      {/* My Account — super admin's own login credentials */}
+      <div className="checkout__panel admin-form" style={{ maxWidth: 520, marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>My account</h3>
+            <span style={{ color: 'var(--ink-soft)', fontSize: '0.85rem' }}>{user?.email} · Super Admin</span>
+          </div>
+          <button className="btn btn--ghost btn--sm" onClick={() => setSelfOpen((s) => !s)}>
+            {selfOpen ? 'Cancel' : 'Change email / password'}
+          </button>
+        </div>
+        {selfOpen && (
+          <form onSubmit={saveSelf} style={{ marginTop: 16 }}>
+            <div className="field"><label>Login email</label><input type="email" value={self.email} onChange={(e) => setSelf((s) => ({ ...s, email: e.target.value }))} /></div>
+            <div className="field"><label>New password (leave blank to keep current)</label><input value={self.password} onChange={(e) => setSelf((s) => ({ ...s, password: e.target.value }))} placeholder="••••••••" /></div>
+            <button className="btn btn--primary" disabled={selfBusy}>{selfBusy ? 'Saving…' : 'Save my account'}</button>
+          </form>
+        )}
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
         <span className="shop__count">{users.length} team members</span>
         <button className="btn btn--primary btn--sm" onClick={() => setShowForm((s) => !s)}>

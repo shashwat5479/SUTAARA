@@ -321,6 +321,15 @@ export const updateMe = asyncHandler(async (req, res) => {
   const data = {};
   if (req.body.name) data.name = req.body.name;
   if (req.body.phone !== undefined) data.phone = req.body.phone;
+  if (req.body.email && req.body.email.toLowerCase().trim() !== req.user.email) {
+    const email = req.body.email.toLowerCase().trim();
+    const taken = await prisma.user.findUnique({ where: { email } });
+    if (taken) {
+      res.status(409);
+      throw new Error('That email is already in use');
+    }
+    data.email = email;
+  }
   if (req.body.password) {
     if (req.body.password.length < 6) {
       res.status(400);

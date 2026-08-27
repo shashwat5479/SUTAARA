@@ -14,7 +14,8 @@ export default function AuthShowcase({ children }) {
   const [opened, setOpened] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setOpened(true), 250);
+    // Hold on the wrapped box a moment so the unwrap reads as a real reveal.
+    const t = setTimeout(() => setOpened(true), 900);
     return () => clearTimeout(t);
   }, []);
 
