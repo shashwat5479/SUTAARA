@@ -11,7 +11,6 @@ function Brand() {
   return (
     <Link to="/" className="brand" aria-label="Sutaara home">
       <span className="brand__name">SUTAARA</span>
-      <span className="brand__tag">Handcrafted</span>
     </Link>
   );
 }
@@ -21,20 +20,20 @@ function Brand() {
 // hover, so the interaction is consistent across every item, not just "Shop All".
 const NAV_LEFT = [
   {
-    key: 'shop',
-    label: 'Shop All',
+    key: 'collection',
+    label: 'Collection',
     to: '/shop',
     mega: {
       columns: [
         {
           title: 'Shop by category',
           links: [
+            { label: 'All pieces', to: '/shop' },
             { label: 'Sarees', to: '/shop?category=saree' },
             { label: 'Suit Sets', to: '/shop?category=suit' },
             { label: 'Blouses', to: '/shop?category=blouse' },
             { label: 'Dupattas', to: '/shop?category=dupatta' },
             { label: 'Potli Bags', to: '/shop?category=potli' },
-            { label: 'Book a Studio Appointment', to: '/studio' },
           ],
         },
         {
@@ -42,8 +41,15 @@ const NAV_LEFT = [
           links: [
             { label: 'Wedding', to: '/shop?occasion=Wedding' },
             { label: 'Festive', to: '/shop?occasion=Festive' },
-            { label: 'Everyday', to: '/shop?occasion=Everyday' },
             { label: 'Party', to: '/shop?occasion=Party' },
+            { label: 'Everyday', to: '/shop?occasion=Everyday' },
+          ],
+        },
+        {
+          title: 'More',
+          links: [
+            { label: 'New arrivals', to: '/shop?sort=newest' },
+            { label: 'Book a Studio Appointment', to: '/studio' },
           ],
         },
       ],
@@ -53,81 +59,19 @@ const NAV_LEFT = [
       ],
     },
   },
-  {
-    key: 'saree',
-    label: 'Sarees',
-    to: '/shop?category=saree',
-    mega: {
-      columns: [
-        {
-          title: 'By fabric',
-          links: [
-            { label: 'Banarasi Silk', to: '/shop?category=saree&fabric=Banarasi%20Silk' },
-            { label: 'Organza', to: '/shop?category=saree&fabric=Organza' },
-            { label: 'Chiffon', to: '/shop?category=saree&fabric=Chiffon' },
-            { label: 'Mul Cotton', to: '/shop?category=saree&fabric=Mul%20Cotton' },
-          ],
-        },
-        {
-          title: 'By occasion',
-          links: [
-            { label: 'Wedding', to: '/shop?category=saree&occasion=Wedding' },
-            { label: 'Festive', to: '/shop?category=saree&occasion=Festive' },
-            { label: 'Party', to: '/shop?category=saree&occasion=Party' },
-            { label: 'Everyday', to: '/shop?category=saree&occasion=Everyday' },
-          ],
-        },
-      ],
-      featured: [
-        { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
-        { label: 'Everyday Drape', img: '/products/peach-leheriya-organza-1.jpg', to: '/shop?category=saree&occasion=Everyday' },
-      ],
-    },
-  },
-  {
-    key: 'dupatta',
-    label: 'Dupattas',
-    to: '/shop?category=dupatta',
-    mega: {
-      columns: [
-        {
-          title: 'By fabric',
-          links: [
-            { label: 'Net', to: '/shop?category=dupatta&fabric=Net' },
-            { label: 'Georgette', to: '/shop?category=dupatta&fabric=Georgette' },
-            { label: 'Chiffon', to: '/shop?category=dupatta&fabric=Chiffon' },
-            { label: 'Kota', to: '/shop?category=dupatta&fabric=Kota' },
-            { label: 'Silk', to: '/shop?category=dupatta&fabric=Silk' },
-          ],
-        },
-        {
-          title: 'By occasion',
-          links: [
-            { label: 'Wedding', to: '/shop?category=dupatta&occasion=Wedding' },
-            { label: 'Festive', to: '/shop?category=dupatta&occasion=Festive' },
-            { label: 'Everyday', to: '/shop?category=dupatta&occasion=Everyday' },
-          ],
-        },
-      ],
-      featured: [
-        { label: 'Bridal Drape', img: '/products/peach-leheriya-organza-3.jpg', to: '/shop?category=dupatta&occasion=Wedding' },
-        { label: 'Everyday Bandhani', img: '/products/peach-madhubani-2.jpg', to: '/shop?category=dupatta&fabric=Kota' },
-      ],
-    },
-  },
 ];
 
 const NAV_RIGHT = [
   {
     key: 'stories',
-    label: 'Stories',
+    label: 'Sutaara Edits',
     to: '/#our-craft',
     mega: {
       columns: [
         {
           title: 'From the journal',
           links: [
-            { label: "A Saree's Story", to: '/story' },
+            { label: "Sutaara Edits", to: '/story' },
             { label: 'Care & keeping', to: '/#care' },
             { label: 'New arrivals', to: '/shop?sort=newest' },
           ],
@@ -288,8 +232,7 @@ export default function Header() {
           className="container header__utility"
           onMouseEnter={() => setActiveMega(null)}
         >
-          <span className="header__tagline">Rooted in craft, Curated for today
-</span>
+          <span className="header__tagline">Handcrafted in Lucknow, worn everywhere</span>
           <div className="header__actions">
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
@@ -418,7 +361,7 @@ export default function Header() {
               <div className="mmenu__section">
                 <span className="mmenu__label">Discover</span>
                 <nav>
-                  <Link to="/story">A Saree's Story</Link>
+                  <Link to="/story">Sutaara Edits</Link>
                   <Link to="/diaries">Sutaara Diaries</Link>
                   <Link to="/studio">Visit the Studio</Link>
                   <Link to="/#our-craft">Our Craft</Link>

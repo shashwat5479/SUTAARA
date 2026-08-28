@@ -251,7 +251,7 @@ export default function Home() {
               <img className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Maroon Patola ikat saree, styled" />
             </div>
             <div className="editorial__body">
-              <div className="chapter-mark">Chapter III — A Saree's Story</div>
+              <div className="chapter-mark">Chapter III — Sutaara Edits</div>
               <span className="eyebrow">The story of a saree</span>
               <h2>Barish &amp; <em>Dhoop</em></h2>
               <p className="drop-cap">
@@ -260,7 +260,7 @@ export default function Home() {
                 handed down.
               </p>
               <Link to="/story" className="btn btn--gold">
-                Discover the Story
+                Explore Sutaara Edits
               </Link>
             </div>
           </div>

@@ -118,19 +118,6 @@ export default function Login() {
             <GoogleButton onCredential={handleGoogle} text="signin_with" />
           </div>
 
-          <button
-            type="button"
-            className="btn btn--ghost btn--block"
-            style={{ marginTop: 12 }}
-            disabled={demoBusy}
-            onClick={handleDemo}
-          >
-            {demoBusy ? 'Signing in…' : 'Continue with a test email'}
-          </button>
-          <p className="sub" style={{ fontSize: '0.76rem', marginTop: 6 }}>
-            Instant guest sign-in with a generated email — for demos and testing.
-          </p>
-
           {showEmailForm ? (
             <>
               <div className="auth-divider"><span>or</span></div>
@@ -152,9 +139,6 @@ export default function Login() {
                   {busy ? 'Signing in…' : 'Sign in'}
                 </button>
               </form>
-              <p className="sub" style={{ marginTop: 18, fontSize: '0.78rem' }}>
-                Demo admin — admin@sutaara.in / admin123
-              </p>
             </>
           ) : (
             <p className="auth-switch" style={{ marginTop: 18 }}>

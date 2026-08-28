@@ -1146,7 +1146,23 @@ textarea {
 .filters {
   position: sticky;
   top: 96px;
+  /* Independent, smooth scroll: the sidebar stays pinned while the product
+     grid scrolls, and if the filter list is taller than the screen it gets
+     its own scrollbar rather than pushing the page. */
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  padding-right: 8px;
+  scrollbar-width: thin;
 }
+/* slim, unobtrusive scrollbar for the sidebar */
+.filters::-webkit-scrollbar { width: 6px; }
+.filters::-webkit-scrollbar-thumb {
+  background: var(--line-strong, #d3c4aa);
+  border-radius: 20px;
+}
+.filters::-webkit-scrollbar-track { background: transparent; }
 .filter-group {
   padding: 20px 0;
   border-bottom: 1px solid var(--line);

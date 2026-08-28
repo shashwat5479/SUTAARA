@@ -116,19 +116,6 @@ export default function Register() {
             <GoogleButton onCredential={handleGoogle} text="signup_with" />
           </div>
 
-          <button
-            type="button"
-            className="btn btn--ghost btn--block"
-            style={{ marginTop: 12 }}
-            disabled={demoBusy}
-            onClick={handleDemo}
-          >
-            {demoBusy ? 'Creating…' : 'Continue with a test email'}
-          </button>
-          <p className="sub" style={{ fontSize: '0.76rem', marginTop: 6 }}>
-            Instant guest account with a generated email — for demos and testing.
-          </p>
-
           {showEmailForm ? (
             <>
               <div className="auth-divider"><span>or</span></div>

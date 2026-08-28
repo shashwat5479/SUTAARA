@@ -19,7 +19,7 @@ export default function Story() {
         <div className="story-hero__bg" style={{ backgroundImage: 'url(/products/maroon-patola-ikat-1.jpg)' }} />
         <div className="story-hero__scrim" />
         <div className="container story-hero__inner">
-          <span className="story-hero__kicker">A Saree's Story</span>
+          <span className="story-hero__kicker">Sutaara Edits</span>
           <h1>Woven by hand,<br /><em>worn with meaning</em></h1>
           <p>
             Every Sutaara piece begins as a story, not a stock number. Scroll on to
