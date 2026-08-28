@@ -20,8 +20,8 @@ function Brand() {
 // hover, so the interaction is consistent across every item, not just "Shop All".
 const NAV_LEFT = [
   {
-    key: 'collection',
-    label: 'Collection',
+    key: 'shop',
+    label: 'Shop All',
     to: '/shop',
     mega: {
       columns: [
@@ -56,6 +56,38 @@ const NAV_LEFT = [
       featured: [
         { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
         { label: 'The Gifting Edit', img: '/products/mustard-turquoise-set-2.jpg', to: '/shop?category=potli' },
+      ],
+    },
+  },
+  {
+    key: 'collection',
+    label: 'Collection',
+    to: '/shop',
+    mega: {
+      columns: [
+        {
+          title: 'By category',
+          links: [
+            { label: 'Sarees', to: '/shop?category=saree' },
+            { label: 'Suit Sets', to: '/shop?category=suit' },
+            { label: 'Blouses', to: '/shop?category=blouse' },
+            { label: 'Dupattas', to: '/shop?category=dupatta' },
+            { label: 'Potli Bags', to: '/shop?category=potli' },
+          ],
+        },
+        {
+          title: 'By occasion',
+          links: [
+            { label: 'Wedding', to: '/shop?occasion=Wedding' },
+            { label: 'Festive', to: '/shop?occasion=Festive' },
+            { label: 'Party', to: '/shop?occasion=Party' },
+            { label: 'Everyday', to: '/shop?occasion=Everyday' },
+          ],
+        },
+      ],
+      featured: [
+        { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
+        { label: 'Everyday Drape', img: '/products/peach-leheriya-organza-1.jpg', to: '/shop?category=saree&occasion=Everyday' },
       ],
     },
   },
@@ -108,35 +140,6 @@ const NAV_RIGHT = [
       featured: [
         { label: 'Meet Sutaara', img: '/products/maroon-patola-ikat-1.jpg', to: '/#our-craft' },
         { label: 'The Weave', img: '/products/mustard-elephant-chanderi-1.jpg', to: '/shop?category=saree&fabric=Tissue' },
-      ],
-    },
-  },
-  {
-    key: 'craft',
-    label: 'Our Craft',
-    to: '/#our-craft',
-    mega: {
-      columns: [
-        {
-          title: 'The craft',
-          links: [
-            { label: 'Banarasi Weave', to: '/shop?fabric=Banarasi%20Silk' },
-            { label: 'Chikankari', to: '/shop?fabric=Cotton%20Chikankari' },
-            { label: 'Ajrakh Print', to: '/shop?fabric=Ajrakh%20Cotton' },
-            { label: 'Zari & Tissue', to: '/shop?fabric=Tissue' },
-          ],
-        },
-        {
-          title: 'Read',
-          links: [
-            { label: 'Our story', to: '/#our-craft' },
-            { label: 'Care & keeping', to: '/#care' },
-          ],
-        },
-      ],
-      featured: [
-        { label: 'The Weave', img: '/products/green-gold-leheriya-1.jpg', to: '/shop?fabric=Banarasi%20Silk' },
-        { label: 'The Suit Sets', img: '/products/rose-emerald-suit-1.jpg', to: '/shop?category=suit' },
       ],
     },
   },
@@ -364,7 +367,6 @@ export default function Header() {
                   <Link to="/story">Sutaara Edits</Link>
                   <Link to="/diaries">Sutaara Diaries</Link>
                   <Link to="/studio">Visit the Studio</Link>
-                  <Link to="/#our-craft">Our Craft</Link>
                   <Link to="/#care">Care &amp; Keeping</Link>
                 </nav>
               </div>
