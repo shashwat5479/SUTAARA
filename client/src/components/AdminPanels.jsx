@@ -397,3 +397,56 @@ export function TeamTab() {
     </>
   );
 }
+
+/* ---------------- Announcement bar tab (admin + super admin) ---------------- */
+export function AnnouncementTab() {
+  const toast = useToast();
+  const [message, setMessage] = useState('');
+  const [active, setActive] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.getAllAnnouncements()
+      .then((list) => {
+        const a = list && list[0];
+        if (a) { setMessage(a.message || ''); setActive(a.active); }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api.saveAnnouncement({ message, active });
+      toast('Announcement saved');
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <form onSubmit={save} className="checkout__panel admin-form" style={{ maxWidth: 640 }}>
+      <h3>Announcement bar</h3>
+      <p className="admin-form__legend">
+        The strip at the very top of every page. Leave the message blank and untick to hide it.
+      </p>
+      <div className="field">
+        <label>Message</label>
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Free shipping across India · Ships in 5–7 days"
+        />
+      </div>
+      <div style={{ margin: '4px 0 18px' }}>
+        <label className="filter-opt">
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Show the announcement bar
+        </label>
+      </div>
+      <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save announcement'}</button>
+    </form>
+  );
+}

@@ -333,3 +333,13 @@ model ExhibitionSlide {
   updatedAt DateTime @updatedAt
 }
 
+// Announcement bar shown at the very top of every page. Admin-controlled;
+// a single active row drives what's displayed.
+model Announcement {
+  id        String   @id @default(uuid())
+  message   String   @default("")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

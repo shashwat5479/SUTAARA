@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getHeroSlides, getAllHeroSlides, createHeroSlide, updateHeroSlide, deleteHeroSlide,
   getExhibitionSlides, getAllExhibitionSlides, createExhibitionSlide, updateExhibitionSlide, deleteExhibitionSlide,
+  getAnnouncement, getAllAnnouncements, saveAnnouncement,
 } from '../controllers/siteContentController.js';
 import { protect, admin } from '../middleware/auth.js';
 
@@ -20,5 +21,10 @@ router.get('/exhibition/all', protect, admin, getAllExhibitionSlides);
 router.post('/exhibition', protect, admin, createExhibitionSlide);
 router.put('/exhibition/:id', protect, admin, updateExhibitionSlide);
 router.delete('/exhibition/:id', protect, admin, deleteExhibitionSlide);
+
+// Announcement bar
+router.get('/announcement', getAnnouncement);
+router.get('/announcement/all', protect, admin, getAllAnnouncements);
+router.put('/announcement', protect, admin, saveAnnouncement);
 
 export default router;

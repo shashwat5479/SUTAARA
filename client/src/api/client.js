@@ -109,6 +109,11 @@ export const api = {
   updateExhibitionSlide: (id, body) => request(`/exhibition/${id}`, { method: 'PUT', body, auth: true }),
   deleteExhibitionSlide: (id) => request(`/exhibition/${id}`, { method: 'DELETE', auth: true }),
 
+  // announcement bar (admin + super admin)
+  getAnnouncement: () => request('/announcement'),
+  getAllAnnouncements: () => request('/announcement/all', { auth: true }),
+  saveAnnouncement: (body) => request('/announcement', { method: 'PUT', body, auth: true }),
+
   // team / staff accounts (super admin only)
   getStaff: () => request('/admin/users', { auth: true }),
   createStaffAccount: (body) => request('/admin/users', { method: 'POST', body, auth: true }),

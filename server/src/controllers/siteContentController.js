@@ -82,3 +82,36 @@ export const deleteExhibitionSlide = asyncHandler(async (req, res) => {
   await prisma.exhibitionSlide.delete({ where: { id: req.params.id } });
   res.json({ message: 'Exhibition slide removed' });
 });
+
+
+/* ---------------- Announcement bar ---------------- */
+
+// GET /api/announcement — public: the active announcement (or null)
+export const getAnnouncement = asyncHandler(async (req, res) => {
+  const a = await prisma.announcement.findFirst({
+    where: { active: true },
+    orderBy: { updatedAt: 'desc' },
+  });
+  res.json(a ? withMongoStyleId(a) : null);
+});
+
+// GET /api/announcement/all — admin
+export const getAllAnnouncements = asyncHandler(async (req, res) => {
+  const list = await prisma.announcement.findMany({ orderBy: { updatedAt: 'desc' } });
+  res.json(withMongoStyleId(list));
+});
+
+// PUT /api/announcement — admin: upsert the single announcement
+export const saveAnnouncement = asyncHandler(async (req, res) => {
+  const message = String(req.body.message || '');
+  const active = req.body.active === undefined ? true : Boolean(req.body.active);
+  const existing = await prisma.announcement.findFirst({ orderBy: { updatedAt: 'desc' } });
+  let a;
+  if (existing) {
+    a = await prisma.announcement.update({ where: { id: existing.id }, data: { message, active } });
+  } else {
+    a = await prisma.announcement.create({ data: { message, active } });
+  }
+  res.json(withMongoStyleId(a));
+});
+

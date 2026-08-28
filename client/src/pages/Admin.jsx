@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab, AnnouncementTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -588,6 +588,9 @@ export default function Admin() {
                 <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
                   Diaries / Reviews
                 </button>
+                <button className={tab === 'announce' ? 'active' : ''} onClick={() => setTab('announce')}>
+                  Announcement
+                </button>
               </>
             )}
             {isSuperAdmin && (
@@ -603,6 +606,7 @@ export default function Admin() {
             : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
             : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
             : tab === 'diaries' && isContentAdmin ? <DiariesTab />
+            : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
             : tab === 'team' && isSuperAdmin ? <TeamTab />
             : <OrdersTab />}
         </div>
