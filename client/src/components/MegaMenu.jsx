@@ -8,7 +8,11 @@ export default function MegaMenu({ menu, onLinkClick }) {
         <div className="mega__columns">
           {menu.columns.map((col) => (
             <div key={col.title} className="mega__col">
-              <h4>{col.title}</h4>
+              {col.headerTo ? (
+                <h4><Link to={col.headerTo} className="mega__col-head">{col.title}</Link></h4>
+              ) : (
+                <h4>{col.title}</h4>
+              )}
               <ul>
                 {col.links.map((link) => (
                   <li key={link.label}>

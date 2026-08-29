@@ -30,9 +30,9 @@ export default function Footer() {
           <div>
             <h4>Help</h4>
             <ul>
-              <li><Link to="/shop">Size &amp; Fit</Link></li>
-              <li><Link to="/shop">Fabric Care</Link></li>
-              <li><Link to="/shop">Shipping &amp; Returns</Link></li>
+              <li><Link to="/shipping-policy">Shipping &amp; Delivery</Link></li>
+              <li><Link to="/returns-policy">Returns &amp; Refunds</Link></li>
+              <li><Link to="/contact">Contact Us</Link></li>
               <li><Link to="/account">Track Order</Link></li>
             </ul>
           </div>
@@ -41,9 +41,8 @@ export default function Footer() {
             <h4>Reach Us</h4>
             <ul>
               <li>Lucknow, Uttar Pradesh</li>
-              <li>hello@sutaara.in</li>
-              <li>+91 98765 43210</li>
-              <li>Instagram · WhatsApp</li>
+              <li><a href="mailto:sutara.lucknow@gmail.com">sutara.lucknow@gmail.com</a></li>
+              <li><a href="https://wa.me/919569659272" target="_blank" rel="noreferrer">WhatsApp · 9569659272</a></li>
             </ul>
           </div>
         </div>

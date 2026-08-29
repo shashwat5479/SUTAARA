@@ -4180,3 +4180,81 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 
 /* compact select for admin tables */
 .select--sm { padding: 5px 8px; font-size: 0.85rem; min-width: 90px; }
+
+/* mega-menu clickable column headings (category → all of that category) */
+.mega__col-head {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.mega__col-head:hover { border-bottom-color: var(--gold); }
+
+/* mobile menu fabric sub-links */
+.mmenu__sub {
+  padding-left: 18px !important;
+  font-size: 0.85rem !important;
+  opacity: 0.8;
+}
+.mmenu__sub--all {
+  color: var(--gold) !important;
+  font-size: 0.8rem !important;
+  opacity: 1;
+}
+
+/* ---------- Policy / legal / contact pages ---------- */
+.policy {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--ink-soft);
+  line-height: 1.85;
+}
+.policy__lead {
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 32px;
+}
+.policy h2 {
+  font-family: var(--display, serif);
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin: 36px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.policy h3 {
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin: 24px 0 8px;
+}
+.policy p { margin: 0 0 16px; }
+.policy ul {
+  margin: 0 0 20px;
+  padding-left: 22px;
+  list-style: none;
+}
+.policy ul li {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+.policy ul li::before {
+  content: '—';
+  position: absolute;
+  left: -20px;
+  color: var(--gold);
+}
+.policy a {
+  color: var(--sindoor, #8a1f26);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.policy a:hover { color: var(--gold); }
+.policy__fine {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}

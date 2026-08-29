@@ -26,30 +26,47 @@ const NAV_LEFT = [
     mega: {
       columns: [
         {
-          title: 'Shop by category',
+          title: 'Sarees',
+          headerTo: '/shop?category=saree',
           links: [
-            { label: 'All pieces', to: '/shop' },
-            { label: 'Sarees', to: '/shop?category=saree' },
-            { label: 'Suit Sets', to: '/shop?category=suit' },
-            { label: 'Blouses', to: '/shop?category=blouse' },
-            { label: 'Dupattas', to: '/shop?category=dupatta' },
-            { label: 'Potli Bags', to: '/shop?category=potli' },
+            { label: 'Cotton', to: '/shop?category=saree&fabric=Cotton' },
+            { label: 'Chanderi', to: '/shop?category=saree&fabric=Chanderi' },
+            { label: 'Chiffon', to: '/shop?category=saree&fabric=Chiffon' },
+            { label: 'Crepe Georgette', to: '/shop?category=saree&fabric=Crepe%20Georgette' },
+            { label: 'Silk', to: '/shop?category=saree&fabric=Silk' },
+            { label: 'Linen', to: '/shop?category=saree&fabric=Linen' },
+            { label: 'Tissue', to: '/shop?category=saree&fabric=Tissue' },
+            { label: 'Organza', to: '/shop?category=saree&fabric=Organza' },
+            { label: 'Maheshwari', to: '/shop?category=saree&fabric=Maheshwari' },
+            { label: 'Kota', to: '/shop?category=saree&fabric=Kota' },
+            { label: 'Modal', to: '/shop?category=saree&fabric=Modal' },
           ],
         },
         {
-          title: 'Shop by occasion',
+          title: 'Suits',
+          headerTo: '/shop?category=suit',
           links: [
-            { label: 'Wedding', to: '/shop?occasion=Wedding' },
-            { label: 'Festive', to: '/shop?occasion=Festive' },
-            { label: 'Party', to: '/shop?occasion=Party' },
-            { label: 'Everyday', to: '/shop?occasion=Everyday' },
+            { label: 'Cotton', to: '/shop?category=suit&fabric=Cotton' },
+            { label: 'Chanderi', to: '/shop?category=suit&fabric=Chanderi' },
+            { label: 'Corduroy', to: '/shop?category=suit&fabric=Corduroy' },
+            { label: 'Crepe', to: '/shop?category=suit&fabric=Crepe' },
+            { label: 'Silk', to: '/shop?category=suit&fabric=Silk' },
+            { label: 'Linen', to: '/shop?category=suit&fabric=Linen' },
+            { label: 'Modal', to: '/shop?category=suit&fabric=Modal' },
+            { label: 'Maheshwari', to: '/shop?category=suit&fabric=Maheshwari' },
+            { label: 'Kota', to: '/shop?category=suit&fabric=Kota' },
+            { label: 'Velvet', to: '/shop?category=suit&fabric=Velvet' },
+            { label: 'Woollen', to: '/shop?category=suit&fabric=Woollen' },
           ],
         },
         {
           title: 'More',
           links: [
+            { label: 'Blouses — Shop All', to: '/shop?category=blouse' },
+            { label: 'Dupattas — Shop All', to: '/shop?category=dupatta' },
+            { label: 'Potlis & Bags — Shop All', to: '/shop?category=potli' },
+            { label: 'All pieces', to: '/shop' },
             { label: 'New arrivals', to: '/shop?sort=newest' },
-            { label: 'Book a Studio Appointment', to: '/studio' },
           ],
         },
       ],
@@ -352,11 +369,21 @@ export default function Header() {
                 <span className="mmenu__label">Shop</span>
                 <nav>
                   <Link to="/shop">Shop All</Link>
-                  <Link to="/shop?category=saree">Sarees</Link>
-                  <Link to="/shop?category=suit">Suits</Link>
+                  <Link to="/shop?category=saree"><strong>Sarees</strong></Link>
+                  <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub">Cotton</Link>
+                  <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub">Chanderi</Link>
+                  <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub">Silk</Link>
+                  <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub">Organza</Link>
+                  <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub">Chiffon</Link>
+                  <Link to="/shop?category=saree" className="mmenu__sub mmenu__sub--all">All sarees →</Link>
+                  <Link to="/shop?category=suit"><strong>Suits</strong></Link>
+                  <Link to="/shop?category=suit&fabric=Cotton" className="mmenu__sub">Cotton</Link>
+                  <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub">Silk</Link>
+                  <Link to="/shop?category=suit&fabric=Velvet" className="mmenu__sub">Velvet</Link>
+                  <Link to="/shop?category=suit" className="mmenu__sub mmenu__sub--all">All suits →</Link>
                   <Link to="/shop?category=blouse">Blouses</Link>
                   <Link to="/shop?category=dupatta">Dupattas</Link>
-                  <Link to="/shop?category=potli">Potli Bags</Link>
+                  <Link to="/shop?category=potli">Potlis &amp; Bags</Link>
                   <Link to="/studio">Book a Studio Appointment</Link>
                 </nav>
               </div>
