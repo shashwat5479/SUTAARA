@@ -24,11 +24,12 @@ const NAV_LEFT = [
     label: 'Shop All',
     to: '/shop',
     mega: {
-      columns: [
+      flyout: [
         {
-          title: 'Sarees',
-          headerTo: '/shop?category=saree',
-          links: [
+          label: 'Sarees',
+          to: '/shop?category=saree',
+          panelTitle: 'Sarees by fabric',
+          sub: [
             { label: 'Cotton', to: '/shop?category=saree&fabric=Cotton' },
             { label: 'Chanderi', to: '/shop?category=saree&fabric=Chanderi' },
             { label: 'Chiffon', to: '/shop?category=saree&fabric=Chiffon' },
@@ -43,9 +44,10 @@ const NAV_LEFT = [
           ],
         },
         {
-          title: 'Suits',
-          headerTo: '/shop?category=suit',
-          links: [
+          label: 'Suits',
+          to: '/shop?category=suit',
+          panelTitle: 'Suits by fabric',
+          sub: [
             { label: 'Cotton', to: '/shop?category=suit&fabric=Cotton' },
             { label: 'Chanderi', to: '/shop?category=suit&fabric=Chanderi' },
             { label: 'Corduroy', to: '/shop?category=suit&fabric=Corduroy' },
@@ -59,16 +61,11 @@ const NAV_LEFT = [
             { label: 'Woollen', to: '/shop?category=suit&fabric=Woollen' },
           ],
         },
-        {
-          title: 'More',
-          links: [
-            { label: 'Blouses — Shop All', to: '/shop?category=blouse' },
-            { label: 'Dupattas — Shop All', to: '/shop?category=dupatta' },
-            { label: 'Potlis & Bags — Shop All', to: '/shop?category=potli' },
-            { label: 'All pieces', to: '/shop' },
-            { label: 'New arrivals', to: '/shop?sort=newest' },
-          ],
-        },
+        { label: 'Blouses', to: '/shop?category=blouse', sub: [] },
+        { label: 'Dupattas', to: '/shop?category=dupatta', sub: [] },
+        { label: 'Potlis & Bags', to: '/shop?category=potli', sub: [] },
+        { label: 'All pieces', to: '/shop', sub: [] },
+        { label: 'New arrivals', to: '/shop?sort=newest', sub: [] },
       ],
       featured: [
         { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },

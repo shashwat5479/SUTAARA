@@ -4258,3 +4258,92 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   font-style: italic;
   color: var(--ink-soft);
 }
+
+/* ---------- Mega-menu flyout (hover a category → its fabrics appear) ---------- */
+.mega__flyout {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  gap: 48px;
+  padding: 32px 0;
+  align-items: start;
+}
+.mega__cats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-right: 1px solid var(--line);
+}
+.mega__cat {
+  margin: 0;
+}
+.mega__cat a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 20px 9px 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.15s, padding 0.15s;
+}
+.mega__cat.is-active a,
+.mega__cat a:hover {
+  color: var(--ink);
+  padding-left: 6px;
+}
+.mega__cat.is-active a {
+  font-weight: 500;
+}
+.mega__cat-arrow {
+  color: var(--gold);
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.mega__cat.is-active .mega__cat-arrow { opacity: 1; }
+
+.mega__panel {
+  min-height: 200px;
+  animation: mega-fade 0.25s ease;
+}
+.mega__panel h4 {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 18px;
+}
+.mega__fabrics {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 32px;
+}
+.mega__fabrics li a {
+  display: block;
+  padding: 7px 0;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  width: fit-content;
+}
+.mega__fabrics li a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+.mega__panel-empty {
+  padding-top: 4px;
+}
+@keyframes mega-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  .mega__flyout { grid-template-columns: 1fr; gap: 20px; }
+  .mega__cats { border-right: none; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+}
