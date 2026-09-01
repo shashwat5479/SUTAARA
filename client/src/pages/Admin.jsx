@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab, AnnouncementTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -598,6 +598,11 @@ export default function Admin() {
                 Team
               </button>
             )}
+            {isSuperAdmin && (
+              <button className={tab === 'notify' ? 'active' : ''} onClick={() => setTab('notify')}>
+                Notifications
+              </button>
+            )}
           </div>
           {tab === 'products' && isContentAdmin ? <ProductsTab />
             : tab === 'orders' ? <OrdersTab />
@@ -608,6 +613,7 @@ export default function Admin() {
             : tab === 'diaries' && isContentAdmin ? <DiariesTab />
             : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
             : tab === 'team' && isSuperAdmin ? <TeamTab />
+            : tab === 'notify' && isSuperAdmin ? <NotificationsTab />
             : <OrdersTab />}
         </div>
       </section>

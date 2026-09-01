@@ -15,6 +15,7 @@ import studioEventRoutes from './routes/studioEvent.js';
 import reviewRoutes from './routes/reviews.js';
 import siteContentRoutes from './routes/siteContent.js';
 import adminUserRoutes from './routes/adminUsers.js';
+import notificationSettingsRoutes from './routes/notificationSettings.js';
 
 // Express app only — no app.listen() and no DB connect call here, so this
 // file can be imported both by the local dev server (src/index.js) and by
@@ -86,6 +87,7 @@ app.use('/api/studio-event', studioEventRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api', siteContentRoutes);
 app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/notification-settings', notificationSettingsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

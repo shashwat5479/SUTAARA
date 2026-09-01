@@ -114,6 +114,10 @@ export const api = {
   getAllAnnouncements: () => request('/announcement/all', { auth: true }),
   saveAnnouncement: (body) => request('/announcement', { method: 'PUT', body, auth: true }),
 
+  // notification settings (super admin)
+  getNotificationSettings: () => request('/notification-settings', { auth: true }),
+  saveNotificationSettings: (body) => request('/notification-settings', { method: 'PUT', body, auth: true }),
+
   // team / staff accounts (super admin only)
   getStaff: () => request('/admin/users', { auth: true }),
   createStaffAccount: (body) => request('/admin/users', { method: 'POST', body, auth: true }),

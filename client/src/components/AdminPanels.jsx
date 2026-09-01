@@ -450,3 +450,53 @@ export function AnnouncementTab() {
     </form>
   );
 }
+
+/* ---------------- Notifications tab (super admin) ---------------- */
+export function NotificationsTab() {
+  const toast = useToast();
+  const [form, setForm] = useState({ alertEmail: '', alertWhatsApp: '', emailEnabled: true });
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.getNotificationSettings()
+      .then((s) => setForm({ alertEmail: s.alertEmail || '', alertWhatsApp: s.alertWhatsApp || '', emailEnabled: s.emailEnabled }))
+      .catch((e) => toast(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api.saveNotificationSettings(form);
+      toast('Notification settings saved');
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <form onSubmit={save} className="checkout__panel admin-form" style={{ maxWidth: 560 }}>
+      <h3>Order notifications</h3>
+      <p className="admin-form__legend">
+        Where new-order alerts are sent. Customers are emailed automatically at each order stage.
+      </p>
+      <div className="field">
+        <label>Alert email — where you get “new order” emails</label>
+        <input type="email" value={form.alertEmail} onChange={(e) => setForm((f) => ({ ...f, alertEmail: e.target.value }))} placeholder="shashwat9252@gmail.com" />
+      </div>
+      <div className="field">
+        <label>Alert WhatsApp number</label>
+        <input value={form.alertWhatsApp} onChange={(e) => setForm((f) => ({ ...f, alertWhatsApp: e.target.value }))} placeholder="9569659272" />
+        <span className="field__hint">Used for WhatsApp order alerts (activates once the WhatsApp provider is connected).</span>
+      </div>
+      <div style={{ margin: '4px 0 18px' }}>
+        <label className="filter-opt">
+          <input type="checkbox" checked={form.emailEnabled} onChange={(e) => setForm((f) => ({ ...f, emailEnabled: e.target.checked }))} /> Send email alerts for new orders
+        </label>
+      </div>
+      <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>
+    </form>
+  );
+}

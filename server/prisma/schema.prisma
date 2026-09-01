@@ -343,3 +343,12 @@ model Announcement {
   updatedAt DateTime @updatedAt
 }
 
+// Store-wide notification settings, editable by the super admin. A single row.
+model NotificationSettings {
+  id            String   @id @default(uuid())
+  alertEmail    String   @default("shashwat9252@gmail.com")
+  alertWhatsApp String   @default("9569659272")
+  emailEnabled  Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+}
+

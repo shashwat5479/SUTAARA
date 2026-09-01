@@ -2,6 +2,7 @@ import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { createShipment } from '../services/shipping.js';
+import { notifyCustomerStatus, notifyOwnerNewOrder } from '../services/notify.js';
 
 const SHIPPING_FREE_ABOVE = 2999;
 const SHIPPING_FLAT = 99;
@@ -131,6 +132,15 @@ export const createOrder = asyncHandler(async (req, res) => {
     return created;
   });
 
+  // Fire notifications after the order is committed. Wrapped so a failure here
+  // never affects the order response the customer sees.
+  try {
+    await notifyOwnerNewOrder(order);
+    await notifyCustomerStatus(order, 'pending');
+  } catch (err) {
+    console.error('[order] notification error:', err.message);
+  }
+
   res.status(201).json(withMongoStyleId(order));
 });
 
@@ -233,6 +243,13 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     data: { ...data, statusHistory: { create: { status, note: note || '' } } },
     include: { items: true, statusHistory: { orderBy: { createdAt: 'asc' } } },
   });
+
+  // Notify the customer of the new status (fails soft).
+  try {
+    await notifyCustomerStatus(updated, status);
+  } catch (err) {
+    console.error('[order] status notification error:', err.message);
+  }
 
   res.json(withMongoStyleId(updated));
 });
