@@ -86,7 +86,7 @@ function HeroSlideForm({ initial, onCancel, onDone }) {
       <div className="field"><label>Title (for your reference)</label><input value={form.title} onChange={set('title')} placeholder="Kalamkari Peacock" /></div>
       <div className="field"><label>Product slug it links to</label><input value={form.slug} onChange={set('slug')} placeholder="mauve-kalamkari-peacock" /></div>
       <p className="admin-form__legend">Images <span>— up to 3, shown side by side. Upload from your gallery.</span></p>
-      <MediaUploader images={form.images} video="" onChange={({ images }) => setForm((f) => ({ ...f, images: images.slice(0, 3) }))} />
+      <MediaUploader images={form.images} video="" onChange={({ images }) => setForm((f) => ({ ...f, images: images.slice(0, 3) }))} target={2} />
       <div className="field__row">
         <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>
         <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -182,7 +182,7 @@ function ExhibitionForm({ initial, onCancel, onDone }) {
       <div className="field"><label>Title</label><input value={form.title} onChange={set('title')} placeholder="Kalamkari Peacock" /></div>
       <div className="field"><label>Subtitle</label><input value={form.subtitle} onChange={set('subtitle')} placeholder="Hand-painted saree" /></div>
       <p className="admin-form__legend">Image <span>— upload from your gallery.</span></p>
-      <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} />
+      <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} target={2} />
       <div className="field"><label>Links to (URL)</label><input value={form.link} onChange={set('link')} placeholder="/shop?category=saree" /></div>
       <div className="field__row">
         <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>
@@ -451,16 +451,22 @@ export function AnnouncementTab() {
   );
 }
 
-/* ---------------- Notifications tab (super admin) ---------------- */
+/* ---------------- Notifications tab (admin + super admin) ---------------- */
 export function NotificationsTab() {
   const toast = useToast();
-  const [form, setForm] = useState({ alertEmail: '', alertWhatsApp: '', emailEnabled: true });
+  const [form, setForm] = useState({ alertEmail1: '', alertEmail2: '', alertEmail3: '', alertWhatsApp: '', emailEnabled: true });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     api.getNotificationSettings()
-      .then((s) => setForm({ alertEmail: s.alertEmail || '', alertWhatsApp: s.alertWhatsApp || '', emailEnabled: s.emailEnabled }))
+      .then((s) => setForm({
+        alertEmail1: s.alertEmail1 || '',
+        alertEmail2: s.alertEmail2 || '',
+        alertEmail3: s.alertEmail3 || '',
+        alertWhatsApp: s.alertWhatsApp || '',
+        emailEnabled: s.emailEnabled,
+      }))
       .catch((e) => toast(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -480,11 +486,19 @@ export function NotificationsTab() {
     <form onSubmit={save} className="checkout__panel admin-form" style={{ maxWidth: 560 }}>
       <h3>Order notifications</h3>
       <p className="admin-form__legend">
-        Where new-order alerts are sent. Customers are emailed automatically at each order stage.
+        Order alerts are emailed to every address below (up to 3). Customers are emailed automatically at each order stage.
       </p>
       <div className="field">
-        <label>Alert email — where you get “new order” emails</label>
-        <input type="email" value={form.alertEmail} onChange={(e) => setForm((f) => ({ ...f, alertEmail: e.target.value }))} placeholder="shashwat9252@gmail.com" />
+        <label>Alert email 1</label>
+        <input type="email" value={form.alertEmail1} onChange={(e) => setForm((f) => ({ ...f, alertEmail1: e.target.value }))} placeholder="shashwat9252@gmail.com" />
+      </div>
+      <div className="field">
+        <label>Alert email 2 (optional)</label>
+        <input type="email" value={form.alertEmail2} onChange={(e) => setForm((f) => ({ ...f, alertEmail2: e.target.value }))} placeholder="—" />
+      </div>
+      <div className="field">
+        <label>Alert email 3 (optional)</label>
+        <input type="email" value={form.alertEmail3} onChange={(e) => setForm((f) => ({ ...f, alertEmail3: e.target.value }))} placeholder="—" />
       </div>
       <div className="field">
         <label>Alert WhatsApp number</label>

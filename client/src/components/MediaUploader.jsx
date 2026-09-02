@@ -3,31 +3,64 @@ import { useState, useRef, useCallback } from 'react';
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drmpijecc';
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sutaara_unsigned';
 
-// Compress/resize a large image in the browser before upload. Keeps quality
-// high (max 2400px on the long edge, 0.85 JPEG quality) so large gallery
-// photos upload fast without visible loss. Small images pass through untouched.
-async function compressImage(file) {
-  // Only compress raster images; leave GIFs/SVGs and already-small files alone.
+// Compress an image in the browser to a target file size, without visible
+// quality loss. It resizes down (huge phone photos have far more pixels than a
+// website shows) then steps the JPEG quality down until the file lands under
+// the target — trying larger dimensions first so quality stays as high as the
+// size budget allows. `targetMB` is the ceiling we aim for.
+async function compressImage(file, targetMB = 0.8) {
   if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
-  if (file.size < 500 * 1024) return file; // under 0.5MB — not worth it
+
+  const targetBytes = targetMB * 1024 * 1024;
+  // Already small enough — don't touch it.
+  if (file.size <= targetBytes) return file;
 
   try {
     const bitmap = await createImageBitmap(file);
-    const MAX = 2400;
-    let { width, height } = bitmap;
-    if (width > MAX || height > MAX) {
-      const scale = MAX / Math.max(width, height);
-      width = Math.round(width * scale);
-      height = Math.round(height * scale);
+    const origW = bitmap.width;
+    const origH = bitmap.height;
+
+    // Try progressively smaller max-dimensions and qualities until we fit.
+    // Bigger banners (2MB target) keep more resolution; product shots (0.8MB)
+    // resize a touch more. Website display rarely needs beyond ~2000px.
+    const maxDims = targetMB >= 1.5 ? [2600, 2200, 1800] : [2000, 1700, 1400];
+    const qualities = [0.85, 0.78, 0.72, 0.65, 0.58];
+
+    let best = null;
+    for (const maxDim of maxDims) {
+      let w = origW;
+      let h = origH;
+      if (w > maxDim || h > maxDim) {
+        const scale = maxDim / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      // Higher-quality downscale
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(bitmap, 0, 0, w, h);
+
+      for (const q of qualities) {
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', q));
+        if (!blob) continue;
+        // Track the best (largest-still-under-target) result.
+        if (blob.size <= targetBytes) {
+          best = blob;
+          break; // this dimension fits at this quality — good enough, keep resolution high
+        }
+        // Remember the smallest we've made in case nothing fits the target.
+        if (!best || blob.size < best.size) best = blob;
+      }
+      if (best && best.size <= targetBytes) break;
     }
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(bitmap, 0, 0, width, height);
-    const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
-    if (!blob || blob.size >= file.size) return file; // no gain — keep original
-    return new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' });
+
+    if (!best || best.size >= file.size) return file; // no gain — keep original
+    return new File([best], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' });
   } catch {
     return file; // if anything fails, upload the original
   }
@@ -67,7 +100,7 @@ function uploadToCloudinary(file, { onProgress } = {}) {
 // Admin media picker: choose images + an optional video from the device
 // gallery, upload directly to Cloudinary with live progress, reorder, remove.
 // Value shape: { images: string[], video: string }.
-export default function MediaUploader({ images = [], video = '', onChange }) {
+export default function MediaUploader({ images = [], video = '', onChange, target = 0.8 }) {
   const [uploading, setUploading] = useState([]); // [{ id, name, pct, kind }]
   const [error, setError] = useState('');
   const imgInput = useRef(null);
@@ -82,11 +115,12 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
     let list = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (list.length === 0) return;
 
-    // Enforce a 25MB per-image cap (before compression).
-    const tooBig = list.filter((f) => f.size > 25 * 1024 * 1024);
+    // Very large files (60MB+) are usually a mistake or unsupported RAW — skip
+    // those; everything else gets compressed down regardless of size.
+    const tooBig = list.filter((f) => f.size > 60 * 1024 * 1024);
     if (tooBig.length) {
-      setError(`${tooBig.length} image(s) over 25MB were skipped. Please use smaller photos.`);
-      list = list.filter((f) => f.size <= 25 * 1024 * 1024);
+      setError(`${tooBig.length} image(s) over 60MB were skipped.`);
+      list = list.filter((f) => f.size <= 60 * 1024 * 1024);
     }
     if (list.length === 0) return;
 
@@ -97,7 +131,7 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
     for (let i = 0; i < list.length; i += 1) {
       try {
         // Compress large photos in-browser first — faster upload, no visible loss.
-        const toUpload = await compressImage(list[i]);
+        const toUpload = await compressImage(list[i], target);
         const urlStr = await uploadToCloudinary(toUpload, {
           onProgress: (pct) => setUploading((u) => u.map((j) => (j.id === jobs[i].id ? { ...j, pct } : j))),
         });
@@ -110,7 +144,7 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
     }
     if (uploaded.length) onChange({ images: [...images, ...uploaded], video });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images, video]);
+  }, [images, video, target]);
 
   const handleVideoFile = useCallback(async (files) => {
     setError('');
@@ -175,7 +209,7 @@ export default function MediaUploader({ images = [], video = '', onChange }) {
         />
         <div className="uploader__zone-inner">
           <strong>Add photos</strong>
-          <span>Tap to choose from gallery, or drag &amp; drop. Up to 25MB each — large photos are auto-compressed. First photo is the main image.</span>
+          <span>Tap to choose from gallery, or drag &amp; drop. Any size — large photos are automatically compressed to ~{target < 1.5 ? '0.5–0.8MB' : '2MB'} for fast loading. First photo is the main image.</span>
         </div>
       </div>
 

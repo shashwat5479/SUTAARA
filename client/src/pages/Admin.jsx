@@ -168,7 +168,7 @@ function ProductForm({ initial, onDone, onCancel }) {
       <p className="admin-form__legend">
         Photos &amp; video <span>— upload from your gallery. First photo is the main image.</span>
       </p>
-      <MediaUploader images={form.images} video={form.video} onChange={setMedia} />
+      <MediaUploader images={form.images} video={form.video} onChange={setMedia} target={0.8} />
 
       <p className="admin-form__legend">Details</p>
       <div className="field">
@@ -591,16 +591,14 @@ export default function Admin() {
                 <button className={tab === 'announce' ? 'active' : ''} onClick={() => setTab('announce')}>
                   Announcement
                 </button>
+                <button className={tab === 'notify' ? 'active' : ''} onClick={() => setTab('notify')}>
+                  Notifications
+                </button>
               </>
             )}
             {isSuperAdmin && (
               <button className={tab === 'team' ? 'active' : ''} onClick={() => setTab('team')}>
                 Team
-              </button>
-            )}
-            {isSuperAdmin && (
-              <button className={tab === 'notify' ? 'active' : ''} onClick={() => setTab('notify')}>
-                Notifications
               </button>
             )}
           </div>
@@ -612,8 +610,8 @@ export default function Admin() {
             : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
             : tab === 'diaries' && isContentAdmin ? <DiariesTab />
             : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
+            : tab === 'notify' && isContentAdmin ? <NotificationsTab />
             : tab === 'team' && isSuperAdmin ? <TeamTab />
-            : tab === 'notify' && isSuperAdmin ? <NotificationsTab />
             : <OrdersTab />}
         </div>
       </section>
