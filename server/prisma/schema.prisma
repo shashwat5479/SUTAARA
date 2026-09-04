@@ -114,6 +114,10 @@ model Product {
   fabric       String      @default("")
   occasion     String      @default("")
   color        String      @default("")
+  sku          String      @default("")
+  sareeLength  String      @default("")
+  blousePiece  String      @default("")
+  stylingNote  String      @default("")
   price        Int
   mrp          Int         @default(0)
   images       String[]
@@ -346,7 +350,9 @@ model Announcement {
 // Store-wide notification settings, editable by the super admin. A single row.
 model NotificationSettings {
   id            String   @id @default(uuid())
-  alertEmail    String   @default("shashwat9252@gmail.com")
+  alertEmail1   String   @default("shashwat9252@gmail.com")
+  alertEmail2   String   @default("")
+  alertEmail3   String   @default("")
   alertWhatsApp String   @default("9569659272")
   emailEnabled  Boolean  @default(true)
   updatedAt     DateTime @updatedAt

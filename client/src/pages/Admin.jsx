@@ -12,6 +12,10 @@ const EMPTY = {
   fabric: '',
   occasion: '',
   color: '',
+  sku: '',
+  sareeLength: '',
+  blousePiece: '',
+  stylingNote: '',
   price: '',
   mrp: '',
   images: [],
@@ -82,6 +86,10 @@ function ProductForm({ initial, onDone, onCancel }) {
         fabric: form.fabric.trim(),
         occasion: form.occasion.trim(),
         color: form.color.trim(),
+        sku: form.sku.trim(),
+        sareeLength: form.sareeLength.trim(),
+        blousePiece: form.blousePiece.trim(),
+        stylingNote: form.stylingNote.trim(),
         price: Number(form.price),
         mrp: Number(form.mrp) || 0,
         stock: Number(form.stock) || 0,
@@ -146,8 +154,35 @@ function ProductForm({ initial, onDone, onCancel }) {
         </div>
         <div className="field">
           <label>Colour</label>
-          <input value={form.color} onChange={set('color')} placeholder="Teal" />
+          <input value={form.color} onChange={set('color')} placeholder="Mustard Yellow" />
         </div>
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>SKU</label>
+          <input value={form.sku} onChange={set('sku')} placeholder="ABSA154" />
+        </div>
+        <div className="field">
+          <label>Saree Length <span className="field__opt">(sarees only)</span></label>
+          <input value={form.sareeLength} onChange={set('sareeLength')} placeholder="5.5 m" />
+        </div>
+      </div>
+
+      <div className="field__row">
+        <div className="field">
+          <label>Blouse Piece <span className="field__opt">(if applicable)</span></label>
+          <input value={form.blousePiece} onChange={set('blousePiece')} placeholder="Yes; 1 m" />
+        </div>
+        <div className="field">
+          <label>Care</label>
+          <input value={form.care} onChange={set('care')} placeholder="Dry clean only" />
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Sutaara Styling Note <span className="field__opt">(optional)</span></label>
+        <textarea rows="3" value={form.stylingNote} onChange={set('stylingNote')} placeholder="Pair it with the running blouse for an easy coordinated look…" />
       </div>
 
       <div className="field__row">

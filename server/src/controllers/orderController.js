@@ -4,8 +4,8 @@ import { withMongoStyleId } from '../utils/serialize.js';
 import { createShipment } from '../services/shipping.js';
 import { notifyCustomerStatus, notifyOwnerNewOrder } from '../services/notify.js';
 
-const SHIPPING_FREE_ABOVE = 2999;
-const SHIPPING_FLAT = 99;
+const SHIPPING_FREE_ABOVE = 4999;
+const SHIPPING_FLAT = 100;
 const GST_RATE = Number(process.env.GST_RATE || 0); // e.g. 0.05 for 5% — leave 0 until GST-registered
 
 const nextOrderNumber = async (tx) => {

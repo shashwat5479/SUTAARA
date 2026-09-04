@@ -168,27 +168,50 @@ export default function ProductDetail() {
             <div className="pdp__info">
               <span className="eyebrow">{product.fabric}</span>
               <h1>{product.name}</h1>
+
+              {(product.sku || product.price) && (
+                <div className="pdp__sku">
+                  {product.sku && <span>SKU — {product.sku}</span>}
+                  {product.sku && <span className="pdp__sku-sep">|</span>}
+                  <span>Price — {inr(product.price)}</span>
+                </div>
+              )}
+
               <div className="pdp__rating">
                 <span className="stars">{'★'.repeat(Math.round(product.rating))}</span>
                 {product.rating.toFixed(1)} · {product.numReviews} reviews
               </div>
 
-              <div className="pdp__price">
-                <span className="price-now">{inr(product.price)}</span>
-                {off > 0 && <span className="price-was">{inr(product.mrp)}</span>}
-                {off > 0 && <span className="price-off">{off}% off</span>}
-              </div>
+              {off > 0 && (
+                <div className="pdp__price">
+                  <span className="price-was">{inr(product.mrp)}</span>
+                  <span className="price-off">{off}% off</span>
+                </div>
+              )}
 
               <p className="pdp__desc">{product.description}</p>
 
-              <div className="pdp__attrs">
-                <div className="attr"><span>Fabric</span><strong>{product.fabric}</strong></div>
-                <div className="attr"><span>Occasion</span><strong>{product.occasion}</strong></div>
-                <div className="attr"><span>Colour</span><strong>{product.color}</strong></div>
-                <div className="attr">
-                  <span>Availability</span>
-                  <strong>{product.stock > 0 ? `In stock (${product.stock})` : 'Sold out'}</strong>
+              {product.stylingNote && (
+                <div className="pdp__styling">
+                  <h4>Sutaara Styling Note</h4>
+                  <p>{product.stylingNote}</p>
                 </div>
+              )}
+
+              {/* Product Details table — each row shown only when it has a value */}
+              <div className="pdp__spec">
+                <h4>Product Details</h4>
+                <table>
+                  <tbody>
+                    {product.fabric && <tr><td>Fabric</td><td>{product.fabric}</td></tr>}
+                    {product.color && <tr><td>Colour</td><td>{product.color}</td></tr>}
+                    {product.sareeLength && <tr><td>Saree Length</td><td>{product.sareeLength}</td></tr>}
+                    {product.blousePiece && <tr><td>Blouse Piece</td><td>{product.blousePiece}</td></tr>}
+                    {product.care && <tr><td>Care</td><td>{product.care}</td></tr>}
+                    {product.occasion && <tr><td>Occasion</td><td>{product.occasion}</td></tr>}
+                    <tr><td>Availability</td><td>{product.stock > 0 ? `In stock (${product.stock})` : 'Sold out'}</td></tr>
+                  </tbody>
+                </table>
               </div>
 
               <div className="pdp__buy">
@@ -230,9 +253,13 @@ export default function ProductDetail() {
                 </button>
               </div>
 
+              <p className="pdp__note-lighting">
+                Please note: the colour shades of the product may appear slightly different due to lighting.
+              </p>
+
               <p className="pdp__meta">
                 <Truck width="16" height="16" style={{ verticalAlign: '-3px', marginRight: 6 }} />
-                Free shipping over ₹2,999 · Dispatched in 3–5 days
+                Free shipping over ₹4,999 · Dispatched in 3–4 working days
               </p>
 
               <a

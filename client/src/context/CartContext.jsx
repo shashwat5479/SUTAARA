@@ -4,8 +4,8 @@ const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
 
 const KEY = 'sutaara_cart';
-const FREE_SHIP_ABOVE = 2999;
-const SHIP_FLAT = 99;
+const FREE_SHIP_ABOVE = 4999;
+const SHIP_FLAT = 100;
 
 function load() {
   try {

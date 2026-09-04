@@ -4424,3 +4424,66 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   justify-content: center;
   flex-wrap: wrap;
 }
+
+/* ---------- Product detail — PDF-spec layout ---------- */
+.pdp__sku {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+  margin: 4px 0 10px;
+  letter-spacing: 0.02em;
+}
+.pdp__sku-sep { color: var(--line-strong); }
+.pdp__styling {
+  background: var(--ivory-2);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin: 18px 0;
+}
+.pdp__styling h4 {
+  font-family: var(--display, serif);
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.pdp__styling p { margin: 0; color: var(--ink-soft); line-height: 1.75; }
+.pdp__spec { margin: 20px 0; }
+.pdp__spec h4 {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+.pdp__spec table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pdp__spec td {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  font-size: 0.92rem;
+}
+.pdp__spec td:first-child {
+  color: var(--ink-soft);
+  width: 40%;
+  font-weight: 500;
+}
+.pdp__spec td:last-child { color: var(--ink); }
+.pdp__note-lighting {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin: 14px 0;
+}
+.field__opt {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-weight: 400;
+  font-style: italic;
+}
