@@ -14,6 +14,9 @@ import Story from './pages/Story.jsx';
 import Diaries from './pages/Diaries.jsx';
 import Exhibition from './pages/Exhibition.jsx';
 import Policy from './pages/Policy.jsx';
+import Faq from './pages/Faq.jsx';
+import Legal from './pages/Legal.jsx';
+import Contact from './pages/Contact.jsx';
 import Account from './pages/Account.jsx';
 import Admin from './pages/Admin.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -35,7 +38,11 @@ export default function App() {
         <Route path="exhibition" element={<Exhibition />} />
         <Route path="shipping-policy" element={<Policy which="shipping" />} />
         <Route path="returns-policy" element={<Policy which="returns" />} />
-        <Route path="contact" element={<Policy which="contact" />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="faq" element={<Faq />} />
+        <Route path="privacy-policy" element={<Legal which="privacy" />} />
+        <Route path="terms" element={<Legal which="terms" />} />
+        <Route path="disclaimer" element={<Legal which="disclaimer" />} />
 
         <Route
           path="checkout"

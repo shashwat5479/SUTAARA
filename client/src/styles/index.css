@@ -4487,3 +4487,79 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   font-weight: 400;
   font-style: italic;
 }
+
+/* ---------- Footer social ---------- */
+.footer__social { display: flex; gap: 12px; margin-top: 14px; }
+.footer__social a {
+  color: var(--ink-soft);
+  transition: color 0.2s;
+  display: inline-flex;
+}
+.footer__social a:hover { color: var(--gold); }
+
+/* ---------- FAQ ---------- */
+.faq { max-width: 760px; margin: 0 auto; }
+.faq-group { margin-bottom: 32px; }
+.faq-group h2 {
+  font-family: var(--display, serif);
+  font-size: 1.4rem;
+  color: var(--sindoor, #8a1f26);
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.faq-item { border-bottom: 1px solid var(--line); }
+.faq-item__q {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 14px 0;
+  font-size: 0.98rem;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-family: inherit;
+}
+.faq-item__q:hover { color: var(--sindoor); }
+.faq-item__icon { color: var(--gold); font-size: 1.3rem; flex-shrink: 0; }
+.faq-item__a {
+  padding: 0 0 16px;
+  color: var(--ink-soft);
+  line-height: 1.8;
+  font-size: 0.92rem;
+}
+.faq-help {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: var(--ivory-2);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.faq-help a { color: var(--sindoor); text-decoration: underline; }
+
+/* ---------- Contact page ---------- */
+.contact {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 48px;
+  align-items: start;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.contact__details { list-style: none; padding: 0; margin: 18px 0; }
+.contact__details li { padding: 6px 0; color: var(--ink-soft); }
+.contact__details a { color: var(--sindoor); text-decoration: underline; }
+.contact__form h2 {
+  font-family: var(--display, serif);
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+@media (max-width: 780px) {
+  .contact { grid-template-columns: 1fr; gap: 28px; }
+}
