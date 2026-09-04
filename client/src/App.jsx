@@ -12,6 +12,7 @@ import Register from './pages/Register.jsx';
 import Studio from './pages/Studio.jsx';
 import Story from './pages/Story.jsx';
 import Diaries from './pages/Diaries.jsx';
+import Exhibition from './pages/Exhibition.jsx';
 import Policy from './pages/Policy.jsx';
 import Account from './pages/Account.jsx';
 import Admin from './pages/Admin.jsx';
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="studio" element={<Studio />} />
         <Route path="story" element={<Story />} />
         <Route path="diaries" element={<Diaries />} />
+        <Route path="exhibition" element={<Exhibition />} />
         <Route path="shipping-policy" element={<Policy which="shipping" />} />
         <Route path="returns-policy" element={<Policy which="returns" />} />
         <Route path="contact" element={<Policy which="contact" />} />

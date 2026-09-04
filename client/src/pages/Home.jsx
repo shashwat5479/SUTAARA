@@ -284,7 +284,7 @@ export default function Home() {
           } />
 
           <div className="text-center mt-40" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/shop" className="btn btn--gold">View Exhibition</Link>
+            <Link to="/exhibition" className="btn btn--gold">View Exhibition</Link>
             <button
               className="btn btn--ghost"
               onClick={() => toast('We’ll share exhibition dates on WhatsApp soon.')}
