@@ -2050,7 +2050,7 @@ textarea {
 .mmenu {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   bottom: 0;
   width: min(86vw, 380px);
   z-index: 95;
@@ -2059,13 +2059,13 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  box-shadow: -20px 0 50px rgba(20, 14, 12, 0.25);
-  animation: mmenu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 20px 0 50px rgba(20, 14, 12, 0.25);
+  animation: mmenu-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes mmenu-slide-in {
   from {
-    transform: translateX(100%);
-    opacity: 0.5;
+    transform: translateX(-100%);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
@@ -5073,3 +5073,37 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 /* PDP price row */
 .pdp__price-row { display: flex; align-items: baseline; gap: 10px; margin: 8px 0; }
 .pdp__price-row .price-now { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+
+/* ---------- Hero mobile — smaller text, more image visible ---------- */
+@media (max-width: 640px) {
+  .hero { min-height: 75vh; }
+  .hero h1 { font-size: 1.8rem; margin: 10px 0 12px; }
+  .hero p { font-size: 0.88rem; margin: 0 0 18px; max-width: 280px; }
+  .hero__inner { padding: 24px 0; }
+  .hero__inner .eyebrow { font-size: 0.68rem; }
+  .hero__scrim {
+    background: linear-gradient(
+      90deg,
+      rgba(20, 14, 12, 0.55) 0%,
+      rgba(20, 14, 12, 0.25) 50%,
+      rgba(20, 14, 12, 0.05) 100%
+    );
+  }
+  .hero__cta .btn { font-size: 0.78rem; padding: 10px 18px; }
+}
+
+/* ---------- PDP mobile — cleaner image + layout ---------- */
+@media (max-width: 640px) {
+  .pdp__main {
+    aspect-ratio: 3 / 4;
+    border-radius: 0;
+    margin: 0 -18px;
+    width: calc(100% + 36px);
+  }
+  .pdp__thumbs { display: none; }
+  .pdp__info h1 { font-size: 1.3rem; }
+  .pdp__price-row .price-now { font-size: 1.2rem; }
+  .pdp__sku { font-size: 0.8rem; }
+  .pdp__meta { font-size: 0.82rem; }
+  .crumbs { font-size: 0.75rem; }
+}
