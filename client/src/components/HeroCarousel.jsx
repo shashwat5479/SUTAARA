@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Swipeable hero band. Each slide is one piece shown as a strip of photos;
-// clicking any photo opens that product. Arrows + swipe + auto-advance.
 export default function HeroCarousel({ slides = [], interval = 4800 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const navigate = useNavigate();
-  const touchRef = useRef({ startX: 0, startY: 0, swiped: false });
+  const containerRef = useRef(null);
+  const touchRef = useRef({ startX: 0, startY: 0, swiped: false, locked: false });
 
   const safe = (Array.isArray(slides) ? slides : [])
     .map((s) => ({
@@ -27,35 +26,63 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
     return () => clearInterval(id);
   }, [paused, go, interval, count]);
 
-  // Touch handlers that work even when the touch lands on a child button.
-  // We track start position and distance to distinguish a swipe from a tap:
-  //   swipe = horizontal drag > 30px  → change slide
-  //   tap   = barely moved            → navigate to product
-  const onTouchStart = (e) => {
-    const t = e.touches[0];
-    touchRef.current = { startX: t.clientX, startY: t.clientY, swiped: false };
-  };
+  // Attach NON-PASSIVE touch listeners directly to the DOM element.
+  // React's onTouchMove is passive — e.preventDefault() is silently ignored,
+  // which lets the browser steal horizontal swipes for back/forward navigation.
+  // By using addEventListener with { passive: false }, our preventDefault
+  // actually fires and the swipe stays inside the carousel.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || count <= 1) return;
 
-  const onTouchMove = (e) => {
-    const t = e.touches[0];
-    const dx = Math.abs(t.clientX - touchRef.current.startX);
-    const dy = Math.abs(t.clientY - touchRef.current.startY);
-    // If moving more horizontally than vertically, prevent page scroll
-    // so the swipe feels smooth
-    if (dx > dy && dx > 10) {
-      e.preventDefault();
-    }
-  };
+    const onStart = (e) => {
+      const t = e.touches[0];
+      touchRef.current = { startX: t.clientX, startY: t.clientY, swiped: false, locked: false };
+    };
 
-  const onTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - touchRef.current.startX;
-    if (Math.abs(dx) > 30) {
-      go(dx < 0 ? 1 : -1);
-      touchRef.current.swiped = true;
-    }
-  };
+    const onMove = (e) => {
+      const ref = touchRef.current;
+      const t = e.touches[0];
+      const dx = t.clientX - ref.startX;
+      const dy = t.clientY - ref.startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
 
-  // Only navigate on tap (not swipe)
+      // First significant movement decides: horizontal = carousel swipe,
+      // vertical = page scroll. Once decided, we lock the direction.
+      if (!ref.locked && (absDx > 8 || absDy > 8)) {
+        ref.locked = true;
+        ref.horizontal = absDx > absDy;
+      }
+
+      // If the user is swiping horizontally, prevent the browser from
+      // doing ANYTHING with it (no back-gesture, no scroll, nothing).
+      if (ref.horizontal) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const onEnd = (e) => {
+      const ref = touchRef.current;
+      const dx = e.changedTouches[0].clientX - ref.startX;
+      if (ref.horizontal && Math.abs(dx) > 30) {
+        go(dx < 0 ? 1 : -1);
+        ref.swiped = true;
+      }
+    };
+
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchmove', onMove, { passive: false }); // non-passive = preventDefault works
+    el.addEventListener('touchend', onEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+      el.removeEventListener('touchend', onEnd);
+    };
+  }, [count, go]);
+
   const handleImgClick = (slug) => {
     if (touchRef.current.swiped) {
       touchRef.current.swiped = false;
@@ -68,12 +95,10 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
 
   return (
     <div
+      ref={containerRef}
       className="hero-carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
     >
       {safe.map((slide, i) => (
         <div
