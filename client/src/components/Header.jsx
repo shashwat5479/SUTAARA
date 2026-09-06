@@ -5,6 +5,7 @@ import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import MegaMenu from './MegaMenu.jsx';
+import SearchOverlay from './SearchOverlay.jsx';
 import { Search, User, Heart, Bag, Menu, Close } from './Icons.jsx';
 
 function Brand() {
@@ -193,7 +194,7 @@ export default function Header() {
   }, [menuOpen]);
 
   const submitSearch = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (q.trim()) {
       navigate(`/shop?search=${encodeURIComponent(q.trim())}`);
       setSearchOpen(false);
@@ -316,32 +317,12 @@ export default function Header() {
       />
 
       {searchOpen && (
-        <div className="drawer-overlay" onClick={() => setSearchOpen(false)}>
-          <div
-            className="container"
-            style={{ paddingTop: '18vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <form onSubmit={submitSearch} style={{ maxWidth: 620, margin: '0 auto' }}>
-              <input
-                autoFocus
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search sarees, suits, blouses…"
-                style={{
-                  width: '100%',
-                  fontFamily: 'var(--display)',
-                  fontSize: '1.8rem',
-                  padding: '16px 4px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '1px solid var(--gold)',
-                  color: 'var(--paper)',
-                }}
-              />
-            </form>
-          </div>
-        </div>
+        <SearchOverlay
+          q={q}
+          setQ={setQ}
+          onClose={() => setSearchOpen(false)}
+          onSubmit={submitSearch}
+        />
       )}
 
       {menuOpen && (
