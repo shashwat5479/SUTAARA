@@ -43,7 +43,8 @@ export function CartProvider({ children }) {
         },
       ];
     });
-    setOpen(true);
+    // Don't auto-open the cart drawer — just show the toast
+    // setOpen(true);
   }, []);
 
   const setQty = useCallback((id, qty) => {

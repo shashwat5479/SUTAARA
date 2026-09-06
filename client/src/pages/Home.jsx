@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
@@ -75,17 +75,19 @@ export default function Home() {
     ).then((pairs) => setByCategory(Object.fromEntries(pairs)));
   }, []);
 
+  const heroSectionRef = useRef(null);
+
   return (
     <>
       {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
-      <section className="hero">
+      <section className="hero" ref={heroSectionRef}>
         <div className="hero__media">
           <HeroCarousel slides={
             heroSlides && heroSlides.length
               ? heroSlides.map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [] }))
                   .filter((s) => s.imgs.length > 0)
               : HERO_SLIDES
-          } />
+          } heroRef={heroSectionRef} />
         </div>
         <div className="hero__scrim" />
         <div className="container">

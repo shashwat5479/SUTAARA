@@ -2045,7 +2045,7 @@ textarea {
   inset: 0;
   z-index: 94;
   background: rgba(20, 14, 12, 0.5);
-  animation: fade 0.2s;
+  animation: fade 0.3s ease;
 }
 .mmenu {
   position: fixed;
@@ -2060,14 +2060,16 @@ textarea {
   flex-direction: column;
   overflow-y: auto;
   box-shadow: -20px 0 50px rgba(20, 14, 12, 0.25);
-  animation: mmenu-slide-in 0.28s var(--ease);
+  animation: mmenu-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes mmenu-slide-in {
   from {
     transform: translateX(100%);
+    opacity: 0.5;
   }
   to {
     transform: translateX(0);
+    opacity: 1;
   }
 }
 .mmenu__head {
