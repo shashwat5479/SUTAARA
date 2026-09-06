@@ -34,6 +34,8 @@ export default function Shop() {
   const color = params.get('color') || '';
   const search = params.get('search') || '';
   const sort = params.get('sort') || 'featured';
+  const minPrice = params.get('minPrice') || '';
+  const maxPrice = params.get('maxPrice') || '';
 
   useEffect(() => {
     api.getFacets().then(setFacets).catch(() => {});
@@ -42,7 +44,7 @@ export default function Shop() {
   useEffect(() => {
     setLoading(true);
     api
-      .getProducts({ category, fabric, occasion, color, search, sort, limit: 48 })
+      .getProducts({ category, fabric, occasion, color, search, sort, minPrice, maxPrice, limit: 48 })
       .then((res) => {
         // Guard against a malformed/failed payload so the grid never tries to
         // .map() something that isn't an array.
@@ -57,7 +59,7 @@ export default function Shop() {
         setTotal(0);
       })
       .finally(() => setLoading(false));
-  }, [category, fabric, occasion, color, search, sort]);
+  }, [category, fabric, occasion, color, search, sort, minPrice, maxPrice]);
 
   const update = useCallback(
     (key, value) => {

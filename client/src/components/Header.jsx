@@ -221,11 +221,40 @@ export default function Header() {
 
   const submitSearch = (e) => {
     e.preventDefault();
-    if (q.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(q.trim())}`);
-      setSearchOpen(false);
-      setQ('');
+    const raw = q.trim();
+    if (!raw) return;
+
+    // Smart search: parse natural-language price queries.
+    // "saree under 5k" -> search=saree, maxPrice=5000
+    // "silk under 3000" -> search=silk, maxPrice=3000
+    // "suit 2k to 5k"  -> search=suit, minPrice=2000, maxPrice=5000
+    const params = new URLSearchParams();
+    let text = raw;
+
+    const priceK = (s) => { const n = parseFloat(s); return n < 200 ? n * 1000 : n; };
+    const rangeMatch = text.match(/(\d+\.?\d*)\s*k?\s*(?:to|[-\u2013])\s*(\d+\.?\d*)\s*k?/i);
+    const underMatch = text.match(/(?:under|below|less than|upto|up to|within|max)\s*(?:rs\.?|\u20b9|inr)?\s*(\d+\.?\d*)\s*k?/i);
+    const aboveMatch = text.match(/(?:above|over|more than|min|from|starting)\s*(?:rs\.?|\u20b9|inr)?\s*(\d+\.?\d*)\s*k?/i);
+
+    if (rangeMatch) {
+      params.set('minPrice', String(priceK(rangeMatch[1])));
+      params.set('maxPrice', String(priceK(rangeMatch[2])));
+      text = text.replace(rangeMatch[0], '').trim();
+    } else if (underMatch) {
+      params.set('maxPrice', String(priceK(underMatch[1])));
+      text = text.replace(underMatch[0], '').trim();
+    } else if (aboveMatch) {
+      params.set('minPrice', String(priceK(aboveMatch[1])));
+      text = text.replace(aboveMatch[0], '').trim();
     }
+
+    text = text.replace(/(?:rs\.?|\u20b9|inr|price|cost|range|budget)\s*/gi, '').replace(/\s+/g, ' ').trim();
+
+    if (text) params.set('search', text);
+    const qs = params.toString();
+    navigate(qs ? `/shop?${qs}` : '/shop');
+    setSearchOpen(false);
+    setQ('');
   };
 
   // Small delay on close so moving the cursor from the trigger link down into
