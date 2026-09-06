@@ -7,11 +7,8 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const navigate = useNavigate();
-  const touchX = useRef(null);
+  const touchRef = useRef({ startX: 0, startY: 0, swiped: false });
 
-  // Defend against malformed slides (e.g. an admin slide missing images) so a
-  // single bad entry can never crash the homepage. Accept either `imgs` or
-  // `images`, drop slides with no photos.
   const safe = (Array.isArray(slides) ? slides : [])
     .map((s) => ({
       slug: (s && s.slug) || 'shop',
@@ -30,12 +27,41 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
     return () => clearInterval(id);
   }, [paused, go, interval, count]);
 
-  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
+  // Touch handlers that work even when the touch lands on a child button.
+  // We track start position and distance to distinguish a swipe from a tap:
+  //   swipe = horizontal drag > 30px  → change slide
+  //   tap   = barely moved            → navigate to product
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touchRef.current = { startX: t.clientX, startY: t.clientY, swiped: false };
+  };
+
+  const onTouchMove = (e) => {
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - touchRef.current.startX);
+    const dy = Math.abs(t.clientY - touchRef.current.startY);
+    // If moving more horizontally than vertically, prevent page scroll
+    // so the swipe feels smooth
+    if (dx > dy && dx > 10) {
+      e.preventDefault();
+    }
+  };
+
   const onTouchEnd = (e) => {
-    if (touchX.current == null) return;
-    const dx = e.changedTouches[0].clientX - touchX.current;
-    if (Math.abs(dx) > 45) go(dx < 0 ? 1 : -1);
-    touchX.current = null;
+    const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+    if (Math.abs(dx) > 30) {
+      go(dx < 0 ? 1 : -1);
+      touchRef.current.swiped = true;
+    }
+  };
+
+  // Only navigate on tap (not swipe)
+  const handleImgClick = (slug) => {
+    if (touchRef.current.swiped) {
+      touchRef.current.swiped = false;
+      return;
+    }
+    navigate(`/product/${slug}`);
   };
 
   if (count === 0) return null;
@@ -46,6 +72,7 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       {safe.map((slide, i) => (
@@ -55,17 +82,18 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
           aria-hidden={i !== index}
         >
           {slide.imgs.map((src, j) => (
-            <button
+            <div
               key={src}
-              type="button"
-              className="hero-carousel__img"
-              onClick={() => navigate(`/product/${slide.slug}`)}
-              aria-label={`View ${slide.title}`}
+              role="button"
               tabIndex={i === index ? 0 : -1}
+              className="hero-carousel__img"
+              onClick={() => handleImgClick(slide.slug)}
+              onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/product/${slide.slug}`); }}
+              aria-label={`View ${slide.title}`}
             >
-              <img src={src} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} />
+              <img src={src} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
               <span className="hero-carousel__view">View piece</span>
-            </button>
+            </div>
           ))}
         </div>
       ))}
