@@ -3045,8 +3045,18 @@ body {
 }
 
 @media (max-width: 640px) {
-  /* Arrows can't be hovered on touch, so keep them visible */
-  .pdp__nav { opacity: 1; width: 34px; height: 34px; font-size: 1.25rem; }
+  /* Transparent arrows on mobile — visible but non-intrusive */
+  .pdp__nav {
+    opacity: 1;
+    width: 34px;
+    height: 34px;
+    font-size: 1.25rem;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    box-shadow: none;
+  }
+  .pdp__nav:hover { background: transparent; }
 }
 
 /* ============================================================
@@ -3547,13 +3557,7 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
-  opacity: 0;
-  transition: opacity 1.1s ease;
-  pointer-events: none;
-}
-.hero-carousel__slide.is-active {
-  opacity: 1;
-  pointer-events: auto;
+  will-change: transform;
 }
 .hero-carousel__img {
   position: relative;
@@ -3573,27 +3577,7 @@ body {
   transition: transform 0.7s ease;
 }
 .hero-carousel__img:hover img { transform: scale(1.05); }
-.hero-carousel__view {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%) translateY(8px);
-  background: rgba(255,250,243,0.94);
-  color: var(--ink);
-  font-size: 0.72rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  padding: 8px 16px;
-  border-radius: 40px;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.hero-carousel__img:hover .hero-carousel__view {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
+
 .hero-carousel__nav {
   position: absolute;
   top: 50%;
@@ -3642,10 +3626,9 @@ body {
   transform: scale(1.3);
 }
 @media (max-width: 640px) {
-  /* On narrow screens show only the first photo of each slide's strip */
   .hero-carousel__slide .hero-carousel__img:nth-child(n+2) { display: none; }
-  .hero-carousel__nav--prev { left: 8px; }
-  .hero-carousel__nav--next { right: 8px; }
+  /* Hide arrow buttons on mobile — swipe only */
+  .hero-carousel__nav { display: none; }
 }
 
 /* ---------- A Saree's Story — scroll-driven narrative ---------- */

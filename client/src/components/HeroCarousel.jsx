@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function HeroCarousel({ slides = [], interval = 4800 }) {
+// Tilfi-style sliding hero carousel.
+// Slides physically translate with your finger on mobile;
+// snaps to the nearest slide on release.
+// Arrow buttons visible on desktop, hidden on mobile.
+export default function HeroCarousel({ slides = [], interval = 4800, heroRef }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
-  const containerRef = useRef(null);
-  const touchRef = useRef({ startX: 0, startY: 0, swiped: false, locked: false });
+  const trackRef = useRef(null);
+  const touchRef = useRef({ startX: 0, startY: 0, locked: false, horizontal: false, swiped: false });
 
   const safe = (Array.isArray(slides) ? slides : [])
     .map((s) => ({
@@ -18,26 +24,27 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
     .filter((s) => s.imgs.length > 0);
   const count = safe.length;
 
-  const go = useCallback((dir) => setIndex((i) => (i + dir + count) % count), [count]);
+  const go = useCallback((dir) => {
+    setIndex((i) => (i + dir + count) % count);
+    setDragOffset(0);
+  }, [count]);
 
+  // Auto-advance
   useEffect(() => {
-    if (paused || count <= 1) return;
+    if (paused || isDragging || count <= 1) return;
     const id = setInterval(() => go(1), interval);
     return () => clearInterval(id);
-  }, [paused, go, interval, count]);
+  }, [paused, isDragging, go, interval, count]);
 
-  // Attach NON-PASSIVE touch listeners directly to the DOM element.
-  // React's onTouchMove is passive — e.preventDefault() is silently ignored,
-  // which lets the browser steal horizontal swipes for back/forward navigation.
-  // By using addEventListener with { passive: false }, our preventDefault
-  // actually fires and the swipe stays inside the carousel.
+  // Non-passive touch listeners for smooth finger-tracking swipe.
   useEffect(() => {
-    const el = containerRef.current;
+    const el = (heroRef && heroRef.current) || trackRef.current;
     if (!el || count <= 1) return;
 
     const onStart = (e) => {
       const t = e.touches[0];
-      touchRef.current = { startX: t.clientX, startY: t.clientY, swiped: false, locked: false };
+      touchRef.current = { startX: t.clientX, startY: t.clientY, locked: false, horizontal: false, swiped: false };
+      setIsDragging(true);
     };
 
     const onMove = (e) => {
@@ -45,35 +52,35 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
       const t = e.touches[0];
       const dx = t.clientX - ref.startX;
       const dy = t.clientY - ref.startY;
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
 
-      // First significant movement decides: horizontal = carousel swipe,
-      // vertical = page scroll. Once decided, we lock the direction.
-      if (!ref.locked && (absDx > 8 || absDy > 8)) {
+      if (!ref.locked && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
         ref.locked = true;
-        ref.horizontal = absDx > absDy;
+        ref.horizontal = Math.abs(dx) > Math.abs(dy);
       }
 
-      // If the user is swiping horizontally, prevent the browser from
-      // doing ANYTHING with it (no back-gesture, no scroll, nothing).
       if (ref.horizontal) {
         e.preventDefault();
         e.stopPropagation();
+        // Move the slide track with the finger
+        setDragOffset(dx);
       }
     };
 
     const onEnd = (e) => {
       const ref = touchRef.current;
       const dx = e.changedTouches[0].clientX - ref.startX;
-      if (ref.horizontal && Math.abs(dx) > 30) {
+
+      if (ref.horizontal && Math.abs(dx) > 50) {
         go(dx < 0 ? 1 : -1);
         ref.swiped = true;
+      } else {
+        setDragOffset(0);
       }
+      setIsDragging(false);
     };
 
     el.addEventListener('touchstart', onStart, { passive: true });
-    el.addEventListener('touchmove', onMove, { passive: false }); // non-passive = preventDefault works
+    el.addEventListener('touchmove', onMove, { passive: false });
     el.addEventListener('touchend', onEnd, { passive: true });
 
     return () => {
@@ -81,7 +88,7 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
       el.removeEventListener('touchmove', onMove);
       el.removeEventListener('touchend', onEnd);
     };
-  }, [count, go]);
+  }, [count, go, heroRef]);
 
   const handleImgClick = (slug) => {
     if (touchRef.current.swiped) {
@@ -95,33 +102,42 @@ export default function HeroCarousel({ slides = [], interval = 4800 }) {
 
   return (
     <div
-      ref={containerRef}
+      ref={trackRef}
       className="hero-carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {safe.map((slide, i) => (
-        <div
-          key={slide.slug}
-          className={`hero-carousel__slide ${i === index ? 'is-active' : ''}`}
-          aria-hidden={i !== index}
-        >
-          {slide.imgs.map((src, j) => (
-            <div
-              key={src}
-              role="button"
-              tabIndex={i === index ? 0 : -1}
-              className="hero-carousel__img"
-              onClick={() => handleImgClick(slide.slug)}
-              onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/product/${slide.slug}`); }}
-              aria-label={`View ${slide.title}`}
-            >
-              <img src={src} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
-              <span className="hero-carousel__view">View piece</span>
-            </div>
-          ))}
-        </div>
-      ))}
+      {safe.map((slide, i) => {
+        // Calculate position: current slide at 0%, others offset by ±100%
+        const diff = i - index;
+        const baseX = diff * 100; // percentage offset
+        const style = {
+          transform: `translateX(calc(${baseX}% + ${isDragging ? dragOffset : 0}px))`,
+          transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        };
+
+        return (
+          <div
+            key={slide.slug}
+            className="hero-carousel__slide"
+            style={style}
+          >
+            {slide.imgs.map((src, j) => (
+              <div
+                key={src}
+                role="button"
+                tabIndex={i === index ? 0 : -1}
+                className="hero-carousel__img"
+                onClick={() => handleImgClick(slide.slug)}
+                onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/product/${slide.slug}`); }}
+                aria-label={`View ${slide.title}`}
+              >
+                <img src={src} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
+              </div>
+            ))}
+          </div>
+        );
+      })}
 
       {count > 1 && (
         <>
