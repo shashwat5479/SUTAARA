@@ -3423,8 +3423,11 @@ body {
 .exhibit-lightbox__nav--next { right: 3%; }
 
 @media (max-width: 640px) {
-  .exhibit__stage { height: 360px; }
-  .exhibit__card { width: 210px; height: 290px; margin: -145px 0 0 -105px; }
+  .exhibit__stage { height: 440px; }
+  .exhibit__card { width: 280px; height: 380px; margin: -190px 0 0 -140px; }
+  /* Hide side cards on mobile — show only the active one */
+  .exhibit__card { opacity: 0 !important; }
+  .exhibit__card.is-active { opacity: 1 !important; }
   .exhibit__nav--prev { left: 2%; }
   .exhibit__nav--next { right: 2%; }
 }
