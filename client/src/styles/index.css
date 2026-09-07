@@ -60,10 +60,11 @@ h2,
 h3,
 h4 {
   font-family: var(--display);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.08;
   margin: 0;
   letter-spacing: 0.2px;
+  color: var(--ink);
 }
 
 a {
@@ -4870,4 +4871,28 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
     cursor: pointer;
   }
   .pdp__sticky-cart:disabled { opacity: 0.5; }
+}
+
+/* ---------- Mobile menu sub-accordions (Sarees > fabrics) ---------- */
+.mmenu__sub-acc { border-bottom: 1px solid var(--line); }
+.mmenu__sub-acc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mmenu__sub-acc-head a {
+  flex: 1;
+  padding: 14px 0;
+}
+.mmenu__sub-acc-toggle {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: var(--gold);
+  cursor: pointer;
+  padding: 8px 4px;
+  line-height: 1;
+}
+.mmenu__sub-acc-body {
+  padding-left: 12px;
 }

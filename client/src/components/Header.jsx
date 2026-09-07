@@ -15,6 +15,24 @@ function Brand() {
   );
 }
 
+
+function SubAccordion({ label, to, children, onClose }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mmenu__sub-acc">
+      <div className="mmenu__sub-acc-head">
+        <Link to={to} onClick={onClose}><strong>{label}</strong></Link>
+        <button type="button" className="mmenu__sub-acc-toggle" onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}>
+          {open ? '−' : '+'}
+        </button>
+      </div>
+      <div className="mmenu__sub-acc-body" style={{ maxHeight: open ? 500 : 0, overflow: 'hidden', transition: 'max-height 0.3s ease', opacity: open ? 1 : 0 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // Every link here points at a real, working filter, page, or on-page section —
 // nothing decorative. Each top-level nav item now opens its own mega menu on
 // hover, so the interaction is consistent across every item, not just "Shop All".
@@ -467,24 +485,26 @@ export default function Header() {
                   {openSection === 'shop' ? <Minus /> : <Plus />}
                 </button>
                 <div className="mmenu__panel">
-                  <nav onClick={() => setMenuOpen(false)}>
-                    <Link to="/shop">Shop All</Link>
-                    <Link to="/shop?category=saree"><strong>Sarees</strong></Link>
-                    <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub">Cotton</Link>
-                    <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub">Chanderi</Link>
-                    <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub">Silk</Link>
-                    <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub">Organza</Link>
-                    <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub">Chiffon</Link>
-                    <Link to="/shop?category=saree" className="mmenu__sub mmenu__sub--all">All sarees →</Link>
-                    <Link to="/shop?category=suit"><strong>Suits</strong></Link>
-                    <Link to="/shop?category=suit&fabric=Cotton" className="mmenu__sub">Cotton</Link>
-                    <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub">Silk</Link>
-                    <Link to="/shop?category=suit&fabric=Velvet" className="mmenu__sub">Velvet</Link>
-                    <Link to="/shop?category=suit" className="mmenu__sub mmenu__sub--all">All suits →</Link>
-                    <Link to="/shop?category=blouse">Blouses</Link>
-                    <Link to="/shop?category=dupatta">Dupattas</Link>
-                    <Link to="/shop?category=potli">Potlis &amp; Bags</Link>
-                    <Link to="/studio">Book a Studio Appointment</Link>
+                  <nav>
+                    <Link to="/shop" onClick={() => setMenuOpen(false)}>Shop All</Link>
+                    <SubAccordion label="Sarees" to="/shop?category=saree" onClose={() => setMenuOpen(false)}>
+                      <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
+                      <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
+                      <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Organza</Link>
+                      <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chiffon</Link>
+                      <Link to="/shop?category=saree" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All sarees →</Link>
+                    </SubAccordion>
+                    <SubAccordion label="Suits" to="/shop?category=suit" onClose={() => setMenuOpen(false)}>
+                      <Link to="/shop?category=suit&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
+                      <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=suit&fabric=Velvet" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Velvet</Link>
+                      <Link to="/shop?category=suit" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All suits →</Link>
+                    </SubAccordion>
+                    <Link to="/shop?category=blouse" onClick={() => setMenuOpen(false)}>Blouses</Link>
+                    <Link to="/shop?category=dupatta" onClick={() => setMenuOpen(false)}>Dupattas</Link>
+                    <Link to="/shop?category=potli" onClick={() => setMenuOpen(false)}>Potlis &amp; Bags</Link>
+                    <Link to="/studio" onClick={() => setMenuOpen(false)}>Book a Studio Appointment</Link>
                   </nav>
                 </div>
               </div>
