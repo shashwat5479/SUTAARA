@@ -314,14 +314,19 @@ model StudioEvent {
 // strip of up to 3 photos; clicking opens its product. Falls back to hardcoded
 // slides on the frontend if none exist.
 model HeroSlide {
-  id        String   @id @default(uuid())
-  title     String   @default("")
-  slug      String   @default("")   // product slug the slide links to
-  images    String[]                // up to 3 image URLs
-  order     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String   @default("")
+  slug        String   @default("")   // product slug the slide links to
+  images      String[]                // up to 3 image URLs
+  heading     String   @default("")   // overlay text: main heading
+  subheading  String   @default("")   // overlay text: eyebrow/subheading
+  description String   @default("")   // overlay text: paragraph
+  ctaText     String   @default("")   // button label e.g. "Shop the collection"
+  ctaLink     String   @default("")   // button link e.g. "/shop"
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Exhibition coverflow slides — admin-controlled.

@@ -44,6 +44,8 @@ export default function Home() {
   const [byCategory, setByCategory] = useState({});
   const [diaries, setDiaries] = useState([]);
   const [heroSlides, setHeroSlides] = useState(null);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const heroSectionRef = useRef(null);
   const [exhibitionSlides, setExhibitionSlides] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -75,8 +77,6 @@ export default function Home() {
     ).then((pairs) => setByCategory(Object.fromEntries(pairs)));
   }, []);
 
-  const heroSectionRef = useRef(null);
-
   return (
     <>
       {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
@@ -84,29 +84,32 @@ export default function Home() {
         <div className="hero__media">
           <HeroCarousel slides={
             heroSlides && heroSlides.length
-              ? heroSlides.map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [] }))
+              ? heroSlides.map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [], heading: s.heading || '', subheading: s.subheading || '', description: s.description || '', ctaText: s.ctaText || '', ctaLink: s.ctaLink || '' }))
                   .filter((s) => s.imgs.length > 0)
               : HERO_SLIDES
-          } heroRef={heroSectionRef} />
+          } onIndexChange={setHeroIndex} heroRef={heroSectionRef} />
         </div>
         <div className="hero__scrim" />
-        <div className="container">
-          <div className="hero__inner reveal reveal--1">
-            <span className="eyebrow reveal reveal--2">बारिश &amp; धूप · New Season</span>
-            <h1 className="reveal reveal--3">
-              Woven by hand,<br />
-              worn with <em>meaning</em>.
-            </h1>
-            <p className="reveal reveal--4">
-              Hand-painted sarees, chikankari suits and one-of-a-kind blouses — made in small
-              batches, never mass-produced.
-            </p>
-            <div className="hero__cta reveal reveal--5">
-              <Link to="/shop" className="btn btn--gold">Shop the collection</Link>
-              <Link to="/shop?category=saree" className="btn btn--light">Explore sarees</Link>
+        {(() => {
+          const slides = heroSlides && heroSlides.length ? heroSlides.filter((s) => s.images && s.images.length) : [];
+          const hs = slides[heroIndex];
+          const hasText = hs && (hs.heading || hs.subheading || hs.description || hs.ctaText);
+          if (!hasText) return null;
+          return (
+            <div className="container">
+              <div className="hero__inner reveal reveal--1">
+                {hs.subheading && <span className="eyebrow reveal reveal--2">{hs.subheading}</span>}
+                {hs.heading && <h1 className="reveal reveal--3">{hs.heading}</h1>}
+                {hs.description && <p className="reveal reveal--4">{hs.description}</p>}
+                {hs.ctaText && hs.ctaLink && (
+                  <div className="hero__cta reveal reveal--5">
+                    <Link to={hs.ctaLink} className="btn btn--gold">{hs.ctaText}</Link>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
       </section>
 
       {/* STORYBOOK INTRO */}

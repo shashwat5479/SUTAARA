@@ -63,7 +63,7 @@ export function HeroSlidesTab() {
 
 function HeroSlideForm({ initial, onCancel, onDone }) {
   const toast = useToast();
-  const [form, setForm] = useState(() => initial || { title: '', slug: '', images: [], order: 0, active: true });
+  const [form, setForm] = useState(() => initial || { title: '', slug: '', images: [], heading: '', subheading: '', description: '', ctaText: '', ctaLink: '', order: 0, active: true });
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
@@ -72,7 +72,12 @@ function HeroSlideForm({ initial, onCancel, onDone }) {
     if (!form.images || form.images.length === 0) { toast('Add at least one image'); return; }
     setBusy(true);
     try {
-      const payload = { title: form.title, slug: form.slug, images: form.images, order: Number(form.order) || 0, active: !!form.active };
+      const payload = {
+        title: form.title, slug: form.slug, images: form.images,
+        heading: form.heading, subheading: form.subheading,
+        description: form.description, ctaText: form.ctaText, ctaLink: form.ctaLink,
+        order: Number(form.order) || 0, active: !!form.active,
+      };
       if (initial) await api.updateHeroSlide(initial._id, payload);
       else await api.createHeroSlide(payload);
       toast('Hero slide saved');
@@ -87,6 +92,14 @@ function HeroSlideForm({ initial, onCancel, onDone }) {
       <div className="field"><label>Product slug it links to</label><input value={form.slug} onChange={set('slug')} placeholder="mauve-kalamkari-peacock" /></div>
       <p className="admin-form__legend">Images <span>— up to 3, shown side by side. Upload from your gallery.</span></p>
       <MediaUploader images={form.images} video="" onChange={({ images }) => setForm((f) => ({ ...f, images: images.slice(0, 3) }))} target={2} />
+      <p className="admin-form__legend" style={{ marginTop: 16 }}>Text overlay <span>— shown on this slide. Leave blank for image-only.</span></p>
+      <div className="field"><label>Subheading (small eyebrow text)</label><input value={form.subheading} onChange={set('subheading')} placeholder="New Season" /></div>
+      <div className="field"><label>Heading (main large text)</label><input value={form.heading} onChange={set('heading')} placeholder="Woven by hand, worn with meaning" /></div>
+      <div className="field"><label>Description</label><textarea rows="2" value={form.description} onChange={set('description')} placeholder="Hand-painted sarees and one-of-a-kind blouses…" /></div>
+      <div className="field__row">
+        <div className="field"><label>Button text</label><input value={form.ctaText} onChange={set('ctaText')} placeholder="Shop the collection" /></div>
+        <div className="field"><label>Button link</label><input value={form.ctaLink} onChange={set('ctaLink')} placeholder="/shop" /></div>
+      </div>
       <div className="field__row">
         <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>
         <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
