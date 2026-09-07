@@ -3547,14 +3547,6 @@ body {
   -webkit-user-select: none;
   user-select: none;
 }
-.hero-carousel__img {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.hero-carousel__img img {
-  pointer-events: none;
-  -webkit-user-drag: none;
-}
 .hero-carousel__slide {
   position: absolute;
   inset: 0;
@@ -3570,6 +3562,7 @@ body {
   background: #1a1310;
   cursor: pointer;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 .hero-carousel__img img {
   width: 100%;
@@ -3577,6 +3570,8 @@ body {
   object-fit: cover;
   display: block;
   transition: transform 0.7s ease;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 .hero-carousel__img:hover img { transform: scale(1.05); }
 
@@ -3590,8 +3585,8 @@ body {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--ink);
-  font-size: 1.7rem;
+  color: rgba(255,255,255,0.7);
+  font-size: 2rem;
   line-height: 1;
   display: flex;
   align-items: center;
