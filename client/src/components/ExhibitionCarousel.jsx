@@ -85,7 +85,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
           const style = {
             transform:
               `translateX(${off * 46}%) ` +
-              `scale(${off === 0 ? 1 : 0.82 - (abs - 1) * 0.06}) ` +
+              `scale(1) ` +
               `rotateY(${off === 0 ? 0 : off > 0 ? -34 : 34}deg)`,
             opacity: visible ? (off === 0 ? 1 : 0.55 - (abs - 1) * 0.18) : 0,
             zIndex: 10 - abs,

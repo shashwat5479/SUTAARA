@@ -93,26 +93,28 @@ export default function Home() {
           })()} onIndexChange={setHeroIndex} heroRef={heroSectionRef} />
         </div>
         <div className="hero__scrim" />
-        {(() => {
-          const slides = heroSlides && heroSlides.length ? heroSlides.filter((s) => s.images && s.images.length) : [];
-          const hs = slides[heroIndex];
-          const hasText = hs && (hs.heading || hs.subheading || hs.description || hs.ctaText);
-          if (!hasText) return null;
-          return (
-            <div className="container">
-              <div className="hero__inner reveal reveal--1">
-                {hs.subheading && <span className="eyebrow reveal reveal--2">{hs.subheading}</span>}
-                {hs.heading && <h1 className="reveal reveal--3">{hs.heading}</h1>}
-                {hs.description && <p className="reveal reveal--4">{hs.description}</p>}
-                {hs.ctaText && hs.ctaLink && (
+        <div className="container">
+          <div className="hero__inner reveal reveal--1">
+            {(() => {
+              const slides = heroSlides && heroSlides.length ? heroSlides.filter((s) => s.images && s.images.length) : [];
+              const hs = slides[heroIndex];
+              const hasText = hs && (hs.heading || hs.subheading || hs.description);
+              return (
+                <>
+                  {hasText && hs.subheading && <span className="eyebrow reveal reveal--2">{hs.subheading}</span>}
+                  {hasText && hs.heading && <h1 className="reveal reveal--3">{hs.heading}</h1>}
+                  {hasText && hs.description && <p className="reveal reveal--4">{hs.description}</p>}
                   <div className="hero__cta reveal reveal--5">
-                    <Link to={hs.ctaLink} className="btn btn--gold">{hs.ctaText}</Link>
+                    {hasText && hs.ctaText && hs.ctaLink
+                      ? <Link to={hs.ctaLink} className="btn btn--gold">{hs.ctaText}</Link>
+                      : <Link to="/shop?sort=newest" className="btn btn--gold">Shop the New Season</Link>
+                    }
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
+                </>
+              );
+            })()}
+          </div>
+        </div>
       </section>
 
       {/* STORYBOOK INTRO */}
