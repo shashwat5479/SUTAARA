@@ -24,8 +24,7 @@ export default function Footer() {
               <span className="brand__name">SUTAARA</span>
             </Link>
             <p>
-              Hand-painted and hand-woven ethnicwear, made in small batches in Lucknow.
-              Every piece carries the mark of the hand that made it.
+              From handwoven classics to contemporary finds, Sutaara curates Indian textiles, rooted in craft and chosen for modern wardrobes.
             </p>
           </div>
 

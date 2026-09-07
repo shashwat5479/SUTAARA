@@ -270,7 +270,7 @@ export default function ProductDetail() {
               </p>
 
               <a className="wa-btn" href={`https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`}
-                target="_blank" rel="noreferrer" style={{ marginBottom: 24, display: 'inline-flex' }}>
+                target="_blank" rel="noreferrer" style={{ marginBottom: 8, display: 'inline-flex' }}>
                 <Whatsapp width="18" height="18" /> Enquire on WhatsApp
               </a>
             </div>

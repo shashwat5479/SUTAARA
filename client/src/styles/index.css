@@ -3255,6 +3255,7 @@ body {
   object-fit: cover;
   display: block;
   user-select: none;
+  transform-origin: center center;
 }
 .exhibit__card.is-active {
   cursor: default;
@@ -4895,4 +4896,11 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 .mmenu__sub-acc-body {
   padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.mmenu__sub-acc-body a {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
 }
