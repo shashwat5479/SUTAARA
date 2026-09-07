@@ -4744,3 +4744,70 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 @media (max-width: 780px) {
   .contact { grid-template-columns: 1fr; gap: 28px; }
 }
+
+/* ---------- Footer accordion — desktop: always open, mobile: tap to expand ---------- */
+.footer__section-head { display: none; }
+.footer__section-body { display: block; }
+.footer__section-toggle { display: none; }
+
+@media (max-width: 860px) {
+  .footer__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .footer__section-head h4 { margin: 0; }
+  .footer__section-toggle {
+    display: block;
+    font-size: 1.4rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .footer__section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+  .footer__section.is-open .footer__section-body {
+    max-height: 500px;
+    opacity: 1;
+  }
+  .footer__section-body ul { padding-top: 8px; padding-bottom: 8px; }
+}
+
+/* Colorful social icons */
+.footer__social {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin: 28px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.footer__social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.footer__social a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.social--whatsapp { background: #25d366; color: #fff; }
+.social--instagram { background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4); color: #fff; }
+.social--facebook { background: #1877f2; color: #fff; }
+.social--youtube { background: #ff0000; color: #fff; }
+.social--email { background: #ea4335; color: #fff; }

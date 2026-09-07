@@ -82,12 +82,15 @@ export default function Home() {
       {/* HERO — swipeable, clickable saree carousel (each opens its product) */}
       <section className="hero" ref={heroSectionRef}>
         <div className="hero__media">
-          <HeroCarousel slides={
-            heroSlides && heroSlides.length
-              ? heroSlides.map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [], heading: s.heading || '', subheading: s.subheading || '', description: s.description || '', ctaText: s.ctaText || '', ctaLink: s.ctaLink || '' }))
-                  .filter((s) => s.imgs.length > 0)
-              : HERO_SLIDES
-          } onIndexChange={setHeroIndex} heroRef={heroSectionRef} />
+          <HeroCarousel slides={(() => {
+            if (heroSlides && heroSlides.length) {
+              const mapped = heroSlides
+                .map((s) => ({ slug: s.slug || 'shop', title: s.title || '', imgs: Array.isArray(s.images) ? s.images : [], heading: s.heading || '', subheading: s.subheading || '', description: s.description || '', ctaText: s.ctaText || '', ctaLink: s.ctaLink || '' }))
+                .filter((s) => s.imgs.length > 0);
+              if (mapped.length > 0) return mapped;
+            }
+            return HERO_SLIDES;
+          })()} onIndexChange={setHeroIndex} heroRef={heroSectionRef} />
         </div>
         <div className="hero__scrim" />
         {(() => {
