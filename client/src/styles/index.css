@@ -4819,20 +4819,12 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  transition: transform 0.2s, box-shadow 0.2s;
+  width: 32px;
+  height: 32px;
+  color: var(--ink-soft);
+  transition: color 0.2s;
 }
-.footer__social a:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.social--whatsapp { background: #25d366; color: #fff; }
-.social--instagram { background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4); color: #fff; }
-.social--facebook { background: #1877f2; color: #fff; }
-.social--youtube { background: #ff0000; color: #fff; }
-.social--email { background: #ea4335; color: #fff; }
+.footer__social a:hover { color: var(--ink); }
 
 /* ---------- PDP sticky bottom bar (mobile) ---------- */
 .pdp__sticky-bar { display: none; }
