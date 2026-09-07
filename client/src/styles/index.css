@@ -138,6 +138,8 @@ textarea {
 .section-head h2 {
   font-size: clamp(2rem, 4vw, 3rem);
   margin: 10px 0 12px;
+  color: var(--ink);
+  font-weight: 600;
 }
 .section-head p {
   color: var(--ink-soft);
