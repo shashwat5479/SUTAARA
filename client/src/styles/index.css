@@ -3093,8 +3093,8 @@ body {
 }
 
 .section-head {
-  opacity: 0;
-  transform: translateY(14px);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
 }
 .section-head.in-view,
