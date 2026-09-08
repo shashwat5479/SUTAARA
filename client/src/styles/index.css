@@ -4903,6 +4903,7 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 /* ── About Us nav button (desktop) ─────────────────────────────────── */
 .nav__about-btn {
+.nav__about-btn {
   background: none;
   border: none;
   padding: 0;
