@@ -4901,3 +4901,285 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
 }
+/* ─── NAV TRIGGER BUTTON (About Us) ─────────────────────────────────── */
+.nav__trigger-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.mmenu__nav-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ─── ABOUT PANEL SCRIM ──────────────────────────────────────────────── */
+.about-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 33, 28, 0);
+  z-index: 900;
+  pointer-events: none;
+  transition: background 0.45s ease;
+}
+.about-scrim--visible {
+  background: rgba(43, 33, 28, 0.55);
+  pointer-events: all;
+}
+
+/* ─── ABOUT PANEL ────────────────────────────────────────────────────── */
+@keyframes about-slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes about-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-8px) rotate(12deg); }
+}
+@keyframes about-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes about-rule-expand {
+  from { width: 0; }
+  to   { width: 56px; }
+}
+@keyframes about-thread {
+  0%   { transform: scaleY(0) translateY(-20px); opacity: 0; }
+  60%  { opacity: 0.5; }
+  100% { transform: scaleY(1) translateY(0);    opacity: 0.18; }
+}
+
+.about-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(520px, 95vw);
+  background: var(--ivory);
+  z-index: 901;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(100%);
+  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.48s ease;
+  box-shadow: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-soft) transparent;
+}
+.about-panel--open {
+  transform: translateX(0);
+  box-shadow: -24px 0 80px rgba(43, 33, 28, 0.22);
+}
+
+/* Ink bar at top */
+.about-panel__ink-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 60%, transparent 100%);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Close button */
+.about-panel__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-soft);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  z-index: 3;
+}
+.about-panel__close:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--ivory-2);
+}
+
+/* Inner content */
+.about-panel__inner {
+  padding: 56px 40px 60px;
+  position: relative;
+}
+
+/* Floating gold star */
+.about-panel__star {
+  font-size: 2.4rem;
+  color: var(--gold);
+  opacity: 0;
+  position: absolute;
+  top: 44px;
+  right: 72px;
+  line-height: 1;
+  animation: none;
+}
+.about-panel--open .about-panel__star {
+  animation: about-float 5s ease-in-out infinite,
+             about-fade-up 0.5s ease 0.1s forwards;
+}
+
+/* Kicker */
+.about-panel__kicker {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  opacity: 0;
+}
+.about-panel--open .about-panel__kicker {
+  animation: about-fade-up 0.5s ease 0.08s forwards;
+}
+
+/* Headline */
+.about-panel__headline {
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  line-height: 1.22;
+  color: var(--ink);
+  font-weight: 400;
+  margin: 0 0 24px;
+  opacity: 0;
+}
+.about-panel__headline em {
+  font-style: italic;
+  color: var(--gold);
+}
+.about-panel--open .about-panel__headline {
+  animation: about-fade-up 0.5s ease 0.14s forwards;
+}
+
+/* Rule */
+.about-panel__rule {
+  border: none;
+  border-top: 1.5px solid var(--gold);
+  width: 0;
+  margin: 0 0 32px;
+}
+.about-panel--open .about-panel__rule {
+  animation: about-rule-expand 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.22s forwards;
+}
+
+/* Story paragraphs */
+.about-panel__story {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.about-panel__para {
+  opacity: 0;
+  line-height: 1.78;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+.about-panel--open .about-panel__para {
+  animation: about-fade-up 0.55s ease var(--delay) forwards;
+}
+.about-panel__para p {
+  margin: 0;
+}
+.about-panel__lead {
+  font-size: 1.08rem;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.6;
+}
+.about-panel__sub {
+  margin-top: 6px !important;
+  font-style: italic;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+.about-panel__quote {
+  margin: 0;
+  padding: 20px 20px 20px 24px;
+  border-left: 3px solid var(--gold);
+  background: var(--ivory-2);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.97rem;
+  color: var(--ink);
+  line-height: 1.7;
+  font-style: normal;
+}
+.about-panel__closing {
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 8px 0 0 !important;
+}
+
+/* Bottom ornament */
+.about-panel__ornament {
+  margin-top: 40px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  opacity: 0;
+}
+.about-panel--open .about-panel__ornament {
+  animation: about-fade-up 0.5s ease 1.2s forwards;
+}
+
+/* Decorative weave threads on the right edge */
+.about-panel__weave {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  z-index: 902;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.3s;
+}
+.about-panel--open .about-panel__weave {
+  opacity: 1;
+}
+.about-panel__weave-thread {
+  flex: 1;
+  background: var(--gold);
+  opacity: 0;
+  transform-origin: top center;
+  transform: scaleY(0) translateY(-20px);
+}
+.about-panel--open .about-panel__weave-thread {
+  animation: about-thread 0.6s ease calc(0.3s + var(--n) * 0.022s) forwards;
+}
+
+@media (max-width: 600px) {
+  .about-panel__inner {
+    padding: 48px 24px 50px;
+  }
+}

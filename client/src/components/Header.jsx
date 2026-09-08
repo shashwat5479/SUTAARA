@@ -5,6 +5,7 @@ import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import MegaMenu from './MegaMenu.jsx';
+import AboutPanel from './AboutPanel.jsx';
 import { Search, User, Heart, Bag, Menu, Close, Plus, Minus } from './Icons.jsx';
 
 function Brand() {
@@ -129,7 +130,7 @@ const NAV_RIGHT = [
   {
     key: 'stories',
     label: 'Sutaara Edits',
-    to: '/#our-craft',
+    to: '/story',
     mega: {
       columns: [
         {
@@ -211,6 +212,7 @@ export default function Header() {
   const [openSection, setOpenSection] = useState('shop');
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [q, setQ] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -296,14 +298,31 @@ export default function Header() {
     setTimeout(() => { suppressHover.current = false; }, 500);
   };
 
-  const NavItem = ({ item }) => (
-    <span
-      className={`nav__trigger ${activeMega === item.key ? 'is-active' : ''}`}
-      onMouseEnter={() => openMega(item.key)}
-    >
-      <NavLink to={item.to} onClick={closeMegaOnNav}>{item.label}</NavLink>
-    </span>
-  );
+  const NavItem = ({ item }) => {
+    if (item.key === 'about') {
+      return (
+        <span
+          className={`nav__trigger ${activeMega === item.key ? 'is-active' : ''}`}
+          onMouseEnter={() => openMega(item.key)}
+        >
+          <button
+            className="nav__trigger-btn"
+            onClick={() => { closeMegaOnNav(); setAboutOpen(true); }}
+          >
+            {item.label}
+          </button>
+        </span>
+      );
+    }
+    return (
+      <span
+        className={`nav__trigger ${activeMega === item.key ? 'is-active' : ''}`}
+        onMouseEnter={() => openMega(item.key)}
+      >
+        <NavLink to={item.to} onClick={closeMegaOnNav}>{item.label}</NavLink>
+      </span>
+    );
+  };
 
   return (
     <>
@@ -457,6 +476,8 @@ export default function Header() {
         </div>
       )}
 
+      <AboutPanel open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
       {menuOpen && (
         <>
           <div className="mmenu-scrim" onClick={() => setMenuOpen(false)} />
@@ -524,6 +545,13 @@ export default function Header() {
                     <Link to="/diaries">Sutaara Diaries</Link>
                     <Link to="/studio">Visit the Studio</Link>
                     <Link to="/#care">Care &amp; Keeping</Link>
+                    <button
+                      type="button"
+                      className="mmenu__nav-btn"
+                      onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
+                    >
+                      About Us
+                    </button>
                   </nav>
                 </div>
               </div>
