@@ -4911,7 +4911,7 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   font-size: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
-  color: inherit;
+  color: var(--ink);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
