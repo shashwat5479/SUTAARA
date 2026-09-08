@@ -4901,3 +4901,241 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
 }
+/* ── About Us nav button (desktop) ─────────────────────────────────── */
+.nav__about-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── About Us button (mobile menu) ──────────────────────────────────── */
+.mmenu__about-btn {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+  margin: 0;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+
+/* ── Scrim ───────────────────────────────────────────────────────────── */
+.ap-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(43,33,28,0);
+  z-index: 900;
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+.ap-scrim--on {
+  background: rgba(43,33,28,0.52);
+  pointer-events: all;
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────── */
+@keyframes ap-slide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes ap-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ap-rule {
+  from { width: 0; }
+  to   { width: 52px; }
+}
+@keyframes ap-star {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-7px) rotate(15deg); }
+}
+
+.ap {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(500px, 96vw);
+  background: var(--ivory);
+  z-index: 901;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(100%);
+  box-shadow: none;
+  transition: transform 0.46s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.46s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-soft) transparent;
+}
+.ap--open {
+  transform: translateX(0);
+  box-shadow: -20px 0 60px rgba(43,33,28,0.18);
+}
+
+/* gold accent bar at top */
+.ap__bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-soft) 60%, transparent);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* close button */
+.ap__close {
+  position: absolute;
+  top: 18px; right: 18px;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-soft);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  z-index: 3;
+}
+.ap__close:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--ivory-2);
+}
+
+/* body */
+.ap__body {
+  padding: 52px 38px 56px;
+  position: relative;
+}
+
+/* floating star */
+.ap__star {
+  position: absolute;
+  top: 42px; right: 68px;
+  font-size: 2.2rem;
+  color: var(--gold);
+  opacity: 0;
+  line-height: 1;
+}
+.ap--open .ap__star {
+  animation: ap-fade-up 0.45s ease 0.1s forwards,
+             ap-star 4.5s ease-in-out 0.6s infinite;
+}
+
+/* kicker */
+.ap__kicker {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+  opacity: 0;
+}
+.ap--open .ap__kicker {
+  animation: ap-fade-up 0.45s ease 0.08s forwards;
+}
+
+/* heading */
+.ap__heading {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  line-height: 1.22;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 22px;
+  opacity: 0;
+}
+.ap__heading em {
+  font-style: italic;
+  color: var(--gold);
+}
+.ap--open .ap__heading {
+  animation: ap-fade-up 0.45s ease 0.14s forwards;
+}
+
+/* rule */
+.ap__rule {
+  border: none;
+  border-top: 1.5px solid var(--gold);
+  width: 0;
+  margin: 0 0 28px;
+}
+.ap--open .ap__rule {
+  animation: ap-rule 0.55s cubic-bezier(0.4,0,0.2,1) 0.22s forwards;
+}
+
+/* story paragraphs */
+.ap__story {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ap__para {
+  opacity: 0;
+  font-size: 0.94rem;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+.ap--open .ap__para {
+  animation: ap-fade-up 0.5s ease var(--d) forwards;
+}
+.ap__para p { margin: 0; }
+.ap__lead {
+  font-size: 1.06rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.ap__sub {
+  margin-top: 6px !important;
+  font-style: italic;
+  color: var(--gold);
+  font-size: 0.88rem;
+}
+.ap__quote {
+  margin: 0;
+  padding: 18px 18px 18px 22px;
+  border-left: 3px solid var(--gold);
+  background: var(--ivory-2);
+  border-radius: 0 6px 6px 0;
+  color: var(--ink);
+  font-size: 0.96rem;
+  line-height: 1.72;
+}
+.ap__closing {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+
+/* ornament */
+.ap__ornament {
+  margin-top: 38px;
+  text-align: center;
+  color: var(--gold);
+  letter-spacing: 0.3em;
+  font-size: 0.82rem;
+  opacity: 0;
+}
+.ap--open .ap__ornament {
+  animation: ap-fade-up 0.5s ease 1.1s forwards;
+}
+
+@media (max-width: 600px) {
+  .ap__body { padding: 44px 22px 48px; }
+}
