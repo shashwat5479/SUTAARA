@@ -4909,7 +4909,7 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   margin: 0;
   font: inherit;
   font-size: inherit;
-  color: var(--sindoor-dark);
+  color: var( --ink-soft: #5a4d44;);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
