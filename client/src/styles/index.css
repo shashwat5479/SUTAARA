@@ -4909,14 +4909,11 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   margin: 0;
   font: inherit;
   font-size: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  color: var(--ink);
+  color: var(--sindoor);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
 }
-
 /* ── About Us button (mobile menu) ──────────────────────────────────── */
 .mmenu__about-btn {
   background: none;
