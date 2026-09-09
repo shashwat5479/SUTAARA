@@ -4902,34 +4902,89 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   border-bottom: 1px solid var(--line);
 }
 /* ── About Us nav button (desktop) ─────────────────────────────────── */
+/* ── About Us nav button (desktop) — must match .nav a exactly ──────── */
 .nav__about-btn {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: color 0.2s;
+}
+.nav__about-btn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.25s var(--ease);
+}
+.nav__about-btn:hover {
+  color: var(--ink);
+}
+.nav__about-btn:hover::after {
+  width: 100%;
+}
+.nav__trigger.is-active .nav__about-btn {
+  color: var(--ink);
+}
+.nav__trigger.is-active .nav__about-btn::after {
+  width: 100%;
+}
+
+/* ── mega menu "action" links (Our story / Meet Sutaara) ─────────────── */
+.mega__action-link {
   background: none;
   border: none;
   padding: 0;
   margin: 0;
   font: inherit;
-  font-size: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  color: var(--ink-soft);
+  color: inherit;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
+  text-align: left;
+  display: inline;
 }
-/* ── About Us button (mobile menu) ──────────────────────────────────── */
-.mmenu__about-btn {
+.mega__featured-card--btn {
   background: none;
   border: none;
-  border-bottom: 1px solid var(--line);
-  padding: 14px 0;
+  padding: 0;
   margin: 0;
   font: inherit;
-  font-size: 1rem;
-  color: var(--ink);
   cursor: pointer;
   text-align: left;
   display: block;
   width: 100%;
+}
+
+/* ── About Us row in mobile menu (always visible, top-level) ─────────── */
+.mmenu__label--about {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  cursor: pointer;
+  text-align: left;
+}
+.mmenu__label--about:hover {
+  color: var(--ink);
 }
 
 /* ── Scrim ───────────────────────────────────────────────────────────── */
@@ -5137,4 +5192,19 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 
 @media (max-width: 600px) {
   .ap__body { padding: 44px 22px 48px; }
+}
+
+/* ── Mobile menu social icons: simple monochrome (footer keeps color) ─── */
+.mmenu__reachus-social .footer__social-icon {
+  background: none !important;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  box-shadow: none;
+}
+.mmenu__reachus-social .footer__social-icon:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--ivory-2) !important;
+  transform: none;
+  box-shadow: none;
 }
