@@ -31,6 +31,17 @@ enum PaymentMethod {
   online
 }
 
+// Tracks the online-payment lifecycle for an order independently of its
+// fulfilment status (OrderStatus) — an order can sit at "pending" fulfilment
+// while its payment is "paid", or stay "pending" fulfilment forever if the
+// payment permanently "failed" and the customer abandoned the retry.
+enum PaymentStatus {
+  not_applicable // COD orders — no online payment involved
+  pending        // Razorpay order created, awaiting the customer to pay
+  paid
+  failed
+}
+
 // Mirrors the automated order lifecycle from the feature brief:
 // placed -> confirmed -> processing -> packed -> shipped -> out_for_delivery -> delivered
 // plus cancellation / return / refund branches.
@@ -203,6 +214,22 @@ model Order {
 
   status OrderStatus @default(pending)
 
+  // Set by an admin/staff member per order — the customer's "Request
+  // return/refund" button only appears when this is true. Off by default:
+  // not every product or order is meant to be returnable (e.g. altered
+  // blouse pieces, festive/wedding pieces sold as final sale).
+  returnEligible Boolean @default(false)
+
+  // Razorpay — populated once an online payment is attempted for this order.
+  // paymentStatus tracks the payment lifecycle separately from `status`
+  // (order fulfilment), so a failed payment never silently looks like a
+  // cancelled or lost order — the customer (and admin) can see it and retry.
+  paymentStatus    PaymentStatus @default(not_applicable)
+  razorpayOrderId  String?       @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  paymentAttempts  PaymentAttempt[]
+
   // Invoice
   invoiceNumber String? @unique
   invoicedAt    DateTime?
@@ -235,6 +262,37 @@ model OrderItem {
   qty       Int     @default(1)
 
   @@index([orderId])
+}
+
+// Full audit trail of every Razorpay attempt against an order — created when
+// a Razorpay order is opened, then updated (or a new row added, for retries)
+// as the checkout resolves. This is what lets the admin panel show exactly
+// which payment attempt failed and why, even after the customer retries and
+// succeeds on a later attempt.
+model PaymentAttempt {
+  id     String @id @default(uuid())
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  razorpayOrderId   String
+  razorpayPaymentId String?
+  status            PaymentAttemptStatus @default(created)
+  method            String? // upi / card / netbanking / wallet — filled in from the webhook/verify payload
+  errorCode         String?
+  errorDescription  String?
+  amount            Int // paise, snapshot at attempt time
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+enum PaymentAttemptStatus {
+  created    // Razorpay order created, checkout not yet completed
+  authorized // payment authorized, awaiting capture (rare — auto-capture is on by default)
+  captured   // payment succeeded and captured
+  failed
 }
 
 // Append-only audit trail backing the "Order Status" timeline on the tracking page

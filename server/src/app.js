@@ -9,6 +9,7 @@ import { notFound, errorHandler } from './middleware/error.js';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
+import { handleShippingWebhook } from './controllers/shippingWebhookController.js';
 import couponRoutes from './routes/coupons.js';
 import appointmentRoutes from './routes/appointments.js';
 import studioEventRoutes from './routes/studioEvent.js';
@@ -16,6 +17,8 @@ import reviewRoutes from './routes/reviews.js';
 import siteContentRoutes from './routes/siteContent.js';
 import adminUserRoutes from './routes/adminUsers.js';
 import notificationSettingsRoutes from './routes/notificationSettings.js';
+import paymentRoutes from './routes/payments.js';
+import { handleRazorpayWebhook } from './controllers/paymentController.js';
 
 // Express app only — no app.listen() and no DB connect call here, so this
 // file can be imported both by the local dev server (src/index.js) and by
@@ -51,6 +54,16 @@ app.use(
     credentials: true,
   })
 );
+// Razorpay webhook — MUST be registered before express.json() below, using
+// express.raw(), because signature verification needs the exact raw bytes
+// Razorpay signed. Any request matching this exact path is fully handled
+// here and never reaches the global json parser.
+app.post(
+  '/api/payments/razorpay/webhook',
+  express.raw({ type: '*/*' }),
+  handleRazorpayWebhook
+);
+
 app.use(express.json({ limit: '2mb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
@@ -81,6 +94,8 @@ app.get('/', (req, res) => res.json({ status: 'ok', service: 'sutaara-api' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+app.post('/api/shipping/webhook', handleShippingWebhook);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/studio-event', studioEventRoutes);
