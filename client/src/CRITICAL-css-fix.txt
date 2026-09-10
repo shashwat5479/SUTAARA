@@ -1,0 +1,16 @@
+CRITICAL FIX — find this in client/src/styles/index.css (near the very top,
+inside the `body { ... }` rule) and change ONE line:
+
+FIND:
+  color: rgba(255,255,255,0.7);
+
+REPLACE WITH:
+  color: var(--ink);
+
+This was the root cause of every "faded text" screenshot — it set the
+site-wide DEFAULT text color to translucent white on a cream background.
+Anything that didn't set its own explicit color (product spec tables, cart
+drawer item names, checkout payment labels, order-success payment status)
+silently inherited this and looked washed out. Everything that already had
+its own explicit color (headings, nav links, the hero, footer, buttons) was
+unaffected — so this one-line fix is safe with no other changes needed.

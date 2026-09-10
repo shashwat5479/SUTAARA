@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../api/client.js';
+import { payForOrder } from '../utils/razorpay.js';
 import { inr } from '../utils/format.js';
 
 export default function Checkout() {
@@ -11,6 +12,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [payment, setPayment] = useState('cod');
   const [placing, setPlacing] = useState(false);
+  const [placingLabel, setPlacingLabel] = useState('Place order');
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     fullName: user?.name || '',
@@ -39,13 +41,34 @@ export default function Checkout() {
     setError('');
     setPlacing(true);
     try {
+      setPlacingLabel('Placing order…');
       const order = await api.createOrder({
         items: items.map((i) => ({ product: i.product, qty: i.qty })),
         shippingAddress: form,
         paymentMethod: payment,
       });
-      clear();
-      navigate(`/order-success/${order._id}`, { state: { order } });
+
+      if (payment === 'cod') {
+        clear();
+        navigate(`/order-success/${order._id}`, { state: { order } });
+        return;
+      }
+
+      // Online payment: open Razorpay Checkout and wait for the result
+      // before deciding where to send the customer.
+      setPlacingLabel('Opening payment…');
+      const result = await payForOrder(order, { customerEmail: user?.email });
+
+      if (result.ok) {
+        clear();
+        navigate(`/order-success/${order._id}`, { state: { order: result.order } });
+      } else if (result.dismissed) {
+        setError('Payment was not completed. Your order is saved — you can retry payment from "My orders".');
+        setPlacing(false);
+      } else {
+        setError(result.message || 'Payment failed. Your order is saved — you can retry payment from "My orders".');
+        setPlacing(false);
+      }
     } catch (err) {
       setError(err.message);
       setPlacing(false);
@@ -124,17 +147,18 @@ export default function Checkout() {
                   />
                   <div>
                     <strong>Pay online</strong>
-                    <span>UPI / cards — gateway coming soon.</span>
+                    <span>UPI / cards / netbanking via Razorpay.</span>
                   </div>
                 </label>
 
-                <div className="pay-note">
-                  <strong>Demo store.</strong> No real payment is processed. Choosing “Pay online”
-                  simply records the order as pending — a live gateway can be added later.
-                  <div className="pay-logos">
-                    <span>UPI</span><span>Visa</span><span>Mastercard</span><span>RuPay</span>
+                {payment === 'online' && (
+                  <div className="pay-note">
+                    You'll be redirected to Razorpay's secure checkout to complete payment.
+                    <div className="pay-logos">
+                      <span>UPI</span><span>Visa</span><span>Mastercard</span><span>RuPay</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -159,7 +183,7 @@ export default function Checkout() {
                 <span>{inr(total)}</span>
               </div>
               <button className="btn btn--primary btn--block" style={{ marginTop: 18 }} disabled={placing}>
-                {placing ? 'Placing order…' : 'Place order'}
+                {placing ? placingLabel : payment === 'online' ? `Pay ${inr(total)}` : 'Place order'}
               </button>
             </div>
           </form>

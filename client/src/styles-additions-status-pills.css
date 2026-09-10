@@ -1,0 +1,32 @@
+/* ── Status pill variants for the full order lifecycle (processing/packed/
+   out_for_delivery weren't styled before; return/refund states use a
+   distinct amber-to-red gradient so admin can spot them at a glance) ────── */
+.status-processing {
+  background: rgba(176, 138, 75, 0.16);
+  color: var(--gold);
+}
+.status-packed {
+  background: rgba(124, 138, 107, 0.14);
+  color: var(--sage);
+}
+.status-out_for_delivery {
+  background: rgba(140, 42, 46, 0.1);
+  color: var(--sindoor);
+}
+.status-return_requested {
+  background: rgba(181, 118, 43, 0.16);
+  color: #b5762b;
+}
+.status-return_approved {
+  background: rgba(181, 118, 43, 0.22);
+  color: #93601f;
+}
+.status-refund_initiated {
+  background: rgba(178, 46, 46, 0.14);
+  color: #b22e2e;
+}
+.status-refunded {
+  background: rgba(94, 31, 38, 0.16);
+  color: var(--maroon);
+}
+

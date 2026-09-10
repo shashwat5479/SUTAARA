@@ -157,7 +157,7 @@ const NAV_RIGHT = [
         {
           title: 'Sutaara',
           links: [
-            { label: 'Our story', to: '/#our-craft' },
+            { label: 'Our story', action: 'about' },
             { label: 'Care & keeping', to: '/#care' },
           ],
         },
@@ -171,7 +171,7 @@ const NAV_RIGHT = [
         },
       ],
       featured: [
-        { label: 'Meet Sutaara', img: '/products/maroon-patola-ikat-1.jpg', to: '/#our-craft' },
+        { label: 'Meet Sutaara', img: '/products/maroon-patola-ikat-1.jpg', action: 'about' },
         { label: 'The Weave', img: '/products/mustard-elephant-chanderi-1.jpg', to: '/shop?category=saree&fabric=Tissue' },
       ],
     },
@@ -398,6 +398,7 @@ export default function Header() {
           <MegaMenu
             menu={activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null}
             onLinkClick={closeMegaOnNav}
+            onAction={(action) => { closeMegaOnNav(); if (action === 'about') setAboutOpen(true); }}
           />
         </div>
       </header>
@@ -545,15 +546,18 @@ export default function Header() {
                     <Link to="/diaries">Sutaara Diaries</Link>
                     <Link to="/studio">Visit the Studio</Link>
                     <Link to="/#care">Care &amp; Keeping</Link>
-                    <button
-                      type="button"
-                      className="mmenu__about-btn"
-                      onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
-                    >
-                      About Us
-                    </button>
                   </nav>
                 </div>
+              </div>
+
+              <div className="mmenu__section mmenu__section--plain">
+                <button
+                  type="button"
+                  className="mmenu__about-link"
+                  onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
+                >
+                  About Us
+                </button>
               </div>
 
               <div className={`mmenu__section ${openSection === 'help' ? 'is-open' : ''}`}>

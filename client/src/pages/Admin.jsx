@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -45,7 +45,10 @@ const FABRICS = [
 ];
 const OCCASIONS = ['Wedding', 'Festive', 'Party', 'Everyday', 'Daywear'];
 
-const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const STATUSES = [
+  'pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery',
+  'delivered', 'cancelled', 'return_requested', 'return_approved', 'refund_initiated', 'refunded',
+];
 const APPOINTMENT_STATUSES = ['requested', 'confirmed', 'completed', 'cancelled'];
 
 function ProductForm({ initial, onDone, onCancel }) {
@@ -323,10 +326,26 @@ function ProductsTab() {
   );
 }
 
+function PaymentBadge({ order }) {
+  if (order.paymentMethod === 'cod') {
+    return <span className="pay-badge pay-badge--na">COD</span>;
+  }
+  if (order.isPaid || order.paymentStatus === 'paid') {
+    return <span className="pay-badge pay-badge--paid">Paid</span>;
+  }
+  if (order.paymentStatus === 'failed') {
+    return <span className="pay-badge pay-badge--failed">Failed</span>;
+  }
+  return <span className="pay-badge pay-badge--pending">Pending</span>;
+}
+
 function OrdersTab() {
   const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
+  const [expanded, setExpanded] = useState(null);
+  const [paymentFilter, setPaymentFilter] = useState('all');
 
   const load = () => {
     setLoading(true);
@@ -344,45 +363,204 @@ function OrdersTab() {
     }
   };
 
+  const toggleReturn = async (o) => {
+    const next = !o.returnEligible;
+    try {
+      await api.setReturnEligibility(o._id, next);
+      setOrders((cur) => cur.map((x) => (x._id === o._id ? { ...x, returnEligible: next } : x)));
+      toast(next ? 'Return/refund enabled for this order' : 'Return/refund disabled for this order');
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  const download = async (o, which) => {
+    setBusyId(o._id + which);
+    try {
+      const fn = { invoice: api.downloadInvoice, packing: api.downloadPackingSlip, label: api.downloadShippingLabel, all: api.downloadPrintAll }[which];
+      await fn(o._id, o.orderNumber);
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   if (loading) return <div className="loader"><div className="spinner" /></div>;
   if (orders.length === 0) return <div className="empty"><h3>No orders yet</h3></div>;
 
+  const visibleOrders = orders.filter((o) => {
+    if (paymentFilter === 'all') return true;
+    if (paymentFilter === 'paid') return o.isPaid || o.paymentStatus === 'paid';
+    if (paymentFilter === 'failed') return o.paymentMethod === 'online' && o.paymentStatus === 'failed';
+    if (paymentFilter === 'pending') return o.paymentMethod === 'online' && o.paymentStatus === 'pending' && !o.isPaid;
+    return true;
+  });
+
+  const paidCount = orders.filter((o) => o.isPaid || o.paymentStatus === 'paid').length;
+  const failedCount = orders.filter((o) => o.paymentMethod === 'online' && o.paymentStatus === 'failed').length;
+  const pendingCount = orders.filter((o) => o.paymentMethod === 'online' && o.paymentStatus === 'pending' && !o.isPaid).length;
+
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Order</th>
-          <th>Customer</th>
-          <th>Items</th>
-          <th>Total</th>
-          <th>Payment</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {orders.map((o) => (
-          <tr key={o._id}>
-            <td style={{ fontFamily: 'monospace' }}>#{o._id.slice(-8)}</td>
-            <td>{o.user?.name || '—'}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{o.user?.email}</span></td>
-            <td>{o.items.reduce((n, i) => n + i.qty, 0)}</td>
-            <td>{inr(o.totalPrice)}</td>
-            <td style={{ textTransform: 'uppercase', fontSize: '0.78rem' }}>{o.paymentMethod}</td>
-            <td>
-              <select
-                className="select"
-                value={o.status}
-                onChange={(e) => changeStatus(o._id, e.target.value)}
-                style={{ padding: '6px 28px 6px 10px' }}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </td>
-          </tr>
+    <div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        {[
+          ['all', `All (${orders.length})`],
+          ['paid', `Paid (${paidCount})`],
+          ['pending', `Pending (${pendingCount})`],
+          ['failed', `Failed (${failedCount})`],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            className={`btn ${paymentFilter === key ? 'btn--primary' : 'btn--ghost'}`}
+            style={{ padding: '7px 16px', fontSize: '0.8rem' }}
+            onClick={() => setPaymentFilter(key)}
+          >
+            {label}
+          </button>
         ))}
-      </tbody>
-    </table>
+      </div>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Return/Refund</th>
+            <th>Documents</th>
+          </tr>
+        </thead>
+        <tbody>
+          {visibleOrders.map((o) => {
+            const isExpanded = expanded === o._id;
+            return (
+              <Fragment key={o._id}>
+                <tr>
+                  <td style={{ fontFamily: 'monospace' }}>{o.orderNumber || `#${o._id.slice(-8)}`}</td>
+                  <td>{o.user?.name || '—'}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{o.user?.email}</span></td>
+                  <td>{o.items.reduce((n, i) => n + i.qty, 0)}</td>
+                  <td>{inr(o.totalPrice)}</td>
+                  <td>
+                    <PaymentBadge order={o} />
+                    {o.paymentMethod === 'online' && (o.paymentAttempts?.length > 0) && (
+                      <button
+                        className="link-underline"
+                        style={{ display: 'block', fontSize: '0.72rem', marginTop: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        onClick={() => setExpanded(isExpanded ? null : o._id)}
+                      >
+                        {isExpanded ? 'Hide' : 'View'} attempts ({o.paymentAttempts.length})
+                      </button>
+                    )}
+                  </td>
+                  <td>
+                    <select
+                      className="select"
+                      value={o.status}
+                      onChange={(e) => changeStatus(o._id, e.target.value)}
+                      style={{ padding: '6px 28px 6px 10px' }}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    {(o.status === 'return_requested' || o.status === 'return_approved') && (
+                      <div style={{ fontSize: '0.7rem', color: '#b5762b', marginTop: 4 }}>Needs action</div>
+                    )}
+                  </td>
+                  <td>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(o.returnEligible)}
+                        onChange={() => toggleReturn(o)}
+                      />
+                      {o.returnEligible ? 'Enabled' : 'Off'}
+                    </label>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button
+                        className="btn btn--ghost"
+                        style={{ padding: '5px 10px', fontSize: '0.72rem' }}
+                        onClick={() => download(o, 'invoice')}
+                        disabled={!o.invoiceNumber || busyId === o._id + 'invoice'}
+                        title={o.invoiceNumber ? 'Download invoice PDF' : 'Invoice not generated yet — confirm or pay the order first'}
+                      >
+                        Invoice
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        style={{ padding: '5px 10px', fontSize: '0.72rem' }}
+                        onClick={() => download(o, 'packing')}
+                        disabled={busyId === o._id + 'packing'}
+                      >
+                        Packing slip
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        style={{ padding: '5px 10px', fontSize: '0.72rem' }}
+                        onClick={() => download(o, 'label')}
+                        disabled={busyId === o._id + 'label'}
+                      >
+                        Label
+                      </button>
+                      <button
+                        className="btn btn--ghost"
+                        style={{ padding: '5px 10px', fontSize: '0.72rem' }}
+                        onClick={() => download(o, 'all')}
+                        disabled={busyId === o._id + 'all'}
+                      >
+                        Print all
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {isExpanded && (
+                  <tr key={o._id + '-attempts'}>
+                    <td colSpan={8} style={{ background: 'var(--paper-2)', padding: '12px 16px' }}>
+                      <table className="table" style={{ margin: 0 }}>
+                        <thead>
+                          <tr>
+                            <th>When</th>
+                            <th>Razorpay order</th>
+                            <th>Payment ID</th>
+                            <th>Method</th>
+                            <th>Result</th>
+                            <th>Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {o.paymentAttempts.map((a) => (
+                            <tr key={a.id}>
+                              <td style={{ fontSize: '0.78rem' }}>
+                                {new Date(a.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </td>
+                              <td style={{ fontFamily: 'monospace', fontSize: '0.72rem' }}>{a.razorpayOrderId}</td>
+                              <td style={{ fontFamily: 'monospace', fontSize: '0.72rem' }}>{a.razorpayPaymentId || '—'}</td>
+                              <td style={{ fontSize: '0.78rem', textTransform: 'uppercase' }}>{a.method || '—'}</td>
+                              <td>
+                                <span className={`pay-badge pay-badge--${a.status === 'captured' ? 'paid' : a.status === 'failed' ? 'failed' : 'pending'}`}>
+                                  {a.status}
+                                </span>
+                              </td>
+                              <td style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>{a.errorDescription || '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

@@ -69,8 +69,54 @@ export const api = {
   createOrder: (body) => request('/orders', { method: 'POST', body, auth: true }),
   getMyOrders: () => request('/orders/mine', { auth: true }),
   getAllOrders: () => request('/orders', { auth: true }),
+  getOrder: (id) => request(`/orders/${id}`, { auth: true }),
   updateOrderStatus: (id, status) =>
     request(`/orders/${id}/status`, { method: 'PUT', body: { status }, auth: true }),
+  setReturnEligibility: (id, eligible) =>
+    request(`/orders/${id}/return-eligibility`, { method: 'PATCH', body: { eligible }, auth: true }),
+  requestReturn: (id, reason) =>
+    request(`/orders/${id}/request-return`, { method: 'POST', body: { reason }, auth: true }),
+
+  // Razorpay payments
+  getRazorpayKey: () => request('/payments/razorpay/key'),
+  createPaymentOrder: (orderId) =>
+    request(`/payments/razorpay/orders/${orderId}`, { method: 'POST', auth: true }),
+  verifyPayment: (body) => request('/payments/razorpay/verify', { method: 'POST', body, auth: true }),
+  recordPaymentFailure: (body) => request('/payments/razorpay/failure', { method: 'POST', body, auth: true }),
+
+  // Invoice / documents — these return a PDF, not JSON, so they bypass the
+  // request() helper and hand back a blob for the browser to open/download.
+  downloadDocument: async (path, filename) => {
+    const token = getToken();
+    const res = await fetch(`${BASE}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let message = `Could not fetch ${filename} (${res.status})`;
+      try {
+        const body = await res.json();
+        if (body?.message) message = body.message;
+      } catch {}
+      throw new Error(message);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  },
+  downloadInvoice: (orderId, orderNumber) =>
+    api.downloadDocument(`/orders/${orderId}/invoice`, `${orderNumber || orderId}-invoice.pdf`),
+  downloadPackingSlip: (orderId, orderNumber) =>
+    api.downloadDocument(`/orders/${orderId}/packing-slip`, `${orderNumber || orderId}-packing-slip.pdf`),
+  downloadShippingLabel: (orderId, orderNumber) =>
+    api.downloadDocument(`/orders/${orderId}/shipping-label`, `${orderNumber || orderId}-label.pdf`),
+  downloadPrintAll: (orderId, orderNumber) =>
+    api.downloadDocument(`/orders/${orderId}/print-all`, `${orderNumber || orderId}-print-all.pdf`),
 
   // studio appointments
   createAppointment: (body) => request('/appointments', { method: 'POST', body, auth: !!getToken() }),

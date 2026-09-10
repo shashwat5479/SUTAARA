@@ -1,0 +1,4 @@
+/* Add right after the existing .success__mark svg { ... } block in index.css */
+.success__mark--warn {
+  background: #b5762b;
+}
