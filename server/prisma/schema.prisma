@@ -241,6 +241,7 @@ model Order {
   trackingUrl   String?
   shippedAt     DateTime?
   estDelivery   DateTime?
+  shiprocketShipmentId String? // Shiprocket's internal shipment ID for label retrieval
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -419,5 +420,15 @@ model NotificationSettings {
   alertWhatsApp String   @default("9569659272")
   emailEnabled  Boolean  @default(true)
   updatedAt     DateTime @updatedAt
+}
+
+// Generic key-value store for server-side state that needs to survive
+// serverless cold starts — currently used to cache the Shiprocket auth token
+// so each Vercel function instance doesn't re-authenticate on every request.
+model AppKV {
+  key       String    @id
+  value     String
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
 }
 

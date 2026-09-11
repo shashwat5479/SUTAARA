@@ -2,6 +2,8 @@ import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { buildInvoicePDF, buildPackingSlipPDF, buildShippingLabelPDF, buildPrintAllPDF } from '../services/documents.js';
 
+const STAFF_ROLES = ['staff', 'admin', 'superadmin'];
+
 async function loadOrder(req, res) {
   const order = await prisma.order.findUnique({ where: { id: req.params.id }, include: { items: true } });
   if (!order) {
@@ -9,7 +11,7 @@ async function loadOrder(req, res) {
     throw new Error('Order not found');
   }
   const owns = order.userId === req.user.id;
-  if (!owns && req.user.role !== 'admin') {
+  if (!owns && !STAFF_ROLES.includes(req.user.role)) {
     res.status(403);
     throw new Error('Not your order');
   }

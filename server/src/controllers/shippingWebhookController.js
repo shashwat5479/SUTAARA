@@ -16,20 +16,31 @@ import { applyStatusChange } from './orderController.js';
 // since couriers vary widely in what they support; swap in the courier's
 // own signature scheme here once you've picked a provider.
 //
-// Expected body — adapt the field names / STATUS_MAP below to whatever your
-// chosen courier actually sends:
-//   { awbNumber: "AWB123", status: "delivered", note: "Delivered to recipient" }
+// Expected body — this accepts TWO shapes:
+//
+// 1. Shiprocket's real webhook shape (Settings > API > Configure Webhook in
+//    your Shiprocket dashboard — set the URL to this endpoint and the
+//    "Custom Header" to X-Webhook-Secret: <SHIPPING_WEBHOOK_SECRET>):
+//      { "awb": "AWB123", "current_status": "Delivered", ... }
+//
+// 2. A generic shape, for any other courier you might use instead/as well:
+//      { "awbNumber": "AWB123", "status": "delivered", "note": "..." }
 const STATUS_MAP = {
-  // courier term -> our OrderStatus enum value
-  shipped: 'shipped',
-  dispatched: 'shipped',
-  in_transit: 'shipped',
-  out_for_delivery: 'out_for_delivery',
-  ofd: 'out_for_delivery',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
-  rto: 'cancelled',
-  return_to_origin: 'cancelled',
+  // Shiprocket's actual `current_status` strings (case-insensitive)
+  'pickup scheduled': 'confirmed',
+  'picked up': 'shipped',
+  'in transit': 'shipped',
+  'shipped': 'shipped',
+  'dispatched': 'shipped',
+  'out for delivery': 'out_for_delivery',
+  'out_for_delivery': 'out_for_delivery',
+  'delivered': 'delivered',
+  'cancelled': 'cancelled',
+  'canceled': 'cancelled',
+  'rto initiated': 'cancelled',
+  'rto delivered': 'cancelled',
+  'return to origin': 'cancelled',
+  'lost': 'cancelled',
 };
 
 export const handleShippingWebhook = asyncHandler(async (req, res) => {
@@ -43,17 +54,23 @@ export const handleShippingWebhook = asyncHandler(async (req, res) => {
     throw new Error('Invalid webhook secret');
   }
 
-  const { awbNumber, status, note } = req.body || {};
-  if (!awbNumber || !status) {
+  const body = req.body || {};
+  // Accept either Shiprocket's field names or the generic ones
+  const awbNumber = body.awb || body.awbNumber;
+  const rawStatus = body.current_status || body.status;
+  const note = body.note || (body.current_status ? `Shiprocket: ${body.current_status}` : undefined);
+
+  if (!awbNumber || !rawStatus) {
     res.status(400);
-    throw new Error('awbNumber and status are required');
+    throw new Error('awb/awbNumber and current_status/status are required');
   }
 
-  const mapped = STATUS_MAP[String(status).toLowerCase()];
+  const mapped = STATUS_MAP[String(rawStatus).toLowerCase()];
   if (!mapped) {
     // Unknown status term — acknowledge so the courier doesn't retry
-    // forever, but don't guess at a mapping.
-    return res.json({ ok: true, applied: false, reason: `Unrecognised status "${status}"` });
+    // forever, but don't guess at a mapping. Add it to STATUS_MAP above
+    // once you see what term they're actually sending.
+    return res.json({ ok: true, applied: false, reason: `Unrecognised status "${rawStatus}"` });
   }
 
   const order = await prisma.order.findFirst({ where: { awbNumber } });

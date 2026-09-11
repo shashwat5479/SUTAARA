@@ -1,7 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
-import { createShipment } from '../services/shipping.js';
+import { createShipment, isShiprocketConfigured, getShiprocketLabel } from '../services/shipping.js';
 import { notifyCustomerStatus, notifyOwnerNewOrder } from '../services/notify.js';
 
 const SHIPPING_FREE_ABOVE = 4999;
@@ -271,11 +271,23 @@ export async function applyStatusChange(orderId, status, note = '') {
   }
 
   if (status === 'shipped' && !order.awbNumber) {
-    const shipment = await createShipment(order);
-    data.awbNumber = shipment.awbNumber;
-    data.courierName = shipment.courierName;
-    data.trackingUrl = shipment.trackingUrl;
-    data.estDelivery = shipment.estDelivery;
+    // The plain status dropdown is also used by teams without Shiprocket set
+    // up yet — only auto-create a Shiprocket shipment if it's configured.
+    // Otherwise just mark the order shipped; admin can attach AWB details
+    // later via the dedicated "Ship with Shiprocket" / "Ship manually"
+    // buttons, which call createShipment / save manual details directly.
+    if (isShiprocketConfigured()) {
+      try {
+        const shipment = await createShipment(order);
+        data.awbNumber = shipment.awbNumber;
+        data.courierName = shipment.courierName;
+        data.trackingUrl = shipment.trackingUrl;
+        data.estDelivery = shipment.estDelivery;
+        data.shiprocketShipmentId = shipment.shipmentId;
+      } catch (err) {
+        console.error('[order] Shiprocket auto-ship failed, marking shipped without AWB:', err.message);
+      }
+    }
     data.shippedAt = new Date();
   }
 
@@ -366,4 +378,87 @@ export const requestReturn = asyncHandler(async (req, res) => {
     reason ? `Customer request: ${reason}` : 'Requested by customer'
   );
   res.json(withMongoStyleId(updated));
+});
+
+// GET /api/orders/shiprocket/status — tells the frontend whether Shiprocket
+// is configured so the admin UI can show the right shipping options
+export const getShiprocketStatus = asyncHandler(async (req, res) => {
+  res.json({ configured: isShiprocketConfigured() });
+});
+
+// POST /api/orders/:id/ship/shiprocket (admin/staff)
+// Creates a Shiprocket shipment, assigns the best courier automatically,
+// and saves the AWB + tracking URL so the customer's email includes it.
+export const shipWithShiprocket = asyncHandler(async (req, res) => {
+  const order = await prisma.order.findUnique({
+    where: { id: req.params.id },
+    include: { items: true, user: { select: { id: true, name: true, email: true } } },
+  });
+  if (!order) { res.status(404); throw new Error('Order not found'); }
+  if (order.awbNumber) { res.status(409); throw new Error('This order already has a shipment — cancel it first'); }
+
+  const shipment = await createShipment(order);
+
+  const updated = await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      status: 'shipped',
+      shippedAt: new Date(),
+      awbNumber: shipment.awbNumber,
+      courierName: shipment.courierName,
+      trackingUrl: shipment.trackingUrl,
+      estDelivery: shipment.estDelivery,
+      shiprocketShipmentId: shipment.shipmentId,
+      statusHistory: { create: { status: 'shipped', note: `Shipped via Shiprocket — AWB ${shipment.awbNumber} (${shipment.courierName})` } },
+    },
+    include: { items: true, statusHistory: { orderBy: { createdAt: 'asc' } }, user: { select: { id: true, name: true, email: true } } },
+  });
+
+  try { await notifyCustomerStatus(updated, 'shipped'); } catch (err) { console.error('[ship] notify error:', err.message); }
+
+  res.json(withMongoStyleId(updated));
+});
+
+// POST /api/orders/:id/ship/manual (admin/staff)
+// Admin enters AWB, courier, and tracking URL by hand — used when shipping
+// via a courier that isn't Shiprocket, or when overriding the auto assignment.
+export const shipManually = asyncHandler(async (req, res) => {
+  const { awbNumber, courierName, trackingUrl, estDelivery } = req.body;
+  if (!awbNumber || !courierName) {
+    res.status(400); throw new Error('awbNumber and courierName are required');
+  }
+  const order = await prisma.order.findUnique({
+    where: { id: req.params.id },
+    include: { items: true, user: { select: { id: true, name: true, email: true } } },
+  });
+  if (!order) { res.status(404); throw new Error('Order not found'); }
+
+  const updated = await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      status: 'shipped',
+      shippedAt: new Date(),
+      awbNumber,
+      courierName,
+      trackingUrl: trackingUrl || null,
+      estDelivery: estDelivery ? new Date(estDelivery) : null,
+      statusHistory: { create: { status: 'shipped', note: `Manually shipped — AWB ${awbNumber} (${courierName})` } },
+    },
+    include: { items: true, statusHistory: { orderBy: { createdAt: 'asc' } }, user: { select: { id: true, name: true, email: true } } },
+  });
+
+  try { await notifyCustomerStatus(updated, 'shipped'); } catch (err) { console.error('[ship] notify error:', err.message); }
+
+  res.json(withMongoStyleId(updated));
+});
+
+// POST /api/orders/:id/ship/label (admin/staff)
+// Returns the Shiprocket label PDF URL for printing
+export const getShippingLabelUrl = asyncHandler(async (req, res) => {
+  const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+  if (!order) { res.status(404); throw new Error('Order not found'); }
+  if (!order.shiprocketShipmentId) { res.status(400); throw new Error('No Shiprocket shipment for this order'); }
+  const labelUrl = await getShiprocketLabel(order.shiprocketShipmentId);
+  if (!labelUrl) { res.status(404); throw new Error('Label not yet generated — try again in a few seconds'); }
+  res.json({ labelUrl });
 });
