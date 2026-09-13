@@ -254,7 +254,7 @@ export default function ProductDetail() {
                 )}
 
                 {product.blouseNote && (
-                  <Accordion title="Blouse &amp; Stitching">
+                  <Accordion title="Blouse piece">
                     <p>{product.blouseNote}</p>
                   </Accordion>
                 )}

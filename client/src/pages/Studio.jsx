@@ -5,10 +5,24 @@ import { api } from '../api/client.js';
 import { Check } from '../components/Icons.jsx';
 
 const SERVICES = [
-  { value: 'Draping consultation', label: 'Draping consultation', blurb: 'One-on-one guidance on the drape that suits your saree and occasion.' },
-  { value: 'Custom stitching & fitting', label: 'Custom stitching & fitting', blurb: 'Blouse and suit stitching, tailored to your measurements.' },
-  { value: 'Styling session', label: 'Styling session', blurb: 'Put together a full look — pairing, layering, accessories.' },
-  { value: 'Bridal trial', label: 'Bridal trial', blurb: 'A dedicated trial run for wedding-day looks, in the studio.' },
+  {
+    value: 'Explore the Collection',
+    label: 'Explore the Collection',
+    blurb: 'Visit our studio to discover, feel and shop our latest sarees and handloom collections in person.',
+    num: '01',
+  },
+  {
+    value: 'Saree Draping Consultation',
+    label: 'Saree Draping Consultation',
+    blurb: 'Try different drapes and find the one that works best for your saree, occasion and personal style.',
+    num: '02',
+  },
+  {
+    value: 'Styling Session',
+    label: 'Styling Session',
+    blurb: 'Get personalised suggestions on saree pairing, blouse options, accessories and putting together your complete look.',
+    num: '03',
+  },
 ];
 
 const TIME_SLOTS = ['11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
@@ -43,6 +57,9 @@ export default function Studio() {
     email: user?.email || '',
     service: SERVICES[0].value,
     preferredDate: '',
+    preferredDay: '',
+    preferredMonth: '',
+    preferredYear: '',
     preferredTime: '',
     notes: '',
   });
@@ -172,12 +189,33 @@ export default function Studio() {
       {/* BOOKING FORM */}
       <section className="section--tight" id="book">
         <div className="container">
-          <div className="section-head">
-            <span className="eyebrow">By appointment</span>
-            <h2>Book your studio visit</h2>
-            <hr className="zari zari--short" />
+
+          {/* Intro copy */}
+          <div className="studio-intro">
+            <div className="section-head">
+              <span className="eyebrow">By appointment</span>
+              <h2>Come visit our studio</h2>
+              <hr className="zari zari--short" />
+              <p className="studio-intro__sub">
+                Explore the collection, experience the fabrics and find your perfect look.
+              </p>
+            </div>
+
+            {/* Numbered services — read-only, above the booking form */}
+            <div className="studio-numbered">
+              {SERVICES.map((s) => (
+                <div key={s.value} className="studio-numbered__item">
+                  <span className="studio-numbered__num">{s.num}</span>
+                  <div>
+                    <strong>{s.label}</strong>
+                    <p>{s.blurb}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <form className="checkout" onSubmit={submit}>
+
+          <form className="checkout" onSubmit={submit} style={{ marginTop: 40 }}>
             <div>
               {error && <div className="form-error">{error}</div>}
 
@@ -195,22 +233,62 @@ export default function Studio() {
 
               <div className="checkout__panel">
                 <h3>Pick a date &amp; time</h3>
-                <div className="field__row">
-                  <div className="field">
-                    <label>Date</label>
-                    <input type="date" min={minDate()} value={form.preferredDate} onChange={set('preferredDate')} required />
-                  </div>
-                  <div className="field">
-                    <label>Time slot</label>
-                    <select className="select" value={form.preferredTime} onChange={set('preferredTime')} required>
-                      <option value="" disabled>Choose a time</option>
-                      {TIME_SLOTS.map((t) => (<option key={t} value={t}>{t}</option>))}
+                <div className="field">
+                  <label>Date</label>
+                  <div className="studio-date-row">
+                    <select
+                      className="select"
+                      value={form.preferredDay || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, preferredDay: e.target.value, preferredDate: f.preferredYear && f.preferredMonth ? `${f.preferredYear}-${f.preferredMonth}-${e.target.value}` : '' }))}
+                      required
+                    >
+                      <option value="" disabled>Day</option>
+                      {Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')).map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                    <select
+                      className="select"
+                      value={form.preferredMonth || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, preferredMonth: e.target.value, preferredDate: f.preferredYear && f.preferredDay ? `${f.preferredYear}-${e.target.value}-${f.preferredDay}` : '' }))}
+                      required
+                    >
+                      <option value="" disabled>Month</option>
+                      {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                        <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                      ))}
+                    </select>
+                    <select
+                      className="select"
+                      value={form.preferredYear || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, preferredYear: e.target.value, preferredDate: f.preferredMonth && f.preferredDay ? `${e.target.value}-${f.preferredMonth}-${f.preferredDay}` : '' }))}
+                      required
+                    >
+                      <option value="" disabled>Year</option>
+                      {[new Date().getFullYear(), new Date().getFullYear() + 1].map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
-                <div className="field">
+                <div className="field" style={{ marginTop: 14 }}>
+                  <label>Time slot</label>
+                  <div className="studio-time-grid">
+                    {TIME_SLOTS.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        className={`studio-time-btn ${form.preferredTime === t ? 'active' : ''}`}
+                        onClick={() => setForm((f) => ({ ...f, preferredTime: t }))}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="field" style={{ marginTop: 14 }}>
                   <label>Anything we should know? (optional)</label>
-                  <textarea rows={3} value={form.notes} onChange={set('notes')} />
+                  <textarea className="textarea" rows={3} value={form.notes} onChange={set('notes')} placeholder="e.g. attending a wedding, need help with a Banarasi drape…" />
                 </div>
               </div>
 
@@ -236,10 +314,10 @@ export default function Studio() {
             <div className="summary-card">
               <h3>{event?.title || 'Sutaara Studio'}</h3>
               <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                {event?.subtitle || 'Visit us for a personal draping consultation, a custom fitting, or a full styling session — by appointment.'}
+                {event?.subtitle || 'Visit our studio to experience the Sutaara collection in person. Browse, try and discover your perfect look with personalised styling guidance.'}
               </p>
               <div className="summary-row" style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
-                <span>Location</span><span>{event?.location || 'Lucknow, UP'}</span>
+                <span>Location</span><span>{event?.location || 'Vipul Khand, Gomti Nagar, Lucknow'}</span>
               </div>
               <div className="summary-row">
                 <span>Hours</span><span>{event?.hours || '11 AM – 7 PM'}</span>
