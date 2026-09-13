@@ -913,6 +913,240 @@ function StudioEventTab() {
   );
 }
 
+const RETURN_STATUS_LABELS = {
+  submitted: { label: 'Submitted', color: '#b5762b' },
+  under_review: { label: 'Under Review', color: '#2563eb' },
+  approved: { label: 'Approved', color: '#2f7a45' },
+  rejected: { label: 'Rejected', color: '#b22e2e' },
+  refund_initiated: { label: 'Refund Sent', color: '#7c3aed' },
+  refund_settled: { label: 'Refunded ✓', color: '#15803d' },
+};
+
+const RETURN_CATEGORY_LABELS = {
+  wrong_item: 'Wrong item',
+  damaged: 'Damaged',
+  quality_issue: 'Quality issue',
+  size_issue: 'Size / fit',
+  not_as_described: 'Not as described',
+  other: 'Other',
+};
+
+function ReturnsTab() {
+  const toast = useToast();
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [expanded, setExpanded] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const [rejectForm, setRejectForm] = useState(null); // orderId being rejected
+  const [rejectReason, setRejectReason] = useState('');
+  const [approveNote, setApproveNote] = useState('');
+  const [refundOverride, setRefundOverride] = useState(''); // partial refund amount
+
+  const load = () => {
+    setLoading(true);
+    api.listReturnRequests(filter === 'all' ? undefined : filter)
+      .then(setRequests).catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, [filter]);
+
+  const act = async (fn, successMsg) => {
+    try {
+      const updated = await fn();
+      setRequests((cur) => cur.map((r) => (r.orderId === updated.orderId ? updated : r)));
+      toast(successMsg);
+      setExpanded(null);
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const markReview = (orderId) => { setBusy(orderId); act(() => api.markReturnUnderReview(orderId), 'Marked as under review'); };
+  const approve = (orderId) => { setBusy(orderId); act(() => api.approveReturn(orderId, { adminNote: approveNote || undefined, refundAmount: refundOverride ? Number(refundOverride) : undefined }), 'Return approved — refund initiated if paid online'); };
+  const reject = (orderId) => { setBusy(orderId); act(() => api.rejectReturn(orderId, { rejectedReason: rejectReason, adminNote: rejectReason }), 'Return rejected'); };
+  const refund = (orderId) => { setBusy(orderId); act(() => api.initiateRefund(orderId, { refundAmount: refundOverride ? Number(refundOverride) : undefined }), 'Refund initiated'); };
+  const settle = (orderId) => { setBusy(orderId); act(() => api.markRefundSettled(orderId, { adminNote: 'Manually settled' }), 'Marked as refund settled'); };
+
+  const filters = ['all', 'submitted', 'under_review', 'approved', 'refund_initiated', 'rejected', 'refund_settled'];
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <div>
+      {/* Filter bar */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+        {filters.map((f) => (
+          <button
+            key={f}
+            className={`btn ${filter === f ? 'btn--primary' : 'btn--ghost'}`}
+            style={{ padding: '6px 14px', fontSize: '0.78rem' }}
+            onClick={() => setFilter(f)}
+          >
+            {f === 'all' ? 'All' : RETURN_STATUS_LABELS[f]?.label || f}
+          </button>
+        ))}
+      </div>
+
+      {requests.length === 0 ? (
+        <div className="empty"><h3>No return requests {filter !== 'all' ? `with status "${filter}"` : ''}</h3></div>
+      ) : requests.map((rr) => {
+        const statusInfo = RETURN_STATUS_LABELS[rr.status] || {};
+        const isOpen = expanded === rr.orderId;
+        const order = rr.order;
+        return (
+          <div key={rr.id} className="rr-admin-card">
+            {/* Header row */}
+            <div className="rr-admin-card__head" onClick={() => setExpanded(isOpen ? null : rr.orderId)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                <span
+                  className="pay-badge"
+                  style={{ background: statusInfo.color + '22', color: statusInfo.color }}
+                >
+                  {statusInfo.label}
+                </span>
+                <div>
+                  <strong style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{order?.orderNumber || rr.orderId.slice(-8)}</strong>
+                  <span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem', marginLeft: 10 }}>
+                    {order?.user?.name} · {order?.user?.email}
+                  </span>
+                </div>
+                <span
+                  className="pay-badge pay-badge--na"
+                  style={{ marginLeft: 'auto', fontSize: '0.7rem' }}
+                >
+                  {RETURN_CATEGORY_LABELS[rr.category] || rr.category}
+                </span>
+                <span style={{ color: 'var(--ink-soft)', fontSize: '0.75rem' }}>
+                  {new Date(rr.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <span style={{ color: 'var(--gold)', fontSize: '0.9rem', marginLeft: 12 }}>{isOpen ? '▲' : '▼'}</span>
+            </div>
+
+            {/* Expanded detail */}
+            {isOpen && (
+              <div className="rr-admin-card__body">
+                <div style={{ marginBottom: 16 }}>
+                  <strong>Customer's reason:</strong>
+                  <p style={{ margin: '4px 0 0', color: 'var(--ink-soft)' }}>{rr.reason}</p>
+                  {rr.description && <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--ink-soft)' }}>{rr.description}</p>}
+                </div>
+
+                {/* Photos */}
+                {rr.photos?.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <strong style={{ display: 'block', marginBottom: 8 }}>Photos ({rr.photos.length})</strong>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {rr.photos.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noreferrer">
+                          <img
+                            src={url}
+                            alt={`Return photo ${i + 1}`}
+                            style={{ width: 90, height: 90, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Order items */}
+                {order?.items && (
+                  <div style={{ marginBottom: 16, background: 'var(--ivory-2)', padding: '12px', borderRadius: 6 }}>
+                    <strong style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem' }}>Order items</strong>
+                    {order.items.map((item, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0', borderBottom: '1px solid var(--line)' }}>
+                        <span>{item.name} × {item.qty}</span>
+                        <span>₹{(item.price / 100).toLocaleString('en-IN')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Refund info if applicable */}
+                {rr.refundId && (
+                  <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(124,58,237,0.06)', borderRadius: 6, border: '1px solid rgba(124,58,237,0.2)' }}>
+                    <strong style={{ fontSize: '0.82rem' }}>Refund details</strong>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 4 }}>
+                      ID: {rr.refundId} · Status: {rr.refundStatus}
+                      {rr.refundAmount && ` · Amount: ₹${(rr.refundAmount / 100).toLocaleString('en-IN')}`}
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin note if set */}
+                {rr.adminNote && (
+                  <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
+                    <strong>Admin note:</strong> {rr.adminNote}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+                  {rr.status === 'submitted' && (
+                    <button className="btn btn--ghost" style={{ fontSize: '0.8rem', padding: '7px 14px' }} onClick={() => markReview(rr.orderId)} disabled={busy === rr.orderId}>Mark under review</button>
+                  )}
+                  {['submitted', 'under_review'].includes(rr.status) && (
+                    <>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
+                        <input
+                          className="input"
+                          placeholder="Refund amount override (₹, blank = full)"
+                          value={refundOverride}
+                          onChange={(e) => setRefundOverride(e.target.value)}
+                          style={{ padding: '6px 10px', fontSize: '0.78rem', maxWidth: 240 }}
+                        />
+                        <input
+                          className="input"
+                          placeholder="Admin note to customer (optional)"
+                          value={approveNote}
+                          onChange={(e) => setApproveNote(e.target.value)}
+                          style={{ padding: '6px 10px', fontSize: '0.78rem', maxWidth: 280 }}
+                        />
+                      </div>
+                      <button className="btn btn--gold" style={{ fontSize: '0.8rem', padding: '7px 14px' }} onClick={() => approve(rr.orderId)} disabled={busy === rr.orderId}>
+                        {busy === rr.orderId ? 'Processing…' : 'Approve & refund'}
+                      </button>
+                      {rejectForm === rr.orderId ? (
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', width: '100%', marginTop: 6 }}>
+                          <input
+                            className="input"
+                            placeholder="Reason for rejection (shown to customer)"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                          />
+                          <button className="btn btn--ghost" style={{ fontSize: '0.78rem', padding: '6px 12px', color: '#b22e2e', borderColor: '#b22e2e' }} onClick={() => reject(rr.orderId)} disabled={!rejectReason || busy === rr.orderId}>Confirm reject</button>
+                          <button className="btn btn--ghost" style={{ fontSize: '0.78rem', padding: '6px 10px' }} onClick={() => setRejectForm(null)}>Cancel</button>
+                        </div>
+                      ) : (
+                        <button className="btn btn--ghost" style={{ fontSize: '0.8rem', padding: '7px 14px', color: '#b22e2e', borderColor: '#b22e2e' }} onClick={() => setRejectForm(rr.orderId)}>Reject</button>
+                      )}
+                    </>
+                  )}
+                  {rr.status === 'approved' && order?.razorpayPaymentId && (
+                    <button className="btn btn--primary" style={{ fontSize: '0.8rem', padding: '7px 14px' }} onClick={() => refund(rr.orderId)} disabled={busy === rr.orderId}>
+                      {busy === rr.orderId ? 'Processing…' : 'Initiate Razorpay refund'}
+                    </button>
+                  )}
+                  {['approved', 'refund_initiated'].includes(rr.status) && (
+                    <button className="btn btn--ghost" style={{ fontSize: '0.8rem', padding: '7px 14px' }} onClick={() => settle(rr.orderId)} disabled={busy === rr.orderId}>
+                      Mark manually settled (COD / UPI transfer)
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Admin() {
   const { isContentAdmin, isSuperAdmin, role } = useAuth();
   // Staff see only Orders (+ read-only products). Admins & super-admins get the
@@ -937,6 +1171,9 @@ export default function Admin() {
             )}
             <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
               Orders
+            </button>
+            <button className={tab === 'returns' ? 'active' : ''} onClick={() => setTab('returns')}>
+              Returns
             </button>
             <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
               Studio Appointments
@@ -971,6 +1208,7 @@ export default function Admin() {
           </div>
           {tab === 'products' && isContentAdmin ? <ProductsTab />
             : tab === 'orders' ? <OrdersTab />
+            : tab === 'returns' ? <ReturnsTab />
             : tab === 'appointments' ? <AppointmentsTab />
             : tab === 'event' && isContentAdmin ? <StudioEventTab />
             : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />

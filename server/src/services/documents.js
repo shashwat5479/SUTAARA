@@ -9,8 +9,9 @@ const STORE = {
   name: 'Sutaara',
   tagline: 'Handcrafted Indian Ethnicwear',
   address: process.env.STORE_ADDRESS || 'Lucknow, Uttar Pradesh, India',
-  email: process.env.STORE_EMAIL || 'hello@sutaara.in',
-  // GST is optional — leave STORE_GSTIN unset until the business is registered.
+  email: process.env.STORE_EMAIL || 'support@sutaara.com',
+  phone: process.env.STORE_PHONE || '+91 95696 59272',
+  website: process.env.STORE_WEBSITE || 'www.sutaara.com',
   gstin: process.env.STORE_GSTIN || '',
 };
 
@@ -27,15 +28,26 @@ function pdfToBuffer(doc) {
 }
 
 function header(doc, title) {
-  doc.font('Helvetica-Bold').fontSize(20).fillColor('#7a1f2b').text(STORE.name, { continued: true });
-  doc.font('Helvetica').fontSize(9).fillColor('#555').text(`   ${STORE.tagline}`, { align: 'left' });
-  doc.moveDown(0.2);
-  doc.fontSize(9).fillColor('#555').text(STORE.address);
-  if (STORE.gstin) doc.text(`GSTIN: ${STORE.gstin}`);
-  doc.moveDown(0.6);
+  // Brand block
+  doc.font('Helvetica-Bold').fontSize(22).fillColor('#7a1f2b').text(STORE.name, 50, 50);
+  doc.font('Helvetica').fontSize(8.5).fillColor('#888').text(STORE.tagline, 50, 76);
+
+  // Right-align contact info
+  const rightX = 545;
+  doc.font('Helvetica').fontSize(8).fillColor('#666');
+  doc.text(STORE.address, 300, 50, { width: 245, align: 'right' });
+  doc.text(STORE.email, 300, 62, { width: 245, align: 'right' });
+  doc.text(STORE.website, 300, 74, { width: 245, align: 'right' });
+  if (STORE.gstin) doc.text(`GSTIN: ${STORE.gstin}`, 300, 86, { width: 245, align: 'right' });
+
+  // Gold divider
+  doc.moveDown(0.3);
+  doc.y = 96;
   doc.strokeColor('#d9b45c').lineWidth(1.5).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-  doc.moveDown(0.6);
-  doc.font('Helvetica-Bold').fontSize(14).fillColor('#222').text(title);
+  doc.moveDown(0.8);
+
+  // Document title
+  doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a1a').text(title);
   doc.moveDown(0.4);
 }
 
@@ -96,7 +108,7 @@ export async function buildInvoicePDF(order) {
 
   doc.moveDown(1.2);
   doc.font('Helvetica-Oblique').fontSize(8.5).fillColor('#777')
-    .text('This is a system-generated invoice. For queries write to ' + STORE.email, { align: 'center' });
+    .text(`This is a system-generated invoice. For queries write to ${STORE.email} or visit ${STORE.website}`, { align: 'center' });
 
   return pdfToBuffer(doc);
 }

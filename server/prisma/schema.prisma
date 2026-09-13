@@ -219,6 +219,7 @@ model Order {
   // not every product or order is meant to be returnable (e.g. altered
   // blouse pieces, festive/wedding pieces sold as final sale).
   returnEligible Boolean @default(false)
+  returnRequest  ReturnRequest?
 
   // Razorpay — populated once an online payment is attempted for this order.
   // paymentStatus tracks the payment lifecycle separately from `status`
@@ -432,3 +433,49 @@ model AppKV {
   updatedAt DateTime  @updatedAt
 }
 
+// Full return/refund request — Flipkart-style flow: customer submits with
+// photo evidence → admin reviews → approves/rejects → if approved and paid
+// online: Razorpay refund is initiated automatically and tracked here.
+model ReturnRequest {
+  id      String @id @default(uuid())
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String @unique
+
+  reason      String
+  category    ReturnCategory      @default(other)
+  photos      String[]
+  description String?
+
+  status         ReturnRequestStatus @default(submitted)
+  adminNote      String?
+  rejectedReason String?
+
+  refundId          String?
+  refundStatus      String?
+  refundAmount      Int?
+  refundInitiatedAt DateTime?
+  refundSettledAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+enum ReturnCategory {
+  wrong_item
+  damaged
+  quality_issue
+  size_issue
+  not_as_described
+  other
+}
+
+enum ReturnRequestStatus {
+  submitted
+  under_review
+  approved
+  rejected
+  refund_initiated
+  refund_settled
+}
