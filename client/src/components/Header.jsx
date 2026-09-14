@@ -342,7 +342,7 @@ export default function Header() {
           className="container header__utility"
           onMouseEnter={() => setActiveMega(null)}
         >
-          <span className="header__tagline">Rooted in Craft , Curated for Today</span>
+          <span className="header__tagline">Rooted in Craft. Crafted for Today</span>
           <div className="header__actions">
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
@@ -550,13 +550,14 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className="mmenu__section mmenu__section--plain">
+              <div className="mmenu__section mmenu__section--plain mmenu__section--about">
                 <button
                   type="button"
-                  className="mmenu__about-link"
+                  className="mmenu__label mmenu__label--toggle mmenu__label--about"
                   onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
                 >
                   About Us
+                  <span className="mmenu__about-arrow">↗</span>
                 </button>
               </div>
 
