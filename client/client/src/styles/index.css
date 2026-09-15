@@ -5161,25 +5161,6 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   border-color: var(--gold);
 }
 
-/* ── Mobile menu: About Us button — matches DISCOVER/HELP section labels ── */
-.mmenu__section--about {
-  border-bottom: 1px solid var(--line) !important;
-  padding-bottom: 14px !important;
-}
-.mmenu__label--about {
-  color: var(--gold);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.mmenu__label--about:hover { opacity: 0.75; }
-.mmenu__about-arrow {
-  font-size: 0.9rem;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-
 /* ── Studio page: intro copy + numbered services ─────────────────────── */
 .studio-intro {
   max-width: 640px;
@@ -5438,3 +5419,72 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 .nav__about-btn:hover { color: var(--ink); }
 .nav__about-btn:hover::after { width: 100%; }
+
+/* ── Curated Edits panels (Sutaara Edits page + mega menu) ──────────────── */
+.story-edits {
+  padding: 70px 0 20px;
+  background: #14100d;
+}
+.story-edits__head {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.story-edits__kicker {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-soft, #cdae76);
+  margin-bottom: 10px;
+}
+.story-edits__head h2 {
+  color: #fff;
+  font-size: 1.9rem;
+  margin: 0;
+}
+.story-edits__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.edit-card {
+  display: block;
+  text-decoration: none;
+  background: #1e1813;
+  border: 1px solid rgba(205,174,118,0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.edit-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(205,174,118,0.5);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.edit-card__img {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+}
+.edit-card__body {
+  padding: 22px 22px 24px;
+}
+.edit-card__body h3 {
+  color: #fff;
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+.edit-card__body p {
+  color: rgba(242,233,219,0.72);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+.edit-card__arrow {
+  display: inline-block;
+  color: var(--gold-soft, #cdae76);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+.edit-card:hover .edit-card__arrow { color: #fff; }

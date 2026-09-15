@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { api } from '../api/client.js';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import MegaMenu from './MegaMenu.jsx';
 import AboutPanel from './AboutPanel.jsx';
@@ -49,17 +50,17 @@ const NAV_LEFT = [
           to: '/shop?category=saree',
           panelTitle: 'Sarees by fabric',
           sub: [
-            { label: 'Cotton', to: '/shop?category=saree&fabric=Cotton' },
-            { label: 'Chanderi', to: '/shop?category=saree&fabric=Chanderi' },
-            { label: 'Chiffon', to: '/shop?category=saree&fabric=Chiffon' },
+            { label: 'Cotton',          to: '/shop?category=saree&fabric=Cotton' },
+            { label: 'Chanderi',        to: '/shop?category=saree&fabric=Chanderi' },
+            { label: 'Chiffon',         to: '/shop?category=saree&fabric=Chiffon' },
             { label: 'Crepe Georgette', to: '/shop?category=saree&fabric=Crepe%20Georgette' },
-            { label: 'Silk', to: '/shop?category=saree&fabric=Silk' },
-            { label: 'Linen', to: '/shop?category=saree&fabric=Linen' },
-            { label: 'Tissue', to: '/shop?category=saree&fabric=Tissue' },
-            { label: 'Organza', to: '/shop?category=saree&fabric=Organza' },
-            { label: 'Maheshwari', to: '/shop?category=saree&fabric=Maheshwari' },
-            { label: 'Kota', to: '/shop?category=saree&fabric=Kota' },
-            { label: 'Modal', to: '/shop?category=saree&fabric=Modal' },
+            { label: 'Silk',            to: '/shop?category=saree&fabric=Silk' },
+            { label: 'Linen',           to: '/shop?category=saree&fabric=Linen' },
+            { label: 'Tissue',          to: '/shop?category=saree&fabric=Tissue' },
+            { label: 'Organza',         to: '/shop?category=saree&fabric=Organza' },
+            { label: 'Maheshwari',      to: '/shop?category=saree&fabric=Maheshwari' },
+            { label: 'Kota',            to: '/shop?category=saree&fabric=Kota' },
+            { label: 'Modal',           to: '/shop?category=saree&fabric=Modal' },
           ],
         },
         {
@@ -67,27 +68,27 @@ const NAV_LEFT = [
           to: '/shop?category=suit',
           panelTitle: 'Suits by fabric',
           sub: [
-            { label: 'Cotton', to: '/shop?category=suit&fabric=Cotton' },
-            { label: 'Chanderi', to: '/shop?category=suit&fabric=Chanderi' },
-            { label: 'Corduroy', to: '/shop?category=suit&fabric=Corduroy' },
-            { label: 'Crepe', to: '/shop?category=suit&fabric=Crepe' },
-            { label: 'Silk', to: '/shop?category=suit&fabric=Silk' },
-            { label: 'Linen', to: '/shop?category=suit&fabric=Linen' },
-            { label: 'Modal', to: '/shop?category=suit&fabric=Modal' },
+            { label: 'Cotton',     to: '/shop?category=suit&fabric=Cotton' },
+            { label: 'Chanderi',   to: '/shop?category=suit&fabric=Chanderi' },
+            { label: 'Corduroy',   to: '/shop?category=suit&fabric=Corduroy' },
+            { label: 'Crepe',      to: '/shop?category=suit&fabric=Crepe' },
+            { label: 'Silk',       to: '/shop?category=suit&fabric=Silk' },
+            { label: 'Linen',      to: '/shop?category=suit&fabric=Linen' },
+            { label: 'Modal',      to: '/shop?category=suit&fabric=Modal' },
             { label: 'Maheshwari', to: '/shop?category=suit&fabric=Maheshwari' },
-            { label: 'Kota', to: '/shop?category=suit&fabric=Kota' },
-            { label: 'Velvet', to: '/shop?category=suit&fabric=Velvet' },
-            { label: 'Woollen', to: '/shop?category=suit&fabric=Woollen' },
+            { label: 'Kota',       to: '/shop?category=suit&fabric=Kota' },
+            { label: 'Velvet',     to: '/shop?category=suit&fabric=Velvet' },
+            { label: 'Woollen',    to: '/shop?category=suit&fabric=Woollen' },
           ],
         },
-        { label: 'Blouses', to: '/shop?category=blouse', sub: [] },
-        { label: 'Dupattas', to: '/shop?category=dupatta', sub: [] },
-        { label: 'Potlis & Bags', to: '/shop?category=potli', sub: [] },
-        { label: 'All pieces', to: '/shop', sub: [] },
+        { label: 'Blouses',      to: '/shop?category=blouse', sub: [] },
+        { label: 'Dupattas',     to: '/shop?category=dupatta', sub: [] },
+        { label: 'Potlis & Bags',to: '/shop?category=potli', sub: [] },
+        { label: 'All pieces',   to: '/shop', sub: [] },
         { label: 'New arrivals', to: '/shop?sort=newest', sub: [] },
       ],
       featured: [
-        { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
+        { label: 'New Season',     img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
         { label: 'The Gifting Edit', img: '/products/mustard-turquoise-set-2.jpg', to: '/shop?category=potli' },
       ],
     },
@@ -99,27 +100,34 @@ const NAV_LEFT = [
     mega: {
       columns: [
         {
-          title: 'By category',
+          title: 'By craft',
           links: [
-            { label: 'Sarees', to: '/shop?category=saree' },
-            { label: 'Suit Sets', to: '/shop?category=suit' },
-            { label: 'Blouses', to: '/shop?category=blouse' },
-            { label: 'Dupattas', to: '/shop?category=dupatta' },
-            { label: 'Potli Bags', to: '/shop?category=potli' },
+            { label: 'Patola',           to: '/shop?craft=Patola' },
+            { label: 'Banarasi',         to: '/shop?craft=Banarasi' },
+            { label: 'Kalamkari',        to: '/shop?craft=Kalamkari' },
+            { label: 'Madhubani',        to: '/shop?craft=Madhubani' },
+            { label: 'Leheriya',         to: '/shop?craft=Leheriya' },
+            { label: 'Block Print',      to: '/shop?craft=Block%20Print' },
+            { label: 'Gota Patti',       to: '/shop?craft=Gota%20Patti' },
+            { label: 'Kantha',           to: '/shop?craft=Kantha' },
+            { label: 'Paithani',         to: '/shop?craft=Paithani' },
+            { label: 'Pochampally Ikat', to: '/shop?craft=Pochampally%20Ikat' },
+            { label: 'Hand Embroidery',  to: '/shop?craft=Hand%20Embroidery' },
+            { label: 'Hand Painted',     to: '/shop?craft=Hand%20Painted' },
           ],
         },
         {
           title: 'By occasion',
           links: [
-            { label: 'Wedding', to: '/shop?occasion=Wedding' },
-            { label: 'Festive', to: '/shop?occasion=Festive' },
-            { label: 'Party', to: '/shop?occasion=Party' },
+            { label: 'Wedding',  to: '/shop?occasion=Wedding' },
+            { label: 'Festive',  to: '/shop?occasion=Festive' },
+            { label: 'Party',    to: '/shop?occasion=Party' },
             { label: 'Everyday', to: '/shop?occasion=Everyday' },
           ],
         },
       ],
       featured: [
-        { label: 'New Season', img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
+        { label: 'New Season',   img: '/products/maroon-patola-ikat-1.jpg', to: '/shop?category=saree' },
         { label: 'Everyday Drape', img: '/products/peach-leheriya-organza-1.jpg', to: '/shop?category=saree&occasion=Everyday' },
       ],
     },
@@ -213,6 +221,13 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [curatedEdits, setCuratedEdits] = useState([]);
+
+  // Fetch curated edits once for the Sutaara Edits mega menu — admin-editable
+  // via Admin > Sutaara Edits, so this list updates without any code change.
+  useEffect(() => {
+    api.getCuratedEdits().then(setCuratedEdits).catch(() => {});
+  }, []);
   const [q, setQ] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -396,7 +411,22 @@ export default function Header() {
           onMouseLeave={scheduleClose}
         >
           <MegaMenu
-            menu={activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null}
+            menu={(() => {
+              const found = activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null;
+              if (!found || activeMega !== 'stories' || curatedEdits.length === 0) return found;
+              // Inject the admin-editable curated edits as their own column,
+              // alongside the existing static "From the journal" column.
+              return {
+                ...found,
+                columns: [
+                  ...found.columns,
+                  {
+                    title: 'Sutaara Edits',
+                    links: curatedEdits.map((e) => ({ label: e.title, to: e.link || '/story' })),
+                  },
+                ],
+              };
+            })()}
             onLinkClick={closeMegaOnNav}
             onAction={(action) => { closeMegaOnNav(); if (action === 'about') setAboutOpen(true); }}
           />
@@ -512,20 +542,48 @@ export default function Header() {
                     <SubAccordion label="Sarees" to="/shop?category=saree" onClose={() => setMenuOpen(false)}>
                       <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
                       <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
-                      <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
-                      <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Organza</Link>
                       <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chiffon</Link>
+                      <Link to="/shop?category=saree&fabric=Crepe%20Georgette" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe Georgette</Link>
+                      <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=saree&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
+                      <Link to="/shop?category=saree&fabric=Tissue" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Tissue</Link>
+                      <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Organza</Link>
+                      <Link to="/shop?category=saree&fabric=Maheshwari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Maheshwari</Link>
+                      <Link to="/shop?category=saree&fabric=Kota" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kota</Link>
+                      <Link to="/shop?category=saree&fabric=Modal" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Modal</Link>
                       <Link to="/shop?category=saree" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All sarees →</Link>
                     </SubAccordion>
                     <SubAccordion label="Suits" to="/shop?category=suit" onClose={() => setMenuOpen(false)}>
                       <Link to="/shop?category=suit&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
+                      <Link to="/shop?category=suit&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
+                      <Link to="/shop?category=suit&fabric=Corduroy" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Corduroy</Link>
+                      <Link to="/shop?category=suit&fabric=Crepe" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe</Link>
                       <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=suit&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
+                      <Link to="/shop?category=suit&fabric=Modal" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Modal</Link>
+                      <Link to="/shop?category=suit&fabric=Maheshwari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Maheshwari</Link>
+                      <Link to="/shop?category=suit&fabric=Kota" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kota</Link>
                       <Link to="/shop?category=suit&fabric=Velvet" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Velvet</Link>
+                      <Link to="/shop?category=suit&fabric=Woollen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Woollen</Link>
                       <Link to="/shop?category=suit" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All suits →</Link>
                     </SubAccordion>
                     <Link to="/shop?category=blouse" onClick={() => setMenuOpen(false)}>Blouses</Link>
                     <Link to="/shop?category=dupatta" onClick={() => setMenuOpen(false)}>Dupattas</Link>
                     <Link to="/shop?category=potli" onClick={() => setMenuOpen(false)}>Potlis &amp; Bags</Link>
+                    <SubAccordion label="By Craft" to="/shop" onClose={() => setMenuOpen(false)}>
+                      <Link to="/shop?craft=Patola" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Patola</Link>
+                      <Link to="/shop?craft=Banarasi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Banarasi</Link>
+                      <Link to="/shop?craft=Kalamkari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kalamkari</Link>
+                      <Link to="/shop?craft=Madhubani" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Madhubani</Link>
+                      <Link to="/shop?craft=Leheriya" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Leheriya</Link>
+                      <Link to="/shop?craft=Block%20Print" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Block Print</Link>
+                      <Link to="/shop?craft=Gota%20Patti" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Gota Patti</Link>
+                      <Link to="/shop?craft=Kantha" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kantha</Link>
+                      <Link to="/shop?craft=Paithani" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Paithani</Link>
+                      <Link to="/shop?craft=Pochampally%20Ikat" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Pochampally Ikat</Link>
+                      <Link to="/shop?craft=Hand%20Embroidery" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Hand Embroidery</Link>
+                      <Link to="/shop?craft=Hand%20Painted" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Hand Painted</Link>
+                    </SubAccordion>
                     <Link to="/studio" onClick={() => setMenuOpen(false)}>Book a Studio Appointment</Link>
                   </nav>
                 </div>
@@ -541,23 +599,38 @@ export default function Header() {
                   {openSection === 'discover' ? <Minus /> : <Plus />}
                 </button>
                 <div className="mmenu__panel">
-                  <nav onClick={() => setMenuOpen(false)}>
-                    <Link to="/story">Sutaara Edits</Link>
-                    <Link to="/diaries">Sutaara Diaries</Link>
-                    <Link to="/studio">Visit the Studio</Link>
-                    <Link to="/#care">Care &amp; Keeping</Link>
+                  <nav onClick={(e) => e.target.tagName === 'A' && setMenuOpen(false)}>
+                    {curatedEdits.length > 0 ? (
+                      <SubAccordion label="Sutaara Edits" to="/story" onClose={() => setMenuOpen(false)}>
+                        {curatedEdits.map((edit) => (
+                          <Link
+                            key={edit._id}
+                            to={edit.link || '/story'}
+                            className="mmenu__sub"
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            {edit.title}
+                          </Link>
+                        ))}
+                      </SubAccordion>
+                    ) : (
+                      <Link to="/story" onClick={() => setMenuOpen(false)}>Sutaara Edits</Link>
+                    )}
+                    <Link to="/diaries" onClick={() => setMenuOpen(false)}>Sutaara Diaries</Link>
+                    <Link to="/studio" onClick={() => setMenuOpen(false)}>Visit the Studio</Link>
+                    <Link to="/#care" onClick={() => setMenuOpen(false)}>Care &amp; Keeping</Link>
                   </nav>
                 </div>
               </div>
 
-              <div className="mmenu__section mmenu__section--plain mmenu__section--about">
+              <div className={`mmenu__section ${openSection === 'about' ? 'is-open' : ''}`}>
                 <button
                   type="button"
-                  className="mmenu__label mmenu__label--toggle mmenu__label--about"
+                  className="mmenu__label mmenu__label--toggle"
                   onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
                 >
                   About Us
-                  <span className="mmenu__about-arrow">↗</span>
+                  <span style={{ fontSize: '1.1rem', color: 'var(--gold)', lineHeight: 1 }}>↗</span>
                 </button>
               </div>
 
