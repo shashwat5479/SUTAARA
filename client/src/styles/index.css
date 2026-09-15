@@ -678,6 +678,11 @@ textarea {
      intentional size regardless of how many columns/links are in the menu. */
   display: flex;
   justify-content: flex-start;
+  /* align-items defaults to 'stretch' on a flex row, which was stretching
+     the featured image cards to the full height of the longest text column
+     (e.g. the 12-item "By Craft" list) instead of their intended 150×200
+     card size. Pin everything to the top instead. */
+  align-items: flex-start;
   gap: 72px;
   padding: 36px 0;
 }
@@ -2314,7 +2319,9 @@ textarea {
 }
 .search-panel__input {
   flex: 1;
-  font-family: var(--display);
+  /* Was `var(--display)` (the serif headline font) — stood out against every
+     other input/control on the site, which all use the sans body font. */
+  font-family: var(--body);
   font-size: 1.3rem;
   padding: 8px 4px;
   background: transparent;
@@ -5513,15 +5520,19 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   .ap__body { padding: 44px 22px 48px; }
 }
 
-/* Desktop About Us nav button */
+/* Desktop About Us nav button — explicitly pinned to the same font/size/
+   line-height as `.nav a` (rather than relying on `inherit`), since a
+   <button>'s user-agent defaults for line-height/vertical alignment can
+   still make it render slightly differently from a sibling <a>. */
 .nav__about-btn {
   background: none;
   border: none;
   padding: 4px 0;
   margin: 0;
-  font-family: inherit;
+  font-family: var(--body);
   font-size: 0.8rem;
   font-weight: 400;
+  line-height: normal;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-soft);

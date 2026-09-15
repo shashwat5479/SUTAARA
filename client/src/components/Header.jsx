@@ -361,15 +361,11 @@ export default function Header() {
           className="container header__utility"
           onMouseEnter={() => setActiveMega(null)}
         >
-          <span className="header__tagline">Rooted in Craft. Crafted for Today</span>
+          <span className="header__tagline">Rooted in Craft , Curated for Today</span>
           <div className="header__actions">
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
             </button>
-            <Link className="icon-btn" to={user ? '/account' : '/login'} aria-label="Account">
-              <User />
-              <span className="header__actions-label">{user ? 'Account' : 'Sign in'}</span>
-            </Link>
             <Link className="icon-btn" to="/wishlist" aria-label="Wishlist">
               <Heart />
               <span className="header__actions-label">Wishlist</span>
@@ -678,7 +674,6 @@ export default function Header() {
               </div>
 
               <div className="mmenu__section mmenu__section--plain">
-                <span className="mmenu__label">Account</span>
                 <nav className="mmenu__iconlinks" onClick={() => setMenuOpen(false)}>
                   <button
                     type="button"
