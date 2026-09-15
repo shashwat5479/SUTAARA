@@ -86,19 +86,33 @@ export const deleteExhibitionSlide = asyncHandler(async (req, res) => {
 
 /* ---------------- Curated Edits (Sutaara Edits menu + page) ---------------- */
 
+// Resolves each edit's chosen productIds into real product objects (in the
+// order they were picked), so the storefront can render actual product
+// cards instead of only a link. Cheap no-op when no edit has products.
+async function attachProducts(edits) {
+  const allIds = [...new Set(edits.flatMap((e) => e.productIds || []))];
+  if (allIds.length === 0) return edits.map((e) => ({ ...e, products: [] }));
+  const products = await prisma.product.findMany({ where: { id: { in: allIds } } });
+  const byId = new Map(products.map((p) => [p.id, p]));
+  return edits.map((e) => ({
+    ...e,
+    products: (e.productIds || []).map((id) => byId.get(id)).filter(Boolean),
+  }));
+}
+
 // GET /api/edits — public: active edits in order
 export const getCuratedEdits = asyncHandler(async (req, res) => {
   const edits = await prisma.curatedEdit.findMany({
     where: { active: true },
     orderBy: { order: 'asc' },
   });
-  res.json(withMongoStyleId(edits));
+  res.json(withMongoStyleId(await attachProducts(edits)));
 });
 
 // GET /api/edits/all — admin
 export const getAllCuratedEdits = asyncHandler(async (req, res) => {
   const edits = await prisma.curatedEdit.findMany({ orderBy: { order: 'asc' } });
-  res.json(withMongoStyleId(edits));
+  res.json(withMongoStyleId(await attachProducts(edits)));
 });
 
 const editData = (b) => ({
@@ -106,6 +120,7 @@ const editData = (b) => ({
   description: String(b.description || ''),
   image: String(b.image || ''),
   link: String(b.link || ''),
+  productIds: Array.isArray(b.productIds) ? b.productIds.filter(Boolean) : [],
   order: Number(b.order) || 0,
   active: b.active === undefined ? true : Boolean(b.active),
 });
