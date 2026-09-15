@@ -698,9 +698,19 @@ textarea {
   font-size: 1.05rem;
   color: var(--ink-soft);
   transition: color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .mega__col a:hover {
   color: var(--sindoor);
+}
+.mega__col-sub {
+  font-family: var(--body);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-mute, #9a9089);
 }
 .mega__featured {
   display: flex;
@@ -5161,6 +5171,81 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   border-color: var(--gold);
 }
 
+/* ── Admin: product picker (Sutaara Edits) ───────────────────────────── */
+.picker__results {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.picker__result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.picker__result:last-child { border-bottom: none; }
+.picker__result:disabled { opacity: 0.5; cursor: default; }
+.picker__result:not(:disabled):hover { background: var(--sand, #f7f2ec); }
+.picker__result img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.picker__result-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.picker__add {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.picker__selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.picker__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+.picker__chip img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.picker__chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  padding: 0 2px;
+}
+.picker__chip button:hover { color: var(--sindoor); }
+
 /* ── Mobile menu: About Us button — matches DISCOVER/HELP section labels ── */
 .mmenu__section--about {
   border-bottom: 1px solid var(--line) !important;
@@ -5482,6 +5567,19 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 .edit-card__img {
   height: 160px;
+  background-size: cover;
+  background-position: center;
+}
+.edit-card__products {
+  height: 160px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+.edit-card__products:has(.edit-card__product:nth-child(1):last-child) {
+  grid-template-columns: 1fr;
+}
+.edit-card__product {
   background-size: cover;
   background-position: center;
 }

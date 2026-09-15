@@ -47,13 +47,21 @@ export default function Story() {
             <div className="story-edits__grid">
               {edits.map((edit) => (
                 <Link key={edit._id} to={edit.link || '/story'} className="edit-card">
-                  {edit.image && (
+                  {edit.products?.length > 0 ? (
+                    <div className="edit-card__products">
+                      {edit.products.slice(0, 4).map((p) => (
+                        <div key={p._id || p.id} className="edit-card__product" style={{ backgroundImage: `url(${p.images?.[0] || edit.image})` }} />
+                      ))}
+                    </div>
+                  ) : edit.image && (
                     <div className="edit-card__img" style={{ backgroundImage: `url(${edit.image})` }} />
                   )}
                   <div className="edit-card__body">
                     <h3>{edit.title}</h3>
                     <p>{edit.description}</p>
-                    <span className="edit-card__arrow">Explore →</span>
+                    <span className="edit-card__arrow">
+                      {edit.products?.length > 0 ? `Explore ${edit.products.length} pieces →` : 'Explore →'}
+                    </span>
                   </div>
                 </Link>
               ))}

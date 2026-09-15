@@ -25,7 +25,10 @@ export default function MegaMenu({ menu, onLinkClick }) {
               <ul>
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to}>{link.label}</Link>
+                    <Link to={link.to}>
+                      {link.label}
+                      {link.sub && <span className="mega__col-sub">{link.sub}</span>}
+                    </Link>
                   </li>
                 ))}
               </ul>

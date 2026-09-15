@@ -249,13 +249,14 @@ export function EditsTab() {
         <div className="empty"><h3>No curated edits yet</h3></div>
       ) : (
         <table className="table">
-          <thead><tr><th></th><th>Title</th><th>Description</th><th>Links to</th><th>Order</th><th>Active</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Title</th><th>Description</th><th>Products</th><th>Links to</th><th>Order</th><th>Active</th><th></th></tr></thead>
           <tbody>
             {edits.map((e) => (
               <tr key={e._id}>
                 <td>{e.image ? <img src={e.image} alt="" /> : '—'}</td>
                 <td>{e.title || '—'}</td>
                 <td style={{ maxWidth: 260 }}>{e.description || '—'}</td>
+                <td>{e.products?.length ? `${e.products.length} product${e.products.length === 1 ? '' : 's'}` : '—'}</td>
                 <td style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>{e.link || '—'}</td>
                 <td>{e.order}</td>
                 <td>{e.active ? 'Yes' : 'No'}</td>
@@ -272,9 +273,72 @@ export function EditsTab() {
   );
 }
 
+// Search-and-add picker for attaching multiple products to a curated edit
+// (Founder's picks, Statement Pieces, etc). Shows matching products as the
+// admin types, and the currently-selected products as removable chips.
+function ProductPicker({ selected, onChange }) {
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (!term) { setResults([]); return; }
+    setBusy(true);
+    const t = setTimeout(() => {
+      api.getProducts({ search: term, limit: 8 })
+        .then((r) => setResults(r.products || []))
+        .catch(() => setResults([]))
+        .finally(() => setBusy(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const isSelected = (p) => selected.some((s) => (s._id || s.id) === (p._id || p.id));
+  const add = (p) => { if (!isSelected(p)) onChange([...selected, p]); };
+  const remove = (id) => onChange(selected.filter((s) => (s._id || s.id) !== id));
+
+  return (
+    <div className="field">
+      <label>Products <span style={{ fontWeight: 400, color: 'var(--ink-soft)' }}>— add as many as this edit should feature</span></label>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products by name…" />
+      {busy && <p className="admin-form__legend" style={{ margin: '6px 0 0' }}>Searching…</p>}
+      {results.length > 0 && (
+        <div className="picker__results">
+          {results.map((p) => (
+            <button
+              type="button"
+              key={p._id || p.id}
+              className="picker__result"
+              disabled={isSelected(p)}
+              onClick={() => add(p)}
+            >
+              {p.images?.[0] && <img src={p.images[0]} alt="" />}
+              <span className="picker__result-name">{p.name}</span>
+              <span className="picker__add">{isSelected(p) ? 'Added' : '+ Add'}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {selected.length > 0 && (
+        <div className="picker__selected">
+          {selected.map((p) => (
+            <div key={p._id || p.id} className="picker__chip">
+              {p.images?.[0] && <img src={p.images[0]} alt="" />}
+              <span>{p.name}</span>
+              <button type="button" aria-label={`Remove ${p.name}`} onClick={() => remove(p._id || p.id)}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EditForm({ initial, onCancel, onDone }) {
   const toast = useToast();
   const [form, setForm] = useState(() => initial || { title: '', description: '', image: '', link: '', order: 0, active: true });
+  const [products, setProducts] = useState(() => initial?.products || []);
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
@@ -288,6 +352,7 @@ function EditForm({ initial, onCancel, onDone }) {
         description: form.description.trim(),
         image: form.image,
         link: form.link.trim(),
+        productIds: products.map((p) => p._id || p.id),
         order: Number(form.order) || 0,
         active: !!form.active,
       };
@@ -308,6 +373,7 @@ function EditForm({ initial, onCancel, onDone }) {
       </div>
       <p className="admin-form__legend">Image <span>— optional, shown as a thumbnail in the menu/page.</span></p>
       <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} target={2} />
+      <ProductPicker selected={products} onChange={setProducts} />
       <div className="field"><label>Links to (URL)</label><input value={form.link} onChange={set('link')} placeholder="/shop?edit=founders-picks" /></div>
       <div className="field__row">
         <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>

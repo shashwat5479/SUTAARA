@@ -100,13 +100,20 @@ const NAV_LEFT = [
     mega: {
       columns: [
         {
-          title: 'By category',
+          title: 'By Craft',
           links: [
-            { label: 'Sarees', to: '/shop?category=saree' },
-            { label: 'Suit Sets', to: '/shop?category=suit' },
-            { label: 'Blouses', to: '/shop?category=blouse' },
-            { label: 'Dupattas', to: '/shop?category=dupatta' },
-            { label: 'Potli Bags', to: '/shop?category=potli' },
+            { label: 'Patola', sub: 'Gujarat', to: '/shop?search=Patola' },
+            { label: 'Banarasi', sub: 'Varanasi, Uttar Pradesh', to: '/shop?search=Banarasi' },
+            { label: 'Kalamkari', sub: 'Andhra Pradesh', to: '/shop?search=Kalamkari' },
+            { label: 'Madhubani', sub: 'Bihar', to: '/shop?search=Madhubani' },
+            { label: 'Leheriya', sub: 'Rajasthan', to: '/shop?search=Leheriya' },
+            { label: 'Block Print', sub: 'Rajasthan', to: '/shop?search=Block%20Print' },
+            { label: 'Gota Patti', sub: 'Rajasthan', to: '/shop?search=Gota%20Patti' },
+            { label: 'Kantha', sub: 'West Bengal', to: '/shop?search=Kantha' },
+            { label: 'Paithani', sub: 'Maharashtra', to: '/shop?search=Paithani' },
+            { label: 'Pochampally Ikat', sub: 'Telangana', to: '/shop?search=Pochampally%20Ikat' },
+            { label: 'Hand Embroidery', sub: 'Crafted across India', to: '/shop?search=Hand%20Embroidery' },
+            { label: 'Hand Painted', sub: 'Crafted across India', to: '/shop?search=Hand%20Painted' },
           ],
         },
         {
@@ -535,21 +542,66 @@ export default function Header() {
                     <SubAccordion label="Sarees" to="/shop?category=saree" onClose={() => setMenuOpen(false)}>
                       <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
                       <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
-                      <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
-                      <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Organza</Link>
                       <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chiffon</Link>
+                      <Link to="/shop?category=saree&fabric=Crepe%20Georgette" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe Georgette</Link>
+                      <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=saree&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
+                      <Link to="/shop?category=saree&fabric=Tissue" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Tissue</Link>
+                      <Link to="/shop?category=saree&fabric=Organza" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Organza</Link>
+                      <Link to="/shop?category=saree&fabric=Maheshwari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Maheshwari</Link>
+                      <Link to="/shop?category=saree&fabric=Kota" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kota</Link>
+                      <Link to="/shop?category=saree&fabric=Modal" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Modal</Link>
                       <Link to="/shop?category=saree" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All sarees →</Link>
                     </SubAccordion>
                     <SubAccordion label="Suits" to="/shop?category=suit" onClose={() => setMenuOpen(false)}>
                       <Link to="/shop?category=suit&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
+                      <Link to="/shop?category=suit&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
+                      <Link to="/shop?category=suit&fabric=Corduroy" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Corduroy</Link>
+                      <Link to="/shop?category=suit&fabric=Crepe" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe</Link>
                       <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
+                      <Link to="/shop?category=suit&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
+                      <Link to="/shop?category=suit&fabric=Modal" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Modal</Link>
+                      <Link to="/shop?category=suit&fabric=Maheshwari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Maheshwari</Link>
+                      <Link to="/shop?category=suit&fabric=Kota" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kota</Link>
                       <Link to="/shop?category=suit&fabric=Velvet" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Velvet</Link>
+                      <Link to="/shop?category=suit&fabric=Woollen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Woollen</Link>
                       <Link to="/shop?category=suit" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>All suits →</Link>
                     </SubAccordion>
                     <Link to="/shop?category=blouse" onClick={() => setMenuOpen(false)}>Blouses</Link>
                     <Link to="/shop?category=dupatta" onClick={() => setMenuOpen(false)}>Dupattas</Link>
                     <Link to="/shop?category=potli" onClick={() => setMenuOpen(false)}>Potlis &amp; Bags</Link>
                     <Link to="/studio" onClick={() => setMenuOpen(false)}>Book a Studio Appointment</Link>
+                  </nav>
+                </div>
+              </div>
+
+              <div className={`mmenu__section ${openSection === 'edits' ? 'is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="mmenu__label mmenu__label--toggle"
+                  onClick={() => setOpenSection(openSection === 'edits' ? null : 'edits')}
+                >
+                  Sutaara Edits
+                  {openSection === 'edits' ? <Minus /> : <Plus />}
+                </button>
+                <div className="mmenu__panel">
+                  <nav onClick={(e) => e.target.tagName === 'A' && setMenuOpen(false)}>
+                    {curatedEdits.length > 0 ? (
+                      curatedEdits.map((edit) => (
+                        <Link
+                          key={edit._id}
+                          to={edit.link || '/story'}
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {edit.title}
+                        </Link>
+                      ))
+                    ) : (
+                      <Link to="/story" onClick={() => setMenuOpen(false)}>All Sutaara Edits</Link>
+                    )}
+                    {curatedEdits.length > 0 && (
+                      <Link to="/story" className="mmenu__sub mmenu__sub--all" onClick={() => setMenuOpen(false)}>View all edits →</Link>
+                    )}
                   </nav>
                 </div>
               </div>
@@ -565,22 +617,6 @@ export default function Header() {
                 </button>
                 <div className="mmenu__panel">
                   <nav onClick={(e) => e.target.tagName === 'A' && setMenuOpen(false)}>
-                    {curatedEdits.length > 0 ? (
-                      <SubAccordion label="Sutaara Edits" to="/story" onClose={() => setMenuOpen(false)}>
-                        {curatedEdits.map((edit) => (
-                          <Link
-                            key={edit._id}
-                            to={edit.link || '/story'}
-                            className="mmenu__sub"
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {edit.title}
-                          </Link>
-                        ))}
-                      </SubAccordion>
-                    ) : (
-                      <Link to="/story" onClick={() => setMenuOpen(false)}>Sutaara Edits</Link>
-                    )}
                     <Link to="/diaries" onClick={() => setMenuOpen(false)}>Sutaara Diaries</Link>
                     <Link to="/studio" onClick={() => setMenuOpen(false)}>Visit the Studio</Link>
                     <Link to="/#care" onClick={() => setMenuOpen(false)}>Care &amp; Keeping</Link>
@@ -595,7 +631,7 @@ export default function Header() {
                   onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
                 >
                   About Us
-                  <span className="mmenu__about-arrow">↗</span>
+                  <Plus />
                 </button>
               </div>
 
