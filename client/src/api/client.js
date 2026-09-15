@@ -81,6 +81,17 @@ export const api = {
   shipManually: (id, body) => request(`/orders/${id}/ship/manual`, { method: 'POST', body, auth: true }),
   getShippingLabelUrl: (id) => request(`/orders/${id}/ship/label`, { method: 'POST', auth: true }),
 
+  // Return requests
+  getReturnUploadUrl: () => request('/returns/upload-url', { auth: true }),
+  submitReturnRequest: (orderId, body) => request(`/returns/${orderId}`, { method: 'POST', body, auth: true }),
+  getReturnRequest: (orderId) => request(`/returns/${orderId}`, { auth: true }),
+  listReturnRequests: (status) => request(`/returns${status ? `?status=${status}` : ''}`, { auth: true }),
+  markReturnUnderReview: (orderId) => request(`/returns/${orderId}/review`, { method: 'PATCH', auth: true }),
+  approveReturn: (orderId, body) => request(`/returns/${orderId}/approve`, { method: 'POST', body, auth: true }),
+  rejectReturn: (orderId, body) => request(`/returns/${orderId}/reject`, { method: 'POST', body, auth: true }),
+  initiateRefund: (orderId, body) => request(`/returns/${orderId}/refund`, { method: 'POST', body, auth: true }),
+  markRefundSettled: (orderId, body) => request(`/returns/${orderId}/mark-settled`, { method: 'POST', body, auth: true }),
+
   // Razorpay payments
   getRazorpayKey: () => request('/payments/razorpay/key'),
   createPaymentOrder: (orderId) =>
@@ -158,6 +169,13 @@ export const api = {
   createExhibitionSlide: (body) => request('/exhibition', { method: 'POST', body, auth: true }),
   updateExhibitionSlide: (id, body) => request(`/exhibition/${id}`, { method: 'PUT', body, auth: true }),
   deleteExhibitionSlide: (id) => request(`/exhibition/${id}`, { method: 'DELETE', auth: true }),
+
+  // curated edits (Sutaara Edits menu + page — admin-controlled)
+  getCuratedEdits: () => request('/edits'),
+  getAllCuratedEdits: () => request('/edits/all', { auth: true }),
+  createCuratedEdit: (body) => request('/edits', { method: 'POST', body, auth: true }),
+  updateCuratedEdit: (id, body) => request(`/edits/${id}`, { method: 'PUT', body, auth: true }),
+  deleteCuratedEdit: (id) => request(`/edits/${id}`, { method: 'DELETE', auth: true }),
 
   // announcement bar (admin + super admin)
   getAnnouncement: () => request('/announcement'),

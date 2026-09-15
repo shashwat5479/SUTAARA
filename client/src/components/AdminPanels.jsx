@@ -211,6 +211,118 @@ function ExhibitionForm({ initial, onCancel, onDone }) {
   );
 }
 
+/* ---------------- Sutaara Edits tab (curated edits menu + page) ---------------- */
+export function EditsTab() {
+  const toast = useToast();
+  const [edits, setEdits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    api.getAllCuratedEdits().then(setEdits).catch(() => {}).finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const del = async (e) => {
+    if (!window.confirm(`Delete "${e.title}"?`)) return;
+    try { await api.deleteCuratedEdit(e._id); toast('Edit removed'); load(); }
+    catch (err) { toast(err.message); }
+  };
+
+  if (editing) {
+    return <EditForm initial={editing === 'new' ? null : editing} onCancel={() => setEditing(null)} onDone={() => { setEditing(null); load(); }} />;
+  }
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <p className="admin-form__legend" style={{ marginTop: 0 }}>
+        These show under <strong>Sutaara Edits</strong> in the header menu and on the /story page.
+        <span> Drag order isn't supported yet — set the "Order" number instead (lower shows first).</span>
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+        <span className="shop__count">{edits.length} curated edits</span>
+        <button className="btn btn--primary btn--sm" onClick={() => setEditing('new')}>+ New edit</button>
+      </div>
+      {edits.length === 0 ? (
+        <div className="empty"><h3>No curated edits yet</h3></div>
+      ) : (
+        <table className="table">
+          <thead><tr><th></th><th>Title</th><th>Description</th><th>Links to</th><th>Order</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+            {edits.map((e) => (
+              <tr key={e._id}>
+                <td>{e.image ? <img src={e.image} alt="" /> : '—'}</td>
+                <td>{e.title || '—'}</td>
+                <td style={{ maxWidth: 260 }}>{e.description || '—'}</td>
+                <td style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>{e.link || '—'}</td>
+                <td>{e.order}</td>
+                <td>{e.active ? 'Yes' : 'No'}</td>
+                <td className="table__actions">
+                  <button onClick={() => setEditing(e)}>Edit</button>
+                  <button onClick={() => del(e)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </>
+  );
+}
+
+function EditForm({ initial, onCancel, onDone }) {
+  const toast = useToast();
+  const [form, setForm] = useState(() => initial || { title: '', description: '', image: '', link: '', order: 0, active: true });
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim()) { toast('Add a title'); return; }
+    setBusy(true);
+    try {
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        image: form.image,
+        link: form.link.trim(),
+        order: Number(form.order) || 0,
+        active: !!form.active,
+      };
+      if (initial) await api.updateCuratedEdit(initial._id, payload);
+      else await api.createCuratedEdit(payload);
+      toast('Curated edit saved');
+      onDone();
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  return (
+    <form onSubmit={save} className="checkout__panel admin-form" style={{ maxWidth: 640 }}>
+      <h3>{initial ? 'Edit curated edit' : 'New curated edit'}</h3>
+      <div className="field"><label>Title</label><input value={form.title} onChange={set('title')} placeholder="Founder's picks" /></div>
+      <div className="field">
+        <label>Description</label>
+        <textarea className="textarea" rows={2} value={form.description} onChange={set('description')} placeholder="The pieces we'd reach for first." />
+      </div>
+      <p className="admin-form__legend">Image <span>— optional, shown as a thumbnail in the menu/page.</span></p>
+      <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} target={2} />
+      <div className="field"><label>Links to (URL)</label><input value={form.link} onChange={set('link')} placeholder="/shop?edit=founders-picks" /></div>
+      <div className="field__row">
+        <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>
+        <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <label className="filter-opt"><input type="checkbox" checked={form.active} onChange={set('active')} /> Show on site</label>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save edit'}</button>
+        <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
 /* ---------------- Diaries / Reviews tab ---------------- */
 export function DiariesTab() {
   const toast = useToast();

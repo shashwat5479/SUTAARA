@@ -479,3 +479,18 @@ enum ReturnRequestStatus {
   refund_initiated
   refund_settled
 }
+
+// Curated "edits" shown under Sutaara Edits — Founder's Picks, Statement
+// Pieces, etc. Admin-editable list; each links to a filtered shop view or
+// custom page.
+model CuratedEdit {
+  id          String   @id @default(uuid())
+  title       String   @default("")
+  description String   @default("")
+  image       String   @default("")
+  link        String   @default("")
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

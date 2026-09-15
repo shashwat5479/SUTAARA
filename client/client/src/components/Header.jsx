@@ -3,7 +3,6 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { api } from '../api/client.js';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import MegaMenu from './MegaMenu.jsx';
 import AboutPanel from './AboutPanel.jsx';
@@ -214,13 +213,6 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [curatedEdits, setCuratedEdits] = useState([]);
-
-  // Fetch curated edits once for the Sutaara Edits mega menu — admin-editable
-  // via Admin > Sutaara Edits, so this list updates without any code change.
-  useEffect(() => {
-    api.getCuratedEdits().then(setCuratedEdits).catch(() => {});
-  }, []);
   const [q, setQ] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -404,22 +396,7 @@ export default function Header() {
           onMouseLeave={scheduleClose}
         >
           <MegaMenu
-            menu={(() => {
-              const found = activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null;
-              if (!found || activeMega !== 'stories' || curatedEdits.length === 0) return found;
-              // Inject the admin-editable curated edits as their own column,
-              // alongside the existing static "From the journal" column.
-              return {
-                ...found,
-                columns: [
-                  ...found.columns,
-                  {
-                    title: 'Sutaara Edits',
-                    links: curatedEdits.map((e) => ({ label: e.title, to: e.link || '/story' })),
-                  },
-                ],
-              };
-            })()}
+            menu={activeMega ? [...NAV_LEFT, ...NAV_RIGHT].find((i) => i.key === activeMega)?.mega : null}
             onLinkClick={closeMegaOnNav}
             onAction={(action) => { closeMegaOnNav(); if (action === 'about') setAboutOpen(true); }}
           />
@@ -564,26 +541,11 @@ export default function Header() {
                   {openSection === 'discover' ? <Minus /> : <Plus />}
                 </button>
                 <div className="mmenu__panel">
-                  <nav onClick={(e) => e.target.tagName === 'A' && setMenuOpen(false)}>
-                    {curatedEdits.length > 0 ? (
-                      <SubAccordion label="Sutaara Edits" to="/story" onClose={() => setMenuOpen(false)}>
-                        {curatedEdits.map((edit) => (
-                          <Link
-                            key={edit._id}
-                            to={edit.link || '/story'}
-                            className="mmenu__sub"
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {edit.title}
-                          </Link>
-                        ))}
-                      </SubAccordion>
-                    ) : (
-                      <Link to="/story" onClick={() => setMenuOpen(false)}>Sutaara Edits</Link>
-                    )}
-                    <Link to="/diaries" onClick={() => setMenuOpen(false)}>Sutaara Diaries</Link>
-                    <Link to="/studio" onClick={() => setMenuOpen(false)}>Visit the Studio</Link>
-                    <Link to="/#care" onClick={() => setMenuOpen(false)}>Care &amp; Keeping</Link>
+                  <nav onClick={() => setMenuOpen(false)}>
+                    <Link to="/story">Sutaara Edits</Link>
+                    <Link to="/diaries">Sutaara Diaries</Link>
+                    <Link to="/studio">Visit the Studio</Link>
+                    <Link to="/#care">Care &amp; Keeping</Link>
                   </nav>
                 </div>
               </div>

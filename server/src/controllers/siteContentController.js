@@ -84,6 +84,47 @@ export const deleteExhibitionSlide = asyncHandler(async (req, res) => {
 });
 
 
+/* ---------------- Curated Edits (Sutaara Edits menu + page) ---------------- */
+
+// GET /api/edits — public: active edits in order
+export const getCuratedEdits = asyncHandler(async (req, res) => {
+  const edits = await prisma.curatedEdit.findMany({
+    where: { active: true },
+    orderBy: { order: 'asc' },
+  });
+  res.json(withMongoStyleId(edits));
+});
+
+// GET /api/edits/all — admin
+export const getAllCuratedEdits = asyncHandler(async (req, res) => {
+  const edits = await prisma.curatedEdit.findMany({ orderBy: { order: 'asc' } });
+  res.json(withMongoStyleId(edits));
+});
+
+const editData = (b) => ({
+  title: String(b.title || ''),
+  description: String(b.description || ''),
+  image: String(b.image || ''),
+  link: String(b.link || ''),
+  order: Number(b.order) || 0,
+  active: b.active === undefined ? true : Boolean(b.active),
+});
+
+export const createCuratedEdit = asyncHandler(async (req, res) => {
+  const edit = await prisma.curatedEdit.create({ data: editData(req.body) });
+  res.status(201).json(withMongoStyleId(edit));
+});
+
+export const updateCuratedEdit = asyncHandler(async (req, res) => {
+  const edit = await prisma.curatedEdit.update({ where: { id: req.params.id }, data: editData(req.body) });
+  res.json(withMongoStyleId(edit));
+});
+
+export const deleteCuratedEdit = asyncHandler(async (req, res) => {
+  await prisma.curatedEdit.delete({ where: { id: req.params.id } });
+  res.json({ message: 'Curated edit removed' });
+});
+
 /* ---------------- Announcement bar ---------------- */
 
 // GET /api/announcement — public: the active announcement (or null)

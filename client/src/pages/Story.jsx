@@ -1,15 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SareeStory from '../components/SareeStory.jsx';
+import { api } from '../api/client.js';
 
 // Full "A Saree's Story" experience on a dark, cinematic theme. Reached from
 // the homepage "Discover the Story" button and the Stories menu.
 export default function Story() {
+  const [edits, setEdits] = useState([]);
+
   // Add a class to <body> so the dark theme can extend edge-to-edge behind
   // the header while this page is mounted; removed on unmount.
   useEffect(() => {
     document.body.classList.add('theme-dark-page');
     return () => document.body.classList.remove('theme-dark-page');
+  }, []);
+
+  useEffect(() => {
+    api.getCuratedEdits().then(setEdits).catch(() => {});
   }, []);
 
   return (
@@ -28,6 +35,32 @@ export default function Story() {
           <a href="#story-begins" className="btn btn--gold">Begin the story</a>
         </div>
       </section>
+
+      {/* Curated edits — admin-editable panels */}
+      {edits.length > 0 && (
+        <section className="story-edits" id="edits">
+          <div className="container">
+            <div className="story-edits__head">
+              <span className="story-edits__kicker">Curated for you</span>
+              <h2>Explore the edits</h2>
+            </div>
+            <div className="story-edits__grid">
+              {edits.map((edit) => (
+                <Link key={edit._id} to={edit.link || '/story'} className="edit-card">
+                  {edit.image && (
+                    <div className="edit-card__img" style={{ backgroundImage: `url(${edit.image})` }} />
+                  )}
+                  <div className="edit-card__body">
+                    <h3>{edit.title}</h3>
+                    <p>{edit.description}</p>
+                    <span className="edit-card__arrow">Explore →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* The scroll-driven narrative, on dark */}
       <section className="story-body" id="story-begins">
