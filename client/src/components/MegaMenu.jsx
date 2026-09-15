@@ -1,7 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function MegaMenu({ menu, onLinkClick }) {
+// A column link or featured card can point at a route (`to`) or fire a
+// callback instead (`action`, e.g. opening the About panel). Previously only
+// `to` was handled, so any item with `action` rendered a dead `<Link to=
+// {undefined}>` — clicking "Our story" or "Meet Sutaara" in the About Us
+// menu did nothing. This renders a real button for those and still calls
+// onAction so the parent can react (and onLinkClick still fires via bubbling
+// to close the mega menu).
+function MegaLink({ to, action, onAction, className, children }) {
+  if (action) {
+    return (
+      <button type="button" className={className} onClick={() => onAction?.(action)}>
+        {children}
+      </button>
+    );
+  }
+  return <Link to={to} className={className}>{children}</Link>;
+}
+
+export default function MegaMenu({ menu, onLinkClick, onAction }) {
   if (!menu) return null;
 
   // Flyout mode: a vertical list of categories on the left; hovering one
@@ -25,10 +43,10 @@ export default function MegaMenu({ menu, onLinkClick }) {
               <ul>
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to}>
+                    <MegaLink to={link.to} action={link.action} onAction={onAction}>
                       {link.label}
                       {link.sub && <span className="mega__col-sub">{link.sub}</span>}
-                    </Link>
+                    </MegaLink>
                   </li>
                 ))}
               </ul>
@@ -38,10 +56,16 @@ export default function MegaMenu({ menu, onLinkClick }) {
         {menu.featured?.length > 0 && (
           <div className="mega__featured">
             {menu.featured.map((f) => (
-              <Link key={f.label} to={f.to} className="mega__featured-card">
+              <MegaLink
+                key={f.label}
+                to={f.to}
+                action={f.action}
+                onAction={onAction}
+                className="mega__featured-card"
+              >
                 <img src={f.img} alt={f.label} />
                 <span>{f.label}</span>
-              </Link>
+              </MegaLink>
             ))}
           </div>
         )}

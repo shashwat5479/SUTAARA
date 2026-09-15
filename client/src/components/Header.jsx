@@ -217,7 +217,11 @@ export default function Header() {
   const { user } = useAuth();
   const [floating, setFloating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openSection, setOpenSection] = useState('shop');
+  // Every accordion section (Shop, Sutaara Edits, Discover, Help) starts
+  // collapsed so they all look and behave the same when the drawer opens —
+  // previously Shop defaulted open, which made it look different from the
+  // rest of the menu.
+  const [openSection, setOpenSection] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);

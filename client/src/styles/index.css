@@ -670,9 +670,15 @@ textarea {
   box-shadow: var(--shadow-lg);
 }
 .mega__grid {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 50px;
+  /* Was `display:grid; grid-template-columns: 1fr auto`, which stretched
+     .mega__columns to fill the whole 1fr track even when its own content
+     (e.g. the 2-column "Collection" menu) was much narrower — leaving a
+     large empty gap before the featured images pinned at the far right.
+     Flex sizes each side to its actual content, so the gap stays a fixed,
+     intentional size regardless of how many columns/links are in the menu. */
+  display: flex;
+  justify-content: flex-start;
+  gap: 72px;
   padding: 36px 0;
 }
 .mega__columns {
@@ -693,7 +699,8 @@ textarea {
   flex-direction: column;
   gap: 11px;
 }
-.mega__col a {
+.mega__col a,
+.mega__col button {
   font-family: var(--display);
   font-size: 1.05rem;
   color: var(--ink-soft);
@@ -701,8 +708,15 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
 }
-.mega__col a:hover {
+.mega__col a:hover,
+.mega__col button:hover {
   color: var(--sindoor);
 }
 .mega__col-sub {
@@ -723,6 +737,10 @@ textarea {
   border-radius: var(--radius);
   overflow: hidden;
   display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 .mega__featured-card img {
   width: 100%;
