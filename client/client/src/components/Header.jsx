@@ -217,7 +217,11 @@ export default function Header() {
   const { user } = useAuth();
   const [floating, setFloating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openSection, setOpenSection] = useState('shop');
+  // Every accordion section (Shop, Sutaara Edits, Discover, Help) starts
+  // collapsed so they all look and behave the same when the drawer opens —
+  // previously Shop defaulted open, which made it look different from the
+  // rest of the menu.
+  const [openSection, setOpenSection] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -362,10 +366,6 @@ export default function Header() {
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
             </button>
-            <Link className="icon-btn" to={user ? '/account' : '/login'} aria-label="Account">
-              <User />
-              <span className="header__actions-label">{user ? 'Account' : 'Sign in'}</span>
-            </Link>
             <Link className="icon-btn" to="/wishlist" aria-label="Wishlist">
               <Heart />
               <span className="header__actions-label">Wishlist</span>
@@ -624,15 +624,26 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className="mmenu__section mmenu__section--plain mmenu__section--about">
+              <div className={`mmenu__section ${openSection === 'about' ? 'is-open' : ''}`}>
                 <button
                   type="button"
-                  className="mmenu__label mmenu__label--toggle mmenu__label--about"
-                  onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
+                  className="mmenu__label mmenu__label--toggle"
+                  onClick={() => setOpenSection(openSection === 'about' ? null : 'about')}
                 >
                   About Us
-                  <Plus />
+                  {openSection === 'about' ? <Minus /> : <Plus />}
                 </button>
+                <div className="mmenu__panel">
+                  <nav>
+                    <button
+                      type="button"
+                      className="mmenu__link-btn"
+                      onClick={() => { setMenuOpen(false); setAboutOpen(true); }}
+                    >
+                      Our Story
+                    </button>
+                  </nav>
+                </div>
               </div>
 
               <div className={`mmenu__section ${openSection === 'help' ? 'is-open' : ''}`}>
@@ -674,7 +685,6 @@ export default function Header() {
               </div>
 
               <div className="mmenu__section mmenu__section--plain">
-                <span className="mmenu__label">Account</span>
                 <nav className="mmenu__iconlinks" onClick={() => setMenuOpen(false)}>
                   <button
                     type="button"

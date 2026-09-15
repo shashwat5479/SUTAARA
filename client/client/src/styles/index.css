@@ -670,9 +670,20 @@ textarea {
   box-shadow: var(--shadow-lg);
 }
 .mega__grid {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 50px;
+  /* Was `display:grid; grid-template-columns: 1fr auto`, which stretched
+     .mega__columns to fill the whole 1fr track even when its own content
+     (e.g. the 2-column "Collection" menu) was much narrower — leaving a
+     large empty gap before the featured images pinned at the far right.
+     Flex sizes each side to its actual content, so the gap stays a fixed,
+     intentional size regardless of how many columns/links are in the menu. */
+  display: flex;
+  justify-content: flex-start;
+  /* align-items defaults to 'stretch' on a flex row, which was stretching
+     the featured image cards to the full height of the longest text column
+     (e.g. the 12-item "By Craft" list) instead of their intended 150×200
+     card size. Pin everything to the top instead. */
+  align-items: flex-start;
+  gap: 72px;
   padding: 36px 0;
 }
 .mega__columns {
@@ -693,7 +704,8 @@ textarea {
   flex-direction: column;
   gap: 11px;
 }
-.mega__col a {
+.mega__col a,
+.mega__col button {
   font-family: var(--display);
   font-size: 1.05rem;
   color: var(--ink-soft);
@@ -701,8 +713,15 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
 }
-.mega__col a:hover {
+.mega__col a:hover,
+.mega__col button:hover {
   color: var(--sindoor);
 }
 .mega__col-sub {
@@ -723,6 +742,10 @@ textarea {
   border-radius: var(--radius);
   overflow: hidden;
   display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 .mega__featured-card img {
   width: 100%;
@@ -2224,15 +2247,25 @@ textarea {
   display: flex;
   gap: 10px;
 }
-.mmenu a {
+.mmenu a,
+.mmenu__link-btn {
   font-family: var(--display);
   font-size: 1.32rem;
   padding: 13px 2px;
   border-bottom: 1px solid var(--line);
   color: var(--ink);
   transition: color 0.2s;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  display: block;
 }
-.mmenu a:active {
+.mmenu a:active,
+.mmenu__link-btn:active {
   color: var(--sindoor);
 }
 .mmenu__iconlinks a,
@@ -2243,14 +2276,23 @@ textarea {
   position: relative;
 }
 .mmenu__iconlinks button {
-  background: none;
+  /* Match `.mmenu a` (used by the Wishlist/My Account rows right next to
+     this) instead of resetting to a bare, borderless button — that reset
+     was why Search looked different from Wishlist in the same row group. */
+  font-family: var(--display);
+  font-size: 1.32rem;
+  padding: 13px 2px;
   border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
   cursor: pointer;
   text-align: left;
   width: 100%;
+  transition: color 0.2s;
+}
+.mmenu__iconlinks button:active {
+  color: var(--sindoor);
 }
 .mmenu__iconlinks a svg,
 .mmenu__iconlinks button svg {
@@ -2296,7 +2338,9 @@ textarea {
 }
 .search-panel__input {
   flex: 1;
-  font-family: var(--display);
+  /* Was `var(--display)` (the serif headline font) — stood out against every
+     other input/control on the site, which all use the sans body font. */
+  font-family: var(--body);
   font-size: 1.3rem;
   padding: 8px 4px;
   background: transparent;
@@ -5246,25 +5290,6 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 .picker__chip button:hover { color: var(--sindoor); }
 
-/* ── Mobile menu: About Us button — matches DISCOVER/HELP section labels ── */
-.mmenu__section--about {
-  border-bottom: 1px solid var(--line) !important;
-  padding-bottom: 14px !important;
-}
-.mmenu__label--about {
-  color: var(--gold);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.mmenu__label--about:hover { opacity: 0.75; }
-.mmenu__about-arrow {
-  font-size: 0.9rem;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-
 /* ── Studio page: intro copy + numbered services ─────────────────────── */
 .studio-intro {
   max-width: 640px;
@@ -5495,15 +5520,19 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   .ap__body { padding: 44px 22px 48px; }
 }
 
-/* Desktop About Us nav button */
+/* Desktop About Us nav button — explicitly pinned to the same font/size/
+   line-height as `.nav a` (rather than relying on `inherit`), since a
+   <button>'s user-agent defaults for line-height/vertical alignment can
+   still make it render slightly differently from a sibling <a>. */
 .nav__about-btn {
   background: none;
   border: none;
   padding: 4px 0;
   margin: 0;
-  font-family: inherit;
+  font-family: var(--body);
   font-size: 0.8rem;
   font-weight: 400;
+  line-height: normal;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-soft);
