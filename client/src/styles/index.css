@@ -2247,15 +2247,25 @@ textarea {
   display: flex;
   gap: 10px;
 }
-.mmenu a {
+.mmenu a,
+.mmenu__link-btn {
   font-family: var(--display);
   font-size: 1.32rem;
   padding: 13px 2px;
   border-bottom: 1px solid var(--line);
   color: var(--ink);
   transition: color 0.2s;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  display: block;
 }
-.mmenu a:active {
+.mmenu a:active,
+.mmenu__link-btn:active {
   color: var(--sindoor);
 }
 .mmenu__iconlinks a,
@@ -2266,14 +2276,23 @@ textarea {
   position: relative;
 }
 .mmenu__iconlinks button {
-  background: none;
+  /* Match `.mmenu a` (used by the Wishlist/My Account rows right next to
+     this) instead of resetting to a bare, borderless button — that reset
+     was why Search looked different from Wishlist in the same row group. */
+  font-family: var(--display);
+  font-size: 1.32rem;
+  padding: 13px 2px;
   border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
   cursor: pointer;
   text-align: left;
   width: 100%;
+  transition: color 0.2s;
+}
+.mmenu__iconlinks button:active {
+  color: var(--sindoor);
 }
 .mmenu__iconlinks a svg,
 .mmenu__iconlinks button svg {
@@ -5270,25 +5289,6 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   padding: 0 2px;
 }
 .picker__chip button:hover { color: var(--sindoor); }
-
-/* ── Mobile menu: About Us button — matches DISCOVER/HELP section labels ── */
-.mmenu__section--about {
-  border-bottom: 1px solid var(--line) !important;
-  padding-bottom: 14px !important;
-}
-.mmenu__label--about {
-  color: var(--gold);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.mmenu__label--about:hover { opacity: 0.75; }
-.mmenu__about-arrow {
-  font-size: 0.9rem;
-  color: var(--gold);
-  flex-shrink: 0;
-}
 
 /* ── Studio page: intro copy + numbered services ─────────────────────── */
 .studio-intro {
