@@ -2247,6 +2247,24 @@ textarea {
   display: flex;
   gap: 10px;
 }
+.mmenu .mmenu__reachus-social a {
+  /* Matches the real <Footer> social icons (flat, monochrome, no badge
+     background) instead of the colourful circular icons this used to
+     borrow — those were never actually used by the footer itself. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+.mmenu .mmenu__reachus-social a:hover,
+.mmenu .mmenu__reachus-social a:active {
+  color: var(--ink);
+}
 .mmenu a,
 .mmenu__link-btn {
   font-family: var(--display);
@@ -4742,28 +4760,6 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 
 /* ---------- Footer social ---------- */
 .footer__social { display: flex; gap: 10px; margin-top: 14px; }
-.footer__social-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 6px rgba(20, 14, 12, 0.18);
-}
-.footer__social-icon:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 14px rgba(20, 14, 12, 0.28);
-}
-.footer__social-icon--whatsapp { background: #25d366; }
-.footer__social-icon--email {
-  background: linear-gradient(135deg, #4facfe 0%, #2b7de9 100%);
-}
-.footer__social-icon--instagram {
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
-}
 
 /* ---------- FAQ ---------- */
 .faq { max-width: 760px; margin: 0 auto; }

@@ -579,6 +579,40 @@ export default function Header() {
                 </div>
               </div>
 
+              <div className={`mmenu__section ${openSection === 'collection' ? 'is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="mmenu__label mmenu__label--toggle"
+                  onClick={() => setOpenSection(openSection === 'collection' ? null : 'collection')}
+                >
+                  Collection
+                  {openSection === 'collection' ? <Minus /> : <Plus />}
+                </button>
+                <div className="mmenu__panel">
+                  <nav onClick={(e) => e.target.tagName === 'A' && setMenuOpen(false)}>
+                    <SubAccordion label="By Craft" to="/shop" onClose={() => setMenuOpen(false)}>
+                      <Link to="/shop?search=Patola" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Patola</Link>
+                      <Link to="/shop?search=Banarasi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Banarasi</Link>
+                      <Link to="/shop?search=Kalamkari" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kalamkari</Link>
+                      <Link to="/shop?search=Madhubani" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Madhubani</Link>
+                      <Link to="/shop?search=Leheriya" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Leheriya</Link>
+                      <Link to="/shop?search=Block%20Print" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Block Print</Link>
+                      <Link to="/shop?search=Gota%20Patti" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Gota Patti</Link>
+                      <Link to="/shop?search=Kantha" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Kantha</Link>
+                      <Link to="/shop?search=Paithani" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Paithani</Link>
+                      <Link to="/shop?search=Pochampally%20Ikat" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Pochampally Ikat</Link>
+                      <Link to="/shop?search=Hand%20Embroidery" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Hand Embroidery</Link>
+                      <Link to="/shop?search=Hand%20Painted" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Hand Painted</Link>
+                    </SubAccordion>
+                    <span className="mmenu__reachus-label" style={{ marginTop: 14 }}>By Occasion</span>
+                    <Link to="/shop?occasion=Wedding" onClick={() => setMenuOpen(false)}>Wedding</Link>
+                    <Link to="/shop?occasion=Festive" onClick={() => setMenuOpen(false)}>Festive</Link>
+                    <Link to="/shop?occasion=Party" onClick={() => setMenuOpen(false)}>Party</Link>
+                    <Link to="/shop?occasion=Everyday" onClick={() => setMenuOpen(false)}>Everyday</Link>
+                  </nav>
+                </div>
+              </div>
+
               <div className={`mmenu__section ${openSection === 'edits' ? 'is-open' : ''}`}>
                 <button
                   type="button"
@@ -673,13 +707,13 @@ export default function Header() {
                     <span className="mmenu__reachus-label">Reach Us</span>
                     <p>Lucknow, Uttar Pradesh</p>
                     <div className="mmenu__reachus-social">
-                      <a className="footer__social-icon footer__social-icon--whatsapp" href="https://wa.me/919569659272" target="_blank" rel="noreferrer" aria-label="WhatsApp" title="WhatsApp">
+                      <a href="https://wa.me/919569659272" target="_blank" rel="noreferrer" aria-label="WhatsApp" title="WhatsApp">
                         <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 00-8.5 15.3L2 22l4.8-1.3A10 10 0 1012 2z"/></svg>
                       </a>
-                      <a className="footer__social-icon footer__social-icon--email" href="mailto:care@sutaara.com" aria-label="Email" title="Email">
+                      <a href="mailto:care@sutaara.com" aria-label="Email" title="Email">
                         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                       </a>
-                      <a className="footer__social-icon footer__social-icon--instagram" href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram">
+                      <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram">
                         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                       </a>
                     </div>
