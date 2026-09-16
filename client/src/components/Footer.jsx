@@ -66,16 +66,13 @@ export default function Footer() {
           <a className="social--facebook" href="https://www.facebook.com/share/1EnVSLxVLU/?mibextid=wwXIfr" target="_blank" rel="noreferrer" aria-label="Facebook">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.33l-.53 3.49h-2.8v8.44C19.61 23.08 24 18.09 24 12.07z"/></svg>
           </a>
-          <a className="social--youtube" href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.55A3.02 3.02 0 00.5 6.19 31.56 31.56 0 000 12a31.56 31.56 0 00.5 5.81 3.02 3.02 0 002.12 2.14c1.88.55 9.38.55 9.38.55s7.5 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.56 31.56 0 0024 12a31.56 31.56 0 00-.5-5.81zM9.75 15.27V8.73L15.5 12l-5.75 3.27z"/></svg>
-          </a>
           <a className="social--email" href="mailto:support@sutaara.com" aria-label="Email">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
           </a>
         </div>
 
         <div className="footer__bottom">
-          <span>&copy; {new Date().getFullYear()} Sutaara. Made by hand.</span>
+          <span>&copy; {new Date().getFullYear()} Sutaara </span>
           <span className="deva">सुतारा</span>
         </div>
       </div>

@@ -134,10 +134,10 @@ export default function Home() {
       <section className="trust">
         <div className="container">
           <div className="trust__grid">
-            <div className="trust__item"><strong>Hand-painted</strong><span>Artist-made, never printed twice</span></div>
-            <div className="trust__item"><strong>Pure fabrics</strong><span>Mul cotton, chiffon, Banarasi silk</span></div>
-            <div className="trust__item"><strong>Free shipping</strong><span>On orders above ₹2,999</span></div>
-            <div className="trust__item"><strong>Made in India</strong><span>Lucknow atelier</span></div>
+            <div className="trust__item"><strong>Craft-led pieces -</strong><span> Handloom favourites, artisanal details, and pieces chosen for today</span></div>
+            <div className="trust__item"><strong>Beautifully chosen fabrics- </strong><span>Mul cotton, chiffon, Banarasi silk, and more</span></div>
+            <div className="trust__item"><strong>Free shipping</strong><span>On orders above ₹4,999</span></div>
+            <div className="trust__item"><strong>Made in India</strong><span> Crafted across India, curated at our studio in Lucknow</span></div>
           </div>
         </div>
       </section>
