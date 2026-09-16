@@ -87,13 +87,18 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// GET /api/products/facets — distinct values for building filter UI
+// GET /api/products/facets — distinct values for building filter UI.
+// Accepts an optional ?category= so the sidebar only shows fabrics/occasions/
+// colors that actually exist within that category (previously this always
+// queried the whole catalog, so every category showed the same full list).
 export const getFacets = asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  const where = category ? { category } : {};
   const [fabrics, occasions, colors, agg] = await Promise.all([
-    prisma.product.findMany({ select: { fabric: true }, distinct: ['fabric'] }),
-    prisma.product.findMany({ select: { occasion: true }, distinct: ['occasion'] }),
-    prisma.product.findMany({ select: { color: true }, distinct: ['color'] }),
-    prisma.product.aggregate({ _min: { price: true }, _max: { price: true } }),
+    prisma.product.findMany({ where, select: { fabric: true }, distinct: ['fabric'] }),
+    prisma.product.findMany({ where, select: { occasion: true }, distinct: ['occasion'] }),
+    prisma.product.findMany({ where, select: { color: true }, distinct: ['color'] }),
+    prisma.product.aggregate({ where, _min: { price: true }, _max: { price: true } }),
   ]);
   res.json({
     fabrics: fabrics.map((f) => f.fabric).filter(Boolean).sort(),

@@ -38,8 +38,13 @@ export default function Shop() {
   const maxPrice = params.get('maxPrice') || '';
 
   useEffect(() => {
-    api.getFacets().then(setFacets).catch(() => {});
-  }, []);
+    // Re-fetch whenever the category changes, and scope the query to it —
+    // this was fetching once on mount with no params, so every category
+    // (Saree, Suit, Blouse, Potli...) showed the exact same catalog-wide
+    // fabric list instead of only the fabrics that actually exist in that
+    // category (matching what Shop All shows for "no category selected").
+    api.getFacets({ category }).then(setFacets).catch(() => {});
+  }, [category]);
 
   useEffect(() => {
     setLoading(true);

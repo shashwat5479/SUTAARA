@@ -50,7 +50,7 @@ function qs(params = {}) {
 export const api = {
   // products
   getProducts: (params) => request(`/products${qs(params)}`),
-  getFacets: () => request('/products/facets'),
+  getFacets: (params) => request(`/products/facets${qs(params)}`),
   getProduct: (slug) => request(`/products/${slug}`),
   createProduct: (body) => request('/products', { method: 'POST', body, auth: true }),
   updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body, auth: true }),

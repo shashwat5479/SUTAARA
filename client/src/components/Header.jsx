@@ -366,6 +366,10 @@ export default function Header() {
             <button className="icon-btn" aria-label="Search" onClick={() => setSearchOpen(true)}>
               <Search />
             </button>
+            <Link className="icon-btn" to={user ? '/account' : '/login'} aria-label="Account">
+              <User />
+              <span className="header__actions-label">{user ? 'Account' : 'Sign in'}</span>
+            </Link>
             <Link className="icon-btn" to="/wishlist" aria-label="Wishlist">
               <Heart />
               <span className="header__actions-label">Wishlist</span>
