@@ -8,6 +8,7 @@ import Wishlist from './pages/Wishlist.jsx';
 import Checkout from './pages/Checkout.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx';
 import Login from './pages/Login.jsx';
+import LoginCallback from './pages/LoginCallback.jsx';
 import Register from './pages/Register.jsx';
 import Studio from './pages/Studio.jsx';
 import Story from './pages/Story.jsx';
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="cart" element={<Cart />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="login" element={<Login />} />
+        <Route path="login/callback" element={<LoginCallback />} />
         <Route path="register" element={<Register />} />
         <Route path="studio" element={<Studio />} />
         <Route path="story" element={<Story />} />

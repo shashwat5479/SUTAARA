@@ -60,6 +60,12 @@ export const api = {
   register: (body) => request('/auth/register', { method: 'POST', body }),
   login: (body) => request('/auth/login', { method: 'POST', body }),
   googleLogin: (credential) => request('/auth/google', { method: 'POST', body: { credential } }),
+  // Yahoo/Outlook are full-page OAuth redirects, not fetch calls — this just
+  // resolves the same BASE the rest of the client uses (dev proxy or
+  // VITE_API_URL) so the button can navigate the browser there directly.
+  oauthRedirectUrl: (provider) => `${BASE}/auth/${provider}`,
+  sendPhoneOtp: (phone) => request('/auth/phone/send-otp', { method: 'POST', body: { phone } }),
+  verifyPhoneOtp: (phone, code) => request('/auth/phone/verify-otp', { method: 'POST', body: { phone, code } }),
   verifyEmail: (email, code) => request('/auth/verify-email', { method: 'POST', body: { email, code } }),
   resendCode: (email) => request('/auth/resend-code', { method: 'POST', body: { email } }),
   getMe: () => request('/auth/me', { auth: true }),

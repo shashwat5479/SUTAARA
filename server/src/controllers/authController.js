@@ -5,6 +5,8 @@ import { asyncHandler } from '../middleware/error.js';
 import { signToken } from '../utils/token.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { sendOtpEmail, isConfigured as mailerConfigured } from '../services/mailer.js';
+import { sendOtpSms, isConfigured as smsConfigured } from '../services/sms.js';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 const OTP_TTL_MIN = 10;
@@ -43,6 +45,48 @@ const publicUser = (u) => withMongoStyleId({
 });
 
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
+
+// Public base URL of this server, used to build the exact redirect_uri
+// registered with Yahoo/Microsoft — must match what's configured in their
+// respective developer consoles.
+const SERVER_URL = (process.env.SERVER_URL || 'http://localhost:5000').replace(/\/$/, '');
+// Where to send the browser back to once an OAuth callback finishes —
+// reuses the same var the CORS allowlist is built from.
+const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:5173').split(',')[0].trim();
+
+const YAHOO_CLIENT_ID = process.env.YAHOO_CLIENT_ID;
+const YAHOO_CLIENT_SECRET = process.env.YAHOO_CLIENT_SECRET;
+const YAHOO_REDIRECT_URI = `${SERVER_URL}/api/auth/yahoo/callback`;
+
+const MS_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID;
+const MS_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET;
+const MS_REDIRECT_URI = `${SERVER_URL}/api/auth/outlook/callback`;
+
+// Short-lived, signed "state" param — stands in for a server-side session so
+// the OAuth redirect flow doesn't need cookies. Verifying the signature on
+// the way back is what stops a forged callback (CSRF on the OAuth dance).
+const signState = () => jwt.sign({ n: crypto.randomBytes(8).toString('hex') }, process.env.JWT_SECRET, { expiresIn: '5m' });
+const verifyState = (state) => {
+  try {
+    jwt.verify(state, process.env.JWT_SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Sends the browser back to the frontend with a working session token in
+// the URL — the frontend's /login/callback route picks it up, stores it,
+// and redirects on, mirroring how the Google flow hands the token back via
+// a normal JSON response (this just does it via redirect instead, since
+// there's no page to return JSON to mid-OAuth-dance).
+function redirectWithToken(res, user) {
+  const token = signToken(user.id);
+  res.redirect(`${CLIENT_URL}/login/callback?token=${token}`);
+}
+function redirectWithError(res, message) {
+  res.redirect(`${CLIENT_URL}/login/callback?error=${encodeURIComponent(message)}`);
+}
 
 // POST /api/auth/register
 export const register = asyncHandler(async (req, res) => {
@@ -280,6 +324,273 @@ export const googleLogin = asyncHandler(async (req, res) => {
         },
       });
     }
+  }
+
+  res.json({ user: publicUser(user), token: signToken(user.id) });
+});
+
+// ----- Yahoo Sign-In (standard OAuth2 Authorization Code redirect flow —
+// Yahoo has no client-side JS SDK like Google's, so this is a full-page
+// redirect: browser -> Yahoo consent screen -> our callback -> back to the
+// frontend with a token in the URL). -----
+
+// GET /api/auth/yahoo — kicks off the redirect
+export const yahooAuthUrl = asyncHandler(async (req, res) => {
+  if (!YAHOO_CLIENT_ID) {
+    res.status(501);
+    throw new Error('Yahoo Sign-In is not configured — set YAHOO_CLIENT_ID/YAHOO_CLIENT_SECRET on the server');
+  }
+  const state = signState();
+  const url = new URL('https://api.login.yahoo.com/oauth2/request_auth');
+  url.searchParams.set('client_id', YAHOO_CLIENT_ID);
+  url.searchParams.set('redirect_uri', YAHOO_REDIRECT_URI);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', 'openid email profile');
+  url.searchParams.set('state', state);
+  res.redirect(url.toString());
+});
+
+// GET /api/auth/yahoo/callback
+export const yahooCallback = asyncHandler(async (req, res) => {
+  const { code, state, error: providerError } = req.query;
+  if (providerError) return redirectWithError(res, 'Yahoo sign-in was cancelled');
+  if (!code || !state || !verifyState(state)) {
+    return redirectWithError(res, 'Yahoo sign-in link expired — please try again');
+  }
+
+  try {
+    const basicAuth = Buffer.from(`${YAHOO_CLIENT_ID}:${YAHOO_CLIENT_SECRET}`).toString('base64');
+    const tokenRes = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        redirect_uri: YAHOO_REDIRECT_URI,
+        code,
+      }),
+    });
+    if (!tokenRes.ok) throw new Error('Yahoo token exchange failed');
+    const { access_token } = await tokenRes.json();
+
+    const profileRes = await fetch('https://api.login.yahoo.com/openid/v1/userinfo', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+    if (!profileRes.ok) throw new Error('Could not fetch Yahoo profile');
+    const profile = await profileRes.json();
+
+    if (!profile.email_verified) return redirectWithError(res, 'Your Yahoo email is not verified');
+    const email = profile.email.toLowerCase().trim();
+
+    let user = await prisma.user.findUnique({ where: { yahooId: profile.sub } });
+    if (!user) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      user = existing
+        ? await prisma.user.update({
+            where: { id: existing.id },
+            data: { yahooId: profile.sub, avatar: existing.avatar || profile.picture || '', emailVerified: true },
+          })
+        : await prisma.user.create({
+            data: {
+              name: profile.name || email.split('@')[0],
+              email,
+              yahooId: profile.sub,
+              emailVerified: true,
+              authProvider: 'yahoo',
+              avatar: profile.picture || '',
+            },
+          });
+    }
+    redirectWithToken(res, user);
+  } catch (err) {
+    redirectWithError(res, 'Could not complete Yahoo sign-in — please try again');
+  }
+});
+
+// ----- Microsoft (Outlook) Sign-In — same Authorization Code pattern,
+// against the Microsoft identity platform + Graph API. -----
+
+// GET /api/auth/outlook
+export const outlookAuthUrl = asyncHandler(async (req, res) => {
+  if (!MS_CLIENT_ID) {
+    res.status(501);
+    throw new Error('Outlook Sign-In is not configured — set MICROSOFT_CLIENT_ID/MICROSOFT_CLIENT_SECRET on the server');
+  }
+  const state = signState();
+  const url = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+  url.searchParams.set('client_id', MS_CLIENT_ID);
+  url.searchParams.set('redirect_uri', MS_REDIRECT_URI);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('response_mode', 'query');
+  url.searchParams.set('scope', 'openid email profile User.Read');
+  url.searchParams.set('state', state);
+  res.redirect(url.toString());
+});
+
+// GET /api/auth/outlook/callback
+export const outlookCallback = asyncHandler(async (req, res) => {
+  const { code, state, error: providerError } = req.query;
+  if (providerError) return redirectWithError(res, 'Outlook sign-in was cancelled');
+  if (!code || !state || !verifyState(state)) {
+    return redirectWithError(res, 'Outlook sign-in link expired — please try again');
+  }
+
+  try {
+    const tokenRes = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: MS_CLIENT_ID,
+        client_secret: MS_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        redirect_uri: MS_REDIRECT_URI,
+        code,
+        scope: 'openid email profile User.Read',
+      }),
+    });
+    if (!tokenRes.ok) throw new Error('Microsoft token exchange failed');
+    const { access_token } = await tokenRes.json();
+
+    const profileRes = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+    if (!profileRes.ok) throw new Error('Could not fetch Microsoft profile');
+    const profile = await profileRes.json();
+
+    // Graph's "me" doesn't always fill mail — userPrincipalName is the
+    // reliable fallback for work/school and most personal Outlook accounts.
+    const rawEmail = profile.mail || profile.userPrincipalName;
+    if (!rawEmail) return redirectWithError(res, 'Could not read an email address from your Outlook account');
+    const email = rawEmail.toLowerCase().trim();
+
+    let user = await prisma.user.findUnique({ where: { outlookId: profile.id } });
+    if (!user) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      user = existing
+        ? await prisma.user.update({
+            where: { id: existing.id },
+            data: { outlookId: profile.id, emailVerified: true },
+          })
+        : await prisma.user.create({
+            data: {
+              name: profile.displayName || email.split('@')[0],
+              email,
+              outlookId: profile.id,
+              emailVerified: true,
+              authProvider: 'outlook',
+            },
+          });
+    }
+    redirectWithToken(res, user);
+  } catch (err) {
+    redirectWithError(res, 'Could not complete Outlook sign-in — please try again');
+  }
+});
+
+// ----- Mobile OTP sign-in — mirrors the email-verification OTP flow above,
+// against PhoneOtp instead of EmailOtp. Verifying the code IS the sign-in:
+// there's no separate password step. -----
+
+const normalizePhone = (raw) => (raw || '').replace(/\D/g, '').slice(-10);
+
+// POST /api/auth/phone/send-otp — body: { phone }
+export const sendPhoneOtp = asyncHandler(async (req, res) => {
+  const phone = normalizePhone(req.body.phone);
+  if (phone.length !== 10) {
+    res.status(400);
+    throw new Error('Enter a valid 10-digit mobile number');
+  }
+  if (process.env.NODE_ENV === 'production' && !smsConfigured()) {
+    res.status(503);
+    throw new Error('Mobile sign-in is temporarily unavailable — please continue with email or Google');
+  }
+
+  const recent = await prisma.phoneOtp.findFirst({
+    where: { phone, purpose: 'login' },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (recent && Date.now() - recent.createdAt.getTime() < OTP_RESEND_COOLDOWN_SEC * 1000) {
+    res.status(429);
+    throw new Error(`Please wait ${OTP_RESEND_COOLDOWN_SEC} seconds before requesting another code`);
+  }
+
+  await prisma.phoneOtp.deleteMany({ where: { phone, purpose: 'login' } });
+  const code = makeOtp();
+  await prisma.phoneOtp.create({
+    data: {
+      phone,
+      codeHash: hashOtp(code),
+      purpose: 'login',
+      expiresAt: new Date(Date.now() + OTP_TTL_MIN * 60_000),
+    },
+  });
+  await sendOtpSms(phone, code);
+
+  res.json({ phone, message: `A verification code has been sent to +91 ${phone}` });
+});
+
+// POST /api/auth/phone/verify-otp — body: { phone, code }. Creates the
+// account on first verify (same "create on first sign-in" shape as Google/
+// Yahoo/Outlook above), or logs in an existing one matched by phone.
+export const verifyPhoneOtp = asyncHandler(async (req, res) => {
+  const phone = normalizePhone(req.body.phone);
+  const code = (req.body.code || '').trim();
+  if (phone.length !== 10 || !code) {
+    res.status(400);
+    throw new Error('Phone and code are required');
+  }
+
+  const record = await prisma.phoneOtp.findFirst({
+    where: { phone, purpose: 'login' },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (!record) {
+    res.status(400);
+    throw new Error('No verification pending for this number — request a new code');
+  }
+  if (record.expiresAt < new Date()) {
+    await prisma.phoneOtp.delete({ where: { id: record.id } });
+    res.status(400);
+    throw new Error('That code has expired — request a new one');
+  }
+  if (record.attempts >= OTP_MAX_ATTEMPTS) {
+    await prisma.phoneOtp.delete({ where: { id: record.id } });
+    res.status(429);
+    throw new Error('Too many incorrect attempts — request a new code');
+  }
+
+  const given = Buffer.from(hashOtp(code));
+  const stored = Buffer.from(record.codeHash);
+  const ok = given.length === stored.length && crypto.timingSafeEqual(given, stored);
+  if (!ok) {
+    await prisma.phoneOtp.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
+    res.status(400);
+    throw new Error('That code is not correct');
+  }
+  await prisma.phoneOtp.deleteMany({ where: { phone, purpose: 'login' } });
+
+  let user = await prisma.user.findFirst({ where: { phone } });
+  if (user) {
+    if (!user.phoneVerified) {
+      user = await prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } });
+    }
+  } else {
+    // Phone-first account — email is required by the schema but nobody has
+    // given us a real one yet, so use a placeholder in the same style as
+    // demoLogin's guest accounts. The person can add a real email later
+    // from their account page.
+    user = await prisma.user.create({
+      data: {
+        name: `Customer ${phone.slice(-4)}`,
+        email: `phone-${phone}@sutaara.phone`,
+        phone,
+        phoneVerified: true,
+        authProvider: 'phone',
+        emailVerified: false,
+      },
+    });
   }
 
   res.json({ user: publicUser(user), token: signToken(user.id) });

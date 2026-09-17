@@ -1736,6 +1736,55 @@ textarea {
   display: flex;
   justify-content: center;
 }
+.oauth-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.oauth-btn:hover {
+  border-color: var(--ink-soft);
+  background: var(--cream);
+}
+.phone-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 8px);
+  padding: 0 12px;
+}
+.phone-input__prefix {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+.phone-input input {
+  border: none;
+  padding: 11px 0;
+  flex: 1;
+}
+.phone-input input:focus {
+  outline: none;
+}
 .auth-switch {
   text-align: center;
   font-size: 0.9rem;

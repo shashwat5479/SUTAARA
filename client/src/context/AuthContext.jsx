@@ -54,6 +54,29 @@ export function AuthProvider({ children }) {
     return persist(res);
   }, []);
 
+  // Used by the Yahoo/Outlook OAuth callback page — those flows hand the
+  // token back via a URL redirect (not a fetch response), so there's no
+  // `res` object to persist(); this just fetches the profile with the
+  // token we were given and stores the session the same way.
+  const loginWithToken = useCallback(async (token) => {
+    localStorage.setItem('sutaara_token', token);
+    try {
+      const res = await api.getMe();
+      setUser(res.user);
+      return res.user;
+    } catch (err) {
+      localStorage.removeItem('sutaara_token');
+      throw err;
+    }
+  }, []);
+
+  const sendPhoneOtp = useCallback(async (phone) => api.sendPhoneOtp(phone), []);
+
+  const verifyPhoneOtp = useCallback(async (phone, code) => {
+    const res = await api.verifyPhoneOtp(phone, code);
+    return persist(res);
+  }, []);
+
   // "Fake mail" / demo login — instant session with a generated placeholder
   // email, no password or verification. For quick demos and testing only.
   const loginDemo = useCallback(async () => {
@@ -80,6 +103,9 @@ export function AuthProvider({ children }) {
         login,
         register,
         loginWithGoogle,
+        loginWithToken,
+        sendPhoneOtp,
+        verifyPhoneOtp,
         loginDemo,
         verifyEmail,
         resendCode,

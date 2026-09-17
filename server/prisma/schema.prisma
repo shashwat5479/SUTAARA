@@ -80,12 +80,19 @@ model User {
   password  String?
   // Set only for accounts created/linked through Google Sign-In.
   googleId  String?   @unique
-  authProvider String @default("password") // "password" | "google" | "demo"
+  // Set only for accounts created/linked through Yahoo or Microsoft
+  // (Outlook) Sign-In, mirroring how googleId works above.
+  yahooId   String?   @unique
+  outlookId String?   @unique
+  authProvider String @default("password") // "password" | "google" | "yahoo" | "outlook" | "phone" | "demo"
   // False until the person proves they own the address by entering the code
   // we email them. Google accounts are true immediately — Google has already
   // verified the address. Password accounts cannot log in until this is true,
   // which is what stops sign-ups with addresses the person doesn't own.
   emailVerified Boolean @default(false)
+  // True once the phone number has been proven via OTP (mobile sign-in, or
+  // linking a number to an existing account). Independent of emailVerified.
+  phoneVerified Boolean @default(false)
   avatar    String    @default("")
   role      Role      @default(user)
   phone     String    @default("")
@@ -323,6 +330,22 @@ model EmailOtp {
   createdAt DateTime @default(now())
 
   @@index([email])
+  @@index([expiresAt])
+}
+
+// One-time codes for mobile sign-in, mirroring EmailOtp exactly (hashed
+// code, short expiry, deleted once used). "purpose" leaves room for e.g.
+// "login" vs "link_phone" later without a schema change.
+model PhoneOtp {
+  id        String   @id @default(uuid())
+  phone     String
+  codeHash  String
+  purpose   String   @default("login")
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
   @@index([expiresAt])
 }
 

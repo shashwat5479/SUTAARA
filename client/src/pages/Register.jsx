@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import GoogleButton from '../components/GoogleButton.jsx';
+import OAuthButton from '../components/OAuthButton.jsx';
 import GoogleDetailsStep from '../components/GoogleDetailsStep.jsx';
 import AuthShowcase from '../components/AuthShowcase.jsx';
 import VerifyEmailStep from '../components/VerifyEmailStep.jsx';
@@ -115,6 +116,14 @@ export default function Register() {
           <div className="auth-google">
             <GoogleButton onCredential={handleGoogle} text="signup_with" />
           </div>
+
+          <div className="oauth-row">
+            <OAuthButton provider="yahoo" />
+            <OAuthButton provider="outlook" />
+          </div>
+          <p className="auth-switch" style={{ marginTop: 4 }}>
+            Prefer your phone? <Link to="/login">Sign in with mobile OTP</Link>
+          </p>
 
           {showEmailForm ? (
             <>
