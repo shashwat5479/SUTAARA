@@ -19,6 +19,17 @@ export const listStaff = asyncHandler(async (req, res) => {
   res.json(withMongoStyleId(users));
 });
 
+// GET /api/admin/users/all-accounts — admin+: every registered account,
+// customers included — for the "Accounts" panel. Read-only: no role changes
+// or deletions here, unlike the staff-management endpoints above.
+export const listAllAccounts = asyncHandler(async (req, res) => {
+  const users = await prisma.user.findMany({
+    select: SAFE,
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(withMongoStyleId(users));
+});
+
 // POST /api/admin/users — superadmin: create a staff or admin account
 export const createStaff = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;

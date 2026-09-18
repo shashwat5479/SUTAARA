@@ -63,6 +63,80 @@ async function sendEmail({ to, subject, html, attachments }) {
 
 const money = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
 
+// ----- Studio appointment emails -----
+
+const APPT_STATUS_COPY = {
+  requested: {
+    subject: 'We’ve received your appointment request',
+    line: 'Thank you for booking with Sutaara Studio — we’ve received your request and will confirm shortly.',
+  },
+  confirmed: {
+    subject: 'Your studio appointment is confirmed',
+    line: 'Good news — your studio appointment is confirmed. See you then!',
+  },
+  completed: {
+    subject: 'Thank you for visiting Sutaara Studio',
+    line: 'Thank you for visiting us at the studio — we hope you loved it.',
+  },
+  cancelled: {
+    subject: 'Your studio appointment was cancelled',
+    line: 'Your studio appointment has been cancelled. If this was a mistake, please contact us.',
+  },
+};
+
+function appointmentDetailsHtml(appt) {
+  const dateStr = new Date(appt.preferredDate).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return `
+    <p style="margin:4px 0"><strong>Service:</strong> ${appt.service}</p>
+    <p style="margin:4px 0"><strong>Date:</strong> ${dateStr}</p>
+    <p style="margin:4px 0"><strong>Time:</strong> ${appt.preferredTime}</p>`;
+}
+
+// Sent to the customer right when they submit a booking (status
+// "requested"), and again whenever an admin changes its status.
+export async function notifyCustomerAppointment(appointment, status) {
+  const copy = APPT_STATUS_COPY[status];
+  if (!copy || !appointment.email) return;
+  const html = `
+    <div style="font-family:Georgia,serif;color:#2b211c;max-width:520px">
+      <h2 style="color:#8a1f26">Sutaara Studio</h2>
+      <p>Hi ${appointment.name || 'there'},</p>
+      <p>${copy.line}</p>
+      ${appointmentDetailsHtml(appointment)}
+      <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
+      <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
+    </div>`;
+  await sendEmail({ to: appointment.email, subject: `${copy.subject} · Sutaara`, html });
+}
+
+// Sent to the store owner (admin alert addresses) the moment a new
+// appointment is requested, so it doesn't rely on someone checking the
+// admin panel proactively.
+export async function notifyOwnerNewAppointment(appointment) {
+  const s = await getSettings();
+  if (!s.emailEnabled) return;
+  const dateStr = new Date(appointment.preferredDate).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#2b211c;max-width:520px">
+      <h2>New studio appointment requested</h2>
+      <p><strong>${appointment.service}</strong> — ${dateStr} at ${appointment.preferredTime}</p>
+      <p>Customer: ${appointment.name} (${appointment.email}, ${appointment.phone})</p>
+      ${appointment.notes ? `<p>Notes: ${appointment.notes}</p>` : ''}
+    </div>`;
+  const recipients = [s.alertEmail1, s.alertEmail2, s.alertEmail3].filter(Boolean);
+  await Promise.all(
+    recipients.map((to) => sendEmail({ to, subject: 'New appointment request · Sutaara', html }))
+  );
+}
+
 function orderItemsHtml(order) {
   const rows = (order.items || [])
     .map((i) => `<tr><td style="padding:4px 8px">${i.name}</td><td style="padding:4px 8px">×${i.qty}</td><td style="padding:4px 8px">${money(i.price)}</td></tr>`)

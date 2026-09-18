@@ -7,8 +7,6 @@ import {
   yahooCallback,
   outlookAuthUrl,
   outlookCallback,
-  sendPhoneOtp,
-  verifyPhoneOtp,
   demoLogin,
   verifyEmail,
   resendCode,
@@ -29,8 +27,6 @@ router.get('/yahoo', yahooAuthUrl);
 router.get('/yahoo/callback', yahooCallback);
 router.get('/outlook', outlookAuthUrl);
 router.get('/outlook/callback', outlookCallback);
-router.post('/phone/send-otp', sendPhoneOtp);
-router.post('/phone/verify-otp', verifyPhoneOtp);
 router.post('/demo-login', demoLogin);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-code', resendCode);

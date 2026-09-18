@@ -1,6 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
+import { notifyCustomerAppointment, notifyOwnerNewAppointment } from '../services/notify.js';
 
 export const SERVICES = [
   'Draping consultation',
@@ -22,6 +23,13 @@ export const createAppointment = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Name, phone, email, service, date and time slot are required');
   }
+  // Was accepted as free text before — "sdkjga" and other non-numeric
+  // strings were landing in the admin table where a phone number should be.
+  const digitsOnly = phone.replace(/\D/g, '');
+  if (digitsOnly.length !== 10) {
+    res.status(400);
+    throw new Error('Enter a valid 10-digit phone number');
+  }
   const date = new Date(preferredDate);
   if (Number.isNaN(date.getTime())) {
     res.status(400);
@@ -38,7 +46,7 @@ export const createAppointment = asyncHandler(async (req, res) => {
     data: {
       userId: req.user?.id,
       name,
-      phone,
+      phone: digitsOnly,
       email: email.toLowerCase().trim(),
       service,
       preferredDate: date,
@@ -46,6 +54,11 @@ export const createAppointment = asyncHandler(async (req, res) => {
       notes: notes || '',
     },
   });
+
+  // Fire-and-forget-ish: sendEmail already fails soft (logs and returns on
+  // error), so this never blocks or breaks the booking response.
+  notifyCustomerAppointment(appointment, 'requested').catch(() => {});
+  notifyOwnerNewAppointment(appointment).catch(() => {});
 
   res.status(201).json(withMongoStyleId(appointment));
 });
@@ -80,5 +93,11 @@ export const updateAppointmentStatus = asyncHandler(async (req, res) => {
     where: { id: req.params.id },
     data: { status },
   });
+  // "requested" is only ever sent at creation (createAppointment above) —
+  // every other status change here means the admin acted on it, so let the
+  // customer know.
+  if (status !== 'requested') {
+    notifyCustomerAppointment(appointment, status).catch(() => {});
+  }
   res.json(withMongoStyleId(appointment));
 });
