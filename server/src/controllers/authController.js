@@ -5,7 +5,6 @@ import { asyncHandler } from '../middleware/error.js';
 import { signToken } from '../utils/token.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { sendOtpEmail, isConfigured as mailerConfigured } from '../services/mailer.js';
-import { sendOtpSms, isConfigured as smsConfigured } from '../services/sms.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
@@ -61,6 +60,25 @@ const YAHOO_REDIRECT_URI = `${SERVER_URL}/api/auth/yahoo/callback`;
 const MS_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID;
 const MS_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET;
 const MS_REDIRECT_URI = `${SERVER_URL}/api/auth/outlook/callback`;
+// Azure app registrations default to "single tenant" now, which rejects the
+// /common endpoint entirely (AADSTS50194). Most storefronts want any
+// Outlook/Hotmail/Live personal account, so default to /consumers — but
+// make it configurable, since it must match whatever "Supported account
+// types" was actually picked when the app was registered:
+//   Single tenant                              -> your Directory (tenant) ID
+//   Multi-tenant (work/school accounts)         -> organizations
+//   Multi-tenant + personal Microsoft accounts  -> common
+//   Personal Microsoft accounts only            -> consumers  (default here)
+const MS_TENANT = process.env.MICROSOFT_TENANT_ID || 'consumers';
+const MS_AUTHORIZE_URL = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/authorize`;
+const MS_TOKEN_URL = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/token`;
+
+// Printed once per cold start so the exact redirect URIs — the single most
+// common source of Yahoo/Microsoft sign-in errors (AADSTS50011, "redirect
+// URI mismatch", etc.) — can be copied straight from the server/Vercel
+// function logs instead of guessed at from SERVER_URL by hand.
+console.log('[auth] Yahoo redirect_uri   :', YAHOO_REDIRECT_URI, YAHOO_CLIENT_ID ? '' : '(YAHOO_CLIENT_ID not set — Yahoo sign-in disabled)');
+console.log('[auth] Outlook redirect_uri :', MS_REDIRECT_URI, MS_CLIENT_ID ? `(tenant: ${MS_TENANT})` : '(MICROSOFT_CLIENT_ID not set — Outlook sign-in disabled)');
 
 // Short-lived, signed "state" param — stands in for a server-side session so
 // the OAuth redirect flow doesn't need cookies. Verifying the signature on
@@ -419,7 +437,7 @@ export const outlookAuthUrl = asyncHandler(async (req, res) => {
     throw new Error('Outlook Sign-In is not configured — set MICROSOFT_CLIENT_ID/MICROSOFT_CLIENT_SECRET on the server');
   }
   const state = signState();
-  const url = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+  const url = new URL(MS_AUTHORIZE_URL);
   url.searchParams.set('client_id', MS_CLIENT_ID);
   url.searchParams.set('redirect_uri', MS_REDIRECT_URI);
   url.searchParams.set('response_type', 'code');
@@ -438,7 +456,7 @@ export const outlookCallback = asyncHandler(async (req, res) => {
   }
 
   try {
-    const tokenRes = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    const tokenRes = await fetch(MS_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -487,113 +505,6 @@ export const outlookCallback = asyncHandler(async (req, res) => {
   } catch (err) {
     redirectWithError(res, 'Could not complete Outlook sign-in — please try again');
   }
-});
-
-// ----- Mobile OTP sign-in — mirrors the email-verification OTP flow above,
-// against PhoneOtp instead of EmailOtp. Verifying the code IS the sign-in:
-// there's no separate password step. -----
-
-const normalizePhone = (raw) => (raw || '').replace(/\D/g, '').slice(-10);
-
-// POST /api/auth/phone/send-otp — body: { phone }
-export const sendPhoneOtp = asyncHandler(async (req, res) => {
-  const phone = normalizePhone(req.body.phone);
-  if (phone.length !== 10) {
-    res.status(400);
-    throw new Error('Enter a valid 10-digit mobile number');
-  }
-  if (process.env.NODE_ENV === 'production' && !smsConfigured()) {
-    res.status(503);
-    throw new Error('Mobile sign-in is temporarily unavailable — please continue with email or Google');
-  }
-
-  const recent = await prisma.phoneOtp.findFirst({
-    where: { phone, purpose: 'login' },
-    orderBy: { createdAt: 'desc' },
-  });
-  if (recent && Date.now() - recent.createdAt.getTime() < OTP_RESEND_COOLDOWN_SEC * 1000) {
-    res.status(429);
-    throw new Error(`Please wait ${OTP_RESEND_COOLDOWN_SEC} seconds before requesting another code`);
-  }
-
-  await prisma.phoneOtp.deleteMany({ where: { phone, purpose: 'login' } });
-  const code = makeOtp();
-  await prisma.phoneOtp.create({
-    data: {
-      phone,
-      codeHash: hashOtp(code),
-      purpose: 'login',
-      expiresAt: new Date(Date.now() + OTP_TTL_MIN * 60_000),
-    },
-  });
-  await sendOtpSms(phone, code);
-
-  res.json({ phone, message: `A verification code has been sent to +91 ${phone}` });
-});
-
-// POST /api/auth/phone/verify-otp — body: { phone, code }. Creates the
-// account on first verify (same "create on first sign-in" shape as Google/
-// Yahoo/Outlook above), or logs in an existing one matched by phone.
-export const verifyPhoneOtp = asyncHandler(async (req, res) => {
-  const phone = normalizePhone(req.body.phone);
-  const code = (req.body.code || '').trim();
-  if (phone.length !== 10 || !code) {
-    res.status(400);
-    throw new Error('Phone and code are required');
-  }
-
-  const record = await prisma.phoneOtp.findFirst({
-    where: { phone, purpose: 'login' },
-    orderBy: { createdAt: 'desc' },
-  });
-  if (!record) {
-    res.status(400);
-    throw new Error('No verification pending for this number — request a new code');
-  }
-  if (record.expiresAt < new Date()) {
-    await prisma.phoneOtp.delete({ where: { id: record.id } });
-    res.status(400);
-    throw new Error('That code has expired — request a new one');
-  }
-  if (record.attempts >= OTP_MAX_ATTEMPTS) {
-    await prisma.phoneOtp.delete({ where: { id: record.id } });
-    res.status(429);
-    throw new Error('Too many incorrect attempts — request a new code');
-  }
-
-  const given = Buffer.from(hashOtp(code));
-  const stored = Buffer.from(record.codeHash);
-  const ok = given.length === stored.length && crypto.timingSafeEqual(given, stored);
-  if (!ok) {
-    await prisma.phoneOtp.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
-    res.status(400);
-    throw new Error('That code is not correct');
-  }
-  await prisma.phoneOtp.deleteMany({ where: { phone, purpose: 'login' } });
-
-  let user = await prisma.user.findFirst({ where: { phone } });
-  if (user) {
-    if (!user.phoneVerified) {
-      user = await prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } });
-    }
-  } else {
-    // Phone-first account — email is required by the schema but nobody has
-    // given us a real one yet, so use a placeholder in the same style as
-    // demoLogin's guest accounts. The person can add a real email later
-    // from their account page.
-    user = await prisma.user.create({
-      data: {
-        name: `Customer ${phone.slice(-4)}`,
-        email: `phone-${phone}@sutaara.phone`,
-        phone,
-        phoneVerified: true,
-        authProvider: 'phone',
-        emailVerified: false,
-      },
-    });
-  }
-
-  res.json({ user: publicUser(user), token: signToken(user.id) });
 });
 
 // POST /api/auth/demo-login — creates (or reuses) a throwaway account with a
