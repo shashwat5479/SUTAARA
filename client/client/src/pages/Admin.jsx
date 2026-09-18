@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, DiariesTab, TeamTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -1179,6 +1179,11 @@ export default function Admin() {
               Studio Appointments
             </button>
             {isContentAdmin && (
+              <button className={tab === 'accounts' ? 'active' : ''} onClick={() => setTab('accounts')}>
+                Accounts
+              </button>
+            )}
+            {isContentAdmin && (
               <>
                 <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
                   Studio Event
@@ -1188,6 +1193,9 @@ export default function Admin() {
                 </button>
                 <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
                   Exhibition
+                </button>
+                <button className={tab === 'edits' ? 'active' : ''} onClick={() => setTab('edits')}>
+                  Sutaara Edits
                 </button>
                 <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
                   Diaries / Reviews
@@ -1210,9 +1218,11 @@ export default function Admin() {
             : tab === 'orders' ? <OrdersTab />
             : tab === 'returns' ? <ReturnsTab />
             : tab === 'appointments' ? <AppointmentsTab />
+            : tab === 'accounts' && isContentAdmin ? <AccountsTab />
             : tab === 'event' && isContentAdmin ? <StudioEventTab />
             : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
             : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
+            : tab === 'edits' && isContentAdmin ? <EditsTab />
             : tab === 'diaries' && isContentAdmin ? <DiariesTab />
             : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
             : tab === 'notify' && isContentAdmin ? <NotificationsTab />

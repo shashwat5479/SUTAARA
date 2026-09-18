@@ -50,7 +50,7 @@ function qs(params = {}) {
 export const api = {
   // products
   getProducts: (params) => request(`/products${qs(params)}`),
-  getFacets: () => request('/products/facets'),
+  getFacets: (params) => request(`/products/facets${qs(params)}`),
   getProduct: (slug) => request(`/products/${slug}`),
   createProduct: (body) => request('/products', { method: 'POST', body, auth: true }),
   updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body, auth: true }),
@@ -60,6 +60,12 @@ export const api = {
   register: (body) => request('/auth/register', { method: 'POST', body }),
   login: (body) => request('/auth/login', { method: 'POST', body }),
   googleLogin: (credential) => request('/auth/google', { method: 'POST', body: { credential } }),
+  // Yahoo/Outlook are full-page OAuth redirects, not fetch calls — this just
+  // resolves the same BASE the rest of the client uses (dev proxy or
+  // VITE_API_URL) so the button can navigate the browser there directly.
+  oauthRedirectUrl: (provider) => `${BASE}/auth/${provider}`,
+  sendPhoneOtp: (phone) => request('/auth/phone/send-otp', { method: 'POST', body: { phone } }),
+  verifyPhoneOtp: (phone, code) => request('/auth/phone/verify-otp', { method: 'POST', body: { phone, code } }),
   verifyEmail: (email, code) => request('/auth/verify-email', { method: 'POST', body: { email, code } }),
   resendCode: (email) => request('/auth/resend-code', { method: 'POST', body: { email } }),
   getMe: () => request('/auth/me', { auth: true }),
@@ -170,6 +176,13 @@ export const api = {
   updateExhibitionSlide: (id, body) => request(`/exhibition/${id}`, { method: 'PUT', body, auth: true }),
   deleteExhibitionSlide: (id) => request(`/exhibition/${id}`, { method: 'DELETE', auth: true }),
 
+  // curated edits (Sutaara Edits menu + page — admin-controlled)
+  getCuratedEdits: () => request('/edits'),
+  getAllCuratedEdits: () => request('/edits/all', { auth: true }),
+  createCuratedEdit: (body) => request('/edits', { method: 'POST', body, auth: true }),
+  updateCuratedEdit: (id, body) => request(`/edits/${id}`, { method: 'PUT', body, auth: true }),
+  deleteCuratedEdit: (id) => request(`/edits/${id}`, { method: 'DELETE', auth: true }),
+
   // announcement bar (admin + super admin)
   getAnnouncement: () => request('/announcement'),
   getAllAnnouncements: () => request('/announcement/all', { auth: true }),
@@ -181,6 +194,7 @@ export const api = {
 
   // team / staff accounts (super admin only)
   getStaff: () => request('/admin/users', { auth: true }),
+  getAllAccounts: () => request('/admin/users/all-accounts', { auth: true }),
   createStaffAccount: (body) => request('/admin/users', { method: 'POST', body, auth: true }),
   changeStaffRole: (id, role) => request(`/admin/users/${id}/role`, { method: 'PUT', body: { role }, auth: true }),
   resetStaffPassword: (id, password) => request(`/admin/users/${id}/password`, { method: 'PUT', body: { password }, auth: true }),
