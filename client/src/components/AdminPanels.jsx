@@ -589,6 +589,82 @@ export function TeamTab() {
   );
 }
 
+/* ---------------- Accounts tab (admin + super admin, read-only) ----------------
+   Every registered account — customers included, not just staff/admin like
+   the Team tab above. This is "who has signed up / logged in", for support
+   lookups; it doesn't manage roles or passwords. */
+export function AccountsTab() {
+  const toast = useToast();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState('');
+
+  useEffect(() => {
+    api.getAllAccounts().then(setUsers).catch((e) => toast(e.message)).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const filtered = users.filter((u) => {
+    const s = q.trim().toLowerCase();
+    if (!s) return true;
+    return [u.name, u.email, u.phone].some((v) => (v || '').toLowerCase().includes(s));
+  });
+
+  const PROVIDER_LABEL = {
+    password: 'Email & password',
+    google: 'Google',
+    yahoo: 'Yahoo',
+    outlook: 'Outlook',
+    phone: 'Mobile OTP',
+    demo: 'Demo',
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, gap: 12, flexWrap: 'wrap' }}>
+        <span className="shop__count">{filtered.length} of {users.length} accounts</span>
+        <input
+          className="select"
+          style={{ maxWidth: 260 }}
+          placeholder="Search name, email or phone…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Signed up with</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((u) => (
+            <tr key={u._id}>
+              <td>{u.name}</td>
+              <td>{u.email}</td>
+              <td>{u.phone || '—'}</td>
+              <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
+              <td>{PROVIDER_LABEL[u.authProvider] || u.authProvider}</td>
+              <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+            </tr>
+          ))}
+          {filtered.length === 0 && (
+            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--ink-soft)' }}>No accounts match "{q}"</td></tr>
+          )}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 /* ---------------- Announcement bar tab (admin + super admin) ---------------- */
 export function AnnouncementTab() {
   const toast = useToast();

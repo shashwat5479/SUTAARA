@@ -7,7 +7,6 @@ import OAuthButton from '../components/OAuthButton.jsx';
 import GoogleDetailsStep from '../components/GoogleDetailsStep.jsx';
 import AuthShowcase from '../components/AuthShowcase.jsx';
 import VerifyEmailStep from '../components/VerifyEmailStep.jsx';
-import PhoneLoginStep from '../components/PhoneLoginStep.jsx';
 
 export default function Login() {
   const { login, loginWithGoogle, loginDemo, updateProfile } = useAuth();
@@ -28,9 +27,6 @@ export default function Login() {
   // option) is the primary path in. Existing password accounts (e.g. the
   // admin login) can still get to it here.
   const [showEmailForm, setShowEmailForm] = useState(false);
-  // Mobile-OTP is its own step, tucked away the same way as the email form —
-  // picking it swaps the whole card over to PhoneLoginStep.
-  const [showPhoneForm, setShowPhoneForm] = useState(false);
 
   const goAfterLogin = (user) => {
     toast(`Welcome back, ${user.name.split(' ')[0]}`);
@@ -113,8 +109,6 @@ export default function Login() {
           onSave={saveDetails}
           onSkip={() => goAfterLogin(pendingUser)}
         />
-      ) : showPhoneForm ? (
-        <PhoneLoginStep onVerified={goAfterLogin} onCancel={() => setShowPhoneForm(false)} />
       ) : (
         <div className="auth-wrap">
           <h1>Sign in</h1>
@@ -128,13 +122,6 @@ export default function Login() {
           <div className="oauth-row">
             <OAuthButton provider="yahoo" />
             <OAuthButton provider="outlook" />
-            <button type="button" className="oauth-btn" onClick={() => setShowPhoneForm(true)}>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <rect x="7" y="2" width="10" height="20" rx="2" />
-                <path d="M11 18h2" strokeLinecap="round" />
-              </svg>
-              <span>Continue with mobile OTP</span>
-            </button>
           </div>
 
           {showEmailForm ? (
