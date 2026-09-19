@@ -243,6 +243,52 @@ function ProductForm({ initial, onDone, onCancel }) {
   );
 }
 
+// Inline-editable stock count for the products table — lets an admin update
+// how many units are in stock without opening the full edit form, and shows
+// at a glance which products are low/out of stock.
+function StockCell({ product, onSaved }) {
+  const toast = useToast();
+  const [value, setValue] = useState(product.stock);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setValue(product.stock), [product.stock]);
+
+  const commit = async () => {
+    const n = Math.max(0, Number(value) || 0);
+    setValue(n);
+    if (n === product.stock) return;
+    setSaving(true);
+    try {
+      const updated = await api.updateProduct(product._id, { stock: n });
+      onSaved(updated);
+    } catch (err) {
+      toast(err.message);
+      setValue(product.stock); // revert on failure
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const status =
+    product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : 'ok';
+
+  return (
+    <div className={`stock-cell stock-cell--${status}`}>
+      <input
+        type="number"
+        min="0"
+        value={value}
+        disabled={saving}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+      />
+      {status === 'out' && <span className="stock-cell__badge">Out of stock</span>}
+      {status === 'low' && <span className="stock-cell__badge">Low stock</span>}
+    </div>
+  );
+}
+
 function ProductsTab() {
   const toast = useToast();
   const [products, setProducts] = useState([]);
@@ -286,7 +332,14 @@ function ProductsTab() {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-        <span className="shop__count">{products.length} products</span>
+        <span className="shop__count">
+          {products.length} products
+          {products.some((p) => p.stock === 0) && (
+            <span style={{ color: 'var(--sindoor)', fontWeight: 600, marginLeft: 10 }}>
+              · {products.filter((p) => p.stock === 0).length} out of stock
+            </span>
+          )}
+        </span>
         <button className="btn btn--primary btn--sm" onClick={() => setEditing('new')}>
           + New product
         </button>
@@ -312,7 +365,14 @@ function ProductsTab() {
                 <td>{p.name}</td>
                 <td style={{ textTransform: 'capitalize' }}>{p.category}</td>
                 <td>{inr(p.price)}</td>
-                <td>{p.stock}</td>
+                <td>
+                  <StockCell
+                    product={p}
+                    onSaved={(updated) =>
+                      setProducts((prev) => prev.map((x) => (x._id === updated._id ? updated : x)))
+                    }
+                  />
+                </td>
                 <td className="table__actions">
                   <button onClick={() => setEditing(p)}>Edit</button>
                   <button onClick={() => del(p)}>Delete</button>

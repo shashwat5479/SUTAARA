@@ -64,8 +64,6 @@ export const api = {
   // resolves the same BASE the rest of the client uses (dev proxy or
   // VITE_API_URL) so the button can navigate the browser there directly.
   oauthRedirectUrl: (provider) => `${BASE}/auth/${provider}`,
-  sendPhoneOtp: (phone) => request('/auth/phone/send-otp', { method: 'POST', body: { phone } }),
-  verifyPhoneOtp: (phone, code) => request('/auth/phone/verify-otp', { method: 'POST', body: { phone, code } }),
   verifyEmail: (email, code) => request('/auth/verify-email', { method: 'POST', body: { email, code } }),
   resendCode: (email) => request('/auth/resend-code', { method: 'POST', body: { email } }),
   getMe: () => request('/auth/me', { auth: true }),
@@ -194,6 +192,7 @@ export const api = {
 
   // team / staff accounts (super admin only)
   getStaff: () => request('/admin/users', { auth: true }),
+  getAllAccounts: () => request('/admin/users/all-accounts', { auth: true }),
   createStaffAccount: (body) => request('/admin/users', { method: 'POST', body, auth: true }),
   changeStaffRole: (id, role) => request(`/admin/users/${id}/role`, { method: 'PUT', body: { role }, auth: true }),
   resetStaffPassword: (id, password) => request(`/admin/users/${id}/password`, { method: 'PUT', body: { password }, auth: true }),
