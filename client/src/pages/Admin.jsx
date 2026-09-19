@@ -1223,71 +1223,83 @@ export default function Admin() {
       </div>
       <section className="section--tight">
         <div className="container">
-          <div className="admin-tabs">
-            {isContentAdmin && (
-              <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
-                Products
+          <div className="admin-layout">
+            <nav className="admin-tabs">
+              {isContentAdmin && (
+                <>
+                  <span className="admin-tabs__label">Catalog</span>
+                  <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
+                    Products
+                  </button>
+                </>
+              )}
+              <span className="admin-tabs__label">Sales</span>
+              <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
+                Orders
               </button>
-            )}
-            <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
-              Orders
-            </button>
-            <button className={tab === 'returns' ? 'active' : ''} onClick={() => setTab('returns')}>
-              Returns
-            </button>
-            <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
-              Studio Appointments
-            </button>
-            {isContentAdmin && (
-              <button className={tab === 'accounts' ? 'active' : ''} onClick={() => setTab('accounts')}>
-                Accounts
+              <button className={tab === 'returns' ? 'active' : ''} onClick={() => setTab('returns')}>
+                Returns
               </button>
-            )}
-            {isContentAdmin && (
-              <>
-                <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
-                  Studio Event
-                </button>
-                <button className={tab === 'hero' ? 'active' : ''} onClick={() => setTab('hero')}>
-                  Hero Panel
-                </button>
-                <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
-                  Exhibition
-                </button>
-                <button className={tab === 'edits' ? 'active' : ''} onClick={() => setTab('edits')}>
-                  Sutaara Edits
-                </button>
-                <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
-                  Diaries / Reviews
-                </button>
-                <button className={tab === 'announce' ? 'active' : ''} onClick={() => setTab('announce')}>
-                  Announcement
-                </button>
-                <button className={tab === 'notify' ? 'active' : ''} onClick={() => setTab('notify')}>
-                  Notifications
-                </button>
-              </>
-            )}
-            {isSuperAdmin && (
-              <button className={tab === 'team' ? 'active' : ''} onClick={() => setTab('team')}>
-                Team
+              <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
+                Studio Appointments
               </button>
-            )}
+              {isContentAdmin && (
+                <button className={tab === 'accounts' ? 'active' : ''} onClick={() => setTab('accounts')}>
+                  Accounts
+                </button>
+              )}
+              {isContentAdmin && (
+                <>
+                  <span className="admin-tabs__label">Site content</span>
+                  <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
+                    Studio Event
+                  </button>
+                  <button className={tab === 'hero' ? 'active' : ''} onClick={() => setTab('hero')}>
+                    Hero Panel
+                  </button>
+                  <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
+                    Exhibition
+                  </button>
+                  <button className={tab === 'edits' ? 'active' : ''} onClick={() => setTab('edits')}>
+                    Sutaara Edits
+                  </button>
+                  <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
+                    Diaries / Reviews
+                  </button>
+                  <button className={tab === 'announce' ? 'active' : ''} onClick={() => setTab('announce')}>
+                    Announcement
+                  </button>
+                  <button className={tab === 'notify' ? 'active' : ''} onClick={() => setTab('notify')}>
+                    Notifications
+                  </button>
+                </>
+              )}
+              {isSuperAdmin && (
+                <>
+                  <span className="admin-tabs__label">Team</span>
+                  <button className={tab === 'team' ? 'active' : ''} onClick={() => setTab('team')}>
+                    Team
+                  </button>
+                </>
+              )}
+            </nav>
+            <div className="admin-content">
+              {tab === 'products' && isContentAdmin ? <ProductsTab />
+                : tab === 'orders' ? <OrdersTab />
+                : tab === 'returns' ? <ReturnsTab />
+                : tab === 'appointments' ? <AppointmentsTab />
+                : tab === 'accounts' && isContentAdmin ? <AccountsTab />
+                : tab === 'event' && isContentAdmin ? <StudioEventTab />
+                : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
+                : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
+                : tab === 'edits' && isContentAdmin ? <EditsTab />
+                : tab === 'diaries' && isContentAdmin ? <DiariesTab />
+                : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
+                : tab === 'notify' && isContentAdmin ? <NotificationsTab />
+                : tab === 'team' && isSuperAdmin ? <TeamTab />
+                : <OrdersTab />}
+            </div>
           </div>
-          {tab === 'products' && isContentAdmin ? <ProductsTab />
-            : tab === 'orders' ? <OrdersTab />
-            : tab === 'returns' ? <ReturnsTab />
-            : tab === 'appointments' ? <AppointmentsTab />
-            : tab === 'accounts' && isContentAdmin ? <AccountsTab />
-            : tab === 'event' && isContentAdmin ? <StudioEventTab />
-            : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
-            : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
-            : tab === 'edits' && isContentAdmin ? <EditsTab />
-            : tab === 'diaries' && isContentAdmin ? <DiariesTab />
-            : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
-            : tab === 'notify' && isContentAdmin ? <NotificationsTab />
-            : tab === 'team' && isSuperAdmin ? <TeamTab />
-            : <OrdersTab />}
         </div>
       </section>
     </>
