@@ -23,11 +23,24 @@ export function CartProvider({ children }) {
     localStorage.setItem(KEY, JSON.stringify(items));
   }, [items]);
 
+  // Returns 'ok', 'capped' (added but hit the stock limit), or 'none' (already
+  // at the limit, nothing added) so callers can toast the right message —
+  // this cart previously had zero awareness of stock at all, so it was
+  // possible to add e.g. 4 of something with only 1 unit in stock.
   const add = useCallback((product, qty = 1) => {
+    const stock = product.stock ?? Infinity;
+    let result = 'ok';
     setItems((cur) => {
       const found = cur.find((i) => i._id === product._id);
+      const currentQty = found ? found.qty : 0;
+      if (currentQty >= stock) {
+        result = 'none';
+        return cur;
+      }
+      const nextQty = Math.min(currentQty + qty, stock);
+      if (nextQty < currentQty + qty) result = 'capped';
       if (found) {
-        return cur.map((i) => (i._id === product._id ? { ...i, qty: i.qty + qty } : i));
+        return cur.map((i) => (i._id === product._id ? { ...i, qty: nextQty, stock } : i));
       }
       return [
         ...cur,
@@ -39,18 +52,20 @@ export function CartProvider({ children }) {
           fabric: product.fabric,
           image: product.images?.[0] || '',
           price: product.price,
-          qty,
+          qty: nextQty,
+          stock,
         },
       ];
     });
     // Don't auto-open the cart drawer — just show the toast
     // setOpen(true);
+    return result;
   }, []);
 
   const setQty = useCallback((id, qty) => {
     setItems((cur) =>
       cur
-        .map((i) => (i._id === id ? { ...i, qty: Math.max(1, qty) } : i))
+        .map((i) => (i._id === id ? { ...i, qty: Math.max(1, Math.min(qty, i.stock ?? Infinity)) } : i))
         .filter((i) => i.qty > 0)
     );
   }, []);

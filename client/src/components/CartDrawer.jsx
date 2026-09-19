@@ -49,10 +49,17 @@ export default function CartDrawer() {
                         <Minus width="14" height="14" />
                       </button>
                       <span>{i.qty}</span>
-                      <button aria-label="Increase" onClick={() => setQty(i._id, i.qty + 1)}>
+                      <button
+                        aria-label="Increase"
+                        disabled={i.stock != null && i.qty >= i.stock}
+                        onClick={() => setQty(i._id, i.qty + 1)}
+                      >
                         <Plus width="14" height="14" />
                       </button>
                     </div>
+                    {i.stock != null && i.qty >= i.stock && (
+                      <div className="line-item__stock-note">Only {i.stock} in stock</div>
+                    )}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div className="price-now">{inr(i.price * i.qty)}</div>

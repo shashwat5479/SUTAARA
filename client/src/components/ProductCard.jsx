@@ -11,14 +11,19 @@ export default function ProductCard({ product }) {
   const toast = useToast();
   const off = discountPct(product.mrp, product.price);
   const wished = has(product._id);
+  const outOfStock = product.stock === 0;
 
   return (
-    <article className="card">
+    <article className={`card ${outOfStock ? 'card--oos' : ''}`}>
       <div className="card__media">
         <Link to={`/product/${product.slug}`}>
           <img src={product.images?.[0]} alt={product.name} loading="lazy" />
         </Link>
-        {product.isNewArrival && <span className="card__tag">New</span>}
+        {outOfStock ? (
+          <span className="card__tag card__tag--oos">Out of Stock</span>
+        ) : (
+          product.isNewArrival && <span className="card__tag">New</span>
+        )}
         <button
           className={`card__wish ${wished ? 'active' : ''}`}
           aria-label={wished ? 'Remove from wishlist' : 'Save to wishlist'}
@@ -32,12 +37,15 @@ export default function ProductCard({ product }) {
         <div className="card__quick">
           <button
             className="btn btn--gold btn--block btn--sm"
+            disabled={outOfStock}
             onClick={() => {
-              add(product, 1);
-              toast('Added to bag');
+              const result = add(product, 1);
+              if (result === 'none') toast(`Only ${product.stock} in stock — already in your bag`);
+              else if (result === 'capped') toast(`Only ${product.stock} in stock — added what's available`);
+              else toast('Added to bag');
             }}
           >
-            Add to bag
+            {outOfStock ? 'Out of Stock' : 'Add to bag'}
           </button>
         </div>
       </div>

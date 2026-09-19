@@ -912,6 +912,21 @@ textarea {
   padding: 5px 10px;
   border-radius: 2px;
 }
+.card__tag--oos {
+  background: var(--ink);
+  color: var(--ivory);
+}
+/* Out-of-stock card: fade the image and disable the quick-add button so it
+   reads clearly without needing to open the product page. */
+.card--oos .card__media img {
+  opacity: 0.55;
+}
+.card--oos .card__quick .btn:disabled {
+  background: var(--ink-soft);
+  border-color: var(--ink-soft);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
 .card__wish {
   position: absolute;
   top: 10px;
@@ -1478,6 +1493,13 @@ textarea {
   color: var(--ink-soft);
   margin-bottom: 22px;
 }
+.pdp__stock {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: -10px 0 18px;
+}
+.pdp__stock--out { color: var(--sindoor); }
+.pdp__stock--low { color: var(--gold); }
 .wa-btn {
   display: inline-flex;
   align-items: center;
@@ -1618,6 +1640,11 @@ textarea {
   font-size: 0.78rem;
   text-decoration: underline;
   padding: 0;
+}
+.line-item__stock-note {
+  font-size: 0.72rem;
+  color: var(--sindoor);
+  margin-top: 4px;
 }
 .summary-row {
   display: flex;
@@ -2053,6 +2080,30 @@ textarea {
   object-fit: cover;
   border-radius: 3px;
 }
+.stock-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stock-cell input {
+  width: 64px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.86rem;
+  text-align: center;
+}
+.stock-cell--out input { border-color: var(--sindoor); color: var(--sindoor); }
+.stock-cell--low input { border-color: var(--gold); color: var(--gold-deep, var(--gold)); }
+.stock-cell__badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.stock-cell--out .stock-cell__badge { color: var(--sindoor); }
+.stock-cell--low .stock-cell__badge { color: var(--gold); }
 .table__actions button {
   border: 0;
   background: none;

@@ -390,13 +390,13 @@ export const yahooCallback = asyncHandler(async (req, res) => {
         code,
       }),
     });
-    if (!tokenRes.ok) throw new Error('Yahoo token exchange failed');
+    if (!tokenRes.ok) throw new Error(`Yahoo token exchange failed (${tokenRes.status}): ${await tokenRes.text()}`);
     const { access_token } = await tokenRes.json();
 
     const profileRes = await fetch('https://api.login.yahoo.com/openid/v1/userinfo', {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-    if (!profileRes.ok) throw new Error('Could not fetch Yahoo profile');
+    if (!profileRes.ok) throw new Error(`Could not fetch Yahoo profile (${profileRes.status}): ${await profileRes.text()}`);
     const profile = await profileRes.json();
 
     if (!profile.email_verified) return redirectWithError(res, 'Your Yahoo email is not verified');
@@ -423,6 +423,10 @@ export const yahooCallback = asyncHandler(async (req, res) => {
     }
     redirectWithToken(res, user);
   } catch (err) {
+    // Was swallowed silently before — the redirect page only ever showed a
+    // generic message with no way to know why (bad client secret? scope not
+    // granted? token exchange rejected?). Now it's in the server logs.
+    console.error('[auth] Yahoo callback failed:', err);
     redirectWithError(res, 'Could not complete Yahoo sign-in — please try again');
   }
 });
@@ -468,13 +472,13 @@ export const outlookCallback = asyncHandler(async (req, res) => {
         scope: 'openid email profile User.Read',
       }),
     });
-    if (!tokenRes.ok) throw new Error('Microsoft token exchange failed');
+    if (!tokenRes.ok) throw new Error(`Microsoft token exchange failed (${tokenRes.status}): ${await tokenRes.text()}`);
     const { access_token } = await tokenRes.json();
 
     const profileRes = await fetch('https://graph.microsoft.com/v1.0/me', {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-    if (!profileRes.ok) throw new Error('Could not fetch Microsoft profile');
+    if (!profileRes.ok) throw new Error(`Could not fetch Microsoft profile (${profileRes.status}): ${await profileRes.text()}`);
     const profile = await profileRes.json();
 
     // Graph's "me" doesn't always fill mail — userPrincipalName is the
@@ -503,6 +507,7 @@ export const outlookCallback = asyncHandler(async (req, res) => {
     }
     redirectWithToken(res, user);
   } catch (err) {
+    console.error('[auth] Outlook callback failed:', err);
     redirectWithError(res, 'Could not complete Outlook sign-in — please try again');
   }
 });

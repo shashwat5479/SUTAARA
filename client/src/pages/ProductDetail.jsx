@@ -204,20 +204,31 @@ export default function ProductDetail() {
                 Free shipping over ₹4,999 · Dispatched in 3–4 working days
               </p>
 
+              {product.stock === 0 ? (
+                <p className="pdp__stock pdp__stock--out">Out of Stock</p>
+              ) : product.stock <= 5 ? (
+                <p className="pdp__stock pdp__stock--low">Only {product.stock} left in stock</p>
+              ) : null}
+
               {/* ── Desktop buy buttons (hidden on mobile — sticky bar instead) ── */}
               <div className="pdp__buy pdp__buy--desktop">
                 <div className="stepper">
-                  <button aria-label="Decrease" onClick={() => setQty((q) => Math.max(1, q - 1))}>
+                  <button aria-label="Decrease" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={product.stock === 0}>
                     <Minus width="16" height="16" />
                   </button>
                   <span>{qty}</span>
-                  <button aria-label="Increase" onClick={() => setQty((q) => q + 1)}>
+                  <button aria-label="Increase" onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))} disabled={product.stock === 0}>
                     <Plus width="16" height="16" />
                   </button>
                 </div>
                 <button className="btn btn--primary" style={{ flex: 1 }} disabled={product.stock === 0}
-                  onClick={() => { add(product, qty); toast('Added to bag'); }}>
-                  Add to bag
+                  onClick={() => {
+                    const result = add(product, qty);
+                    if (result === 'none') toast(`Only ${product.stock} in stock — already in your bag`);
+                    else if (result === 'capped') toast(`Only ${product.stock} in stock — added what's available`);
+                    else toast('Added to bag');
+                  }}>
+                  {product.stock === 0 ? 'Out of Stock' : 'Add to bag'}
                 </button>
                 <button className="icon-btn" aria-label="Wishlist"
                   style={{ border: '1px solid var(--line-strong)', borderRadius: 'var(--radius)', width: 48, color: wished ? 'var(--sindoor)' : 'var(--ink)' }}
@@ -310,8 +321,13 @@ export default function ProductDetail() {
           <span>Wishlist</span>
         </button>
         <button className="pdp__sticky-cart" disabled={product.stock === 0}
-          onClick={() => { add(product, qty); toast('Added to bag'); }}>
-          Add to bag — {inr(product.price)}
+          onClick={() => {
+                    const result = add(product, qty);
+                    if (result === 'none') toast(`Only ${product.stock} in stock — already in your bag`);
+                    else if (result === 'capped') toast(`Only ${product.stock} in stock — added what's available`);
+                    else toast('Added to bag');
+                  }}>
+          {product.stock === 0 ? 'Out of Stock' : `Add to bag — ${inr(product.price)}`}
         </button>
       </div>
     </>
