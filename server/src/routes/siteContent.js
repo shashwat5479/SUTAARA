@@ -4,6 +4,7 @@ import {
   getExhibitionSlides, getAllExhibitionSlides, createExhibitionSlide, updateExhibitionSlide, deleteExhibitionSlide,
   getCuratedEdits, getAllCuratedEdits, createCuratedEdit, updateCuratedEdit, deleteCuratedEdit,
   getAnnouncement, getAllAnnouncements, saveAnnouncement,
+  getCategoryTiles, getAllCategoryTiles, updateCategoryTile,
 } from '../controllers/siteContentController.js';
 import { protect, admin } from '../middleware/auth.js';
 
@@ -34,5 +35,10 @@ router.delete('/edits/:id', protect, admin, deleteCuratedEdit);
 router.get('/announcement', getAnnouncement);
 router.get('/announcement/all', protect, admin, getAllAnnouncements);
 router.put('/announcement', protect, admin, saveAnnouncement);
+
+// Category tiles ("Shop by category" on homepage) — fixed set, edit-only
+router.get('/category-tiles', getCategoryTiles);
+router.get('/category-tiles/all', protect, admin, getAllCategoryTiles);
+router.put('/category-tiles/:id', protect, admin, updateCategoryTile);
 
 export default router;

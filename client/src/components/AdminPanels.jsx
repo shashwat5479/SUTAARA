@@ -3,6 +3,7 @@ import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import MediaUploader from './MediaUploader.jsx';
+import { inr } from '../utils/format.js';
 
 /* ---------------- Hero slides tab ---------------- */
 export function HeroSlidesTab() {
@@ -661,6 +662,198 @@ export function AccountsTab() {
           )}
         </tbody>
       </table>
+    </>
+  );
+}
+
+/* ---------------- Category tiles ("Shop by category" on homepage) ----------------
+   Fixed set of 5 — edit label/note/image in place, no add/remove (the keys
+   are tied to how products are categorized elsewhere in the app). */
+export function CategoryTilesTab() {
+  const toast = useToast();
+  const [tiles, setTiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.getAllCategoryTiles().then(setTiles).catch((e) => toast(e.message)).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <p className="admin-form__legend" style={{ marginBottom: 18 }}>
+        These 5 tiles are the "Shop by category" section on the homepage.
+      </p>
+      <div className="category-tiles-grid">
+        {tiles.map((t) => (
+          <CategoryTileEditor
+            key={t._id}
+            tile={t}
+            onSaved={(updated) => setTiles((prev) => prev.map((x) => (x._id === updated._id ? updated : x)))}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CategoryTileEditor({ tile, onSaved }) {
+  const toast = useToast();
+  const [form, setForm] = useState({ label: tile.label, note: tile.note, image: tile.image, active: tile.active });
+  const [busy, setBusy] = useState(false);
+  const dirty = form.label !== tile.label || form.note !== tile.note || form.image !== tile.image || form.active !== tile.active;
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const updated = await api.updateCategoryTile(tile._id, form);
+      onSaved(updated);
+      toast(`${form.label} tile saved`);
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="category-tile-editor">
+      <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} target={1.2} />
+      <div className="field"><label>Label</label><input value={form.label} onChange={set('label')} /></div>
+      <div className="field"><label>Eyebrow text</label><input value={form.note} onChange={set('note')} placeholder="Drape" /></div>
+      <label className="filter-opt"><input type="checkbox" checked={form.active} onChange={set('active')} /> Show on homepage</label>
+      <button className="btn btn--primary btn--sm" disabled={!dirty || busy} onClick={save}>
+        {busy ? 'Saving…' : 'Save'}
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Analytics tab (admin + super admin) ---------------- */
+export function AnalyticsTab() {
+  const toast = useToast();
+  const [days, setDays] = useState(30);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = (silent) => {
+    if (!silent) setLoading(true);
+    api.getAnalytics(days).then(setData).catch((e) => toast(e.message)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load(false);
+    // Light auto-refresh while this tab is open, so numbers stay current
+    // without needing a manual reload — not full push/websocket real-time,
+    // but close enough for a dashboard someone glances at.
+    const t = setInterval(() => load(true), 30_000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
+
+  if (loading || !data) return <div className="loader"><div className="spinner" /></div>;
+
+  const maxDayRevenue = Math.max(1, ...data.revenueByDay.map((d) => d.total));
+  const maxQtySold = Math.max(1, ...data.topProducts.map((p) => p.qtySold));
+  const STATUS_LABEL = {
+    pending: 'Pending', confirmed: 'Confirmed', processing: 'Processing', packed: 'Packed',
+    shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
+  };
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
+        <span className="shop__count">Last {data.days} days</span>
+        <div className="filter-opt-row">
+          {[7, 30, 90].map((n) => (
+            <button
+              key={n}
+              className={`btn btn--sm ${days === n ? 'btn--primary' : 'btn--ghost'}`}
+              onClick={() => setDays(n)}
+            >
+              {n} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI cards */}
+      <div className="analytics-kpis">
+        <div className="analytics-kpi">
+          <span className="analytics-kpi__label">Revenue</span>
+          <span className="analytics-kpi__value">{inr(data.revenue)}</span>
+        </div>
+        <div className="analytics-kpi">
+          <span className="analytics-kpi__label">Orders</span>
+          <span className="analytics-kpi__value">{data.totalOrders}</span>
+        </div>
+        <div className="analytics-kpi">
+          <span className="analytics-kpi__label">Avg. order value</span>
+          <span className="analytics-kpi__value">{inr(data.avgOrderValue)}</span>
+        </div>
+      </div>
+
+      {/* Status breakdown */}
+      <div className="analytics-status-row">
+        {Object.entries(data.statusCounts).map(([status, count]) => (
+          <span key={status} className={`analytics-status-pill analytics-status-pill--${status}`}>
+            {count} {STATUS_LABEL[status] || status}
+          </span>
+        ))}
+        {Object.keys(data.statusCounts).length === 0 && <span className="admin-empty-note">No orders in this window yet.</span>}
+      </div>
+
+      <div className="analytics-grid">
+        {/* Revenue by day */}
+        <div className="analytics-panel">
+          <h3>Revenue by day</h3>
+          {data.revenueByDay.length === 0 ? (
+            <p className="admin-empty-note">No revenue in this window yet.</p>
+          ) : (
+            <div className="analytics-bars">
+              {data.revenueByDay.map((d) => (
+                <div className="analytics-bar" key={d.date} title={`${d.date}: ${inr(d.total)}`}>
+                  <div className="analytics-bar__fill" style={{ height: `${Math.max(4, (d.total / maxDayRevenue) * 100)}%` }} />
+                  <span className="analytics-bar__label">{d.date.slice(5)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Top-selling products */}
+        <div className="analytics-panel">
+          <h3>Top-selling products</h3>
+          {data.topProducts.length === 0 ? (
+            <p className="admin-empty-note">No sales in this window yet.</p>
+          ) : (
+            <div className="analytics-top-list">
+              {data.topProducts.map((p) => (
+                <div className="analytics-top-item" key={p.productId}>
+                  {p.image ? <img src={p.image} alt="" /> : <div className="analytics-top-item__noimg" />}
+                  <div className="analytics-top-item__body">
+                    <div className="analytics-top-item__row">
+                      <span className="analytics-top-item__name">{p.name}</span>
+                      <span className="analytics-top-item__qty">{p.qtySold} sold</span>
+                    </div>
+                    <div className="analytics-top-item__bar">
+                      <div style={{ width: `${Math.max(4, (p.qtySold / maxQtySold) * 100)}%` }} />
+                    </div>
+                    {p.currentStock !== null && (
+                      <span className={`analytics-top-item__stock ${p.currentStock === 0 ? 'is-out' : p.currentStock <= 5 ? 'is-low' : ''}`}>
+                        {p.currentStock === 0 ? 'Out of stock' : `${p.currentStock} in stock`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }

@@ -30,7 +30,7 @@ const HERO_SLIDES = [
   { slug: 'magenta-emerald-set', title: 'Magenta Emerald Set', imgs: ['/products/magenta-emerald-set-1.jpg', '/products/magenta-emerald-set-2.jpg', '/products/rose-emerald-suit-1.jpg'] },
 ];
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { key: 'saree',   label: 'Sarees',      note: 'Drape',     img: '/products/mauve-kalamkari-peacock-1.jpg' },
   { key: 'suit',    label: 'Suit Sets',   note: 'Everyday',  img: '/products/rose-emerald-suit-1.jpg' },
   { key: 'blouse',  label: 'Blouses',     note: 'Statement', img: '/products/magenta-emerald-set-2.jpg' },
@@ -47,6 +47,10 @@ export default function Home() {
   const [heroIndex, setHeroIndex] = useState(0);
   const heroSectionRef = useRef(null);
   const [exhibitionSlides, setExhibitionSlides] = useState(null);
+  // Admin-editable "Shop by category" tiles — falls back to the defaults
+  // above until the API responds (or if it's ever empty), so the homepage
+  // never shows a blank section.
+  const [categoryTiles, setCategoryTiles] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
@@ -64,11 +68,12 @@ export default function Home() {
     // defaults below if the admin hasn't added any.
     api.getHeroSlides().then((s) => setHeroSlides(Array.isArray(s) ? s : [])).catch(() => setHeroSlides([]));
     api.getExhibitionSlides().then((s) => setExhibitionSlides(Array.isArray(s) ? s : [])).catch(() => setExhibitionSlides([]));
+    api.getCategoryTiles().then((t) => setCategoryTiles(Array.isArray(t) ? t : [])).catch(() => setCategoryTiles([]));
 
     // Fetch each category's first few pieces in parallel. Individual failures
     // are swallowed so one empty category can't blank the whole homepage.
     Promise.all(
-      CATEGORIES.map((c) =>
+      categories.map((c) =>
         api
           .getProducts({ category: c.key, limit: 4, sort: 'featured' })
           .then((res) => [c.key, res.products])
@@ -76,6 +81,13 @@ export default function Home() {
       )
     ).then((pairs) => setByCategory(Object.fromEntries(pairs)));
   }, []);
+
+  // Single source of truth for both the tile grid and the per-category
+  // product rows further down — falls back to the hardcoded defaults until
+  // the admin-edited tiles load (or if none exist yet).
+  const categories = categoryTiles && categoryTiles.length
+    ? categoryTiles.map((t) => ({ key: t.key, label: t.label, note: t.note, img: t.image }))
+    : DEFAULT_CATEGORIES;
 
   return (
     <>
@@ -152,7 +164,7 @@ export default function Home() {
             <hr className="zari zari--short" />
           </div>
           <div className="cats">
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <Link to={`/shop?category=${c.key}`} className="cat" key={c.key}>
                 <img src={c.img} alt={c.label} />
                 <div className="cat__label">
@@ -198,7 +210,7 @@ export default function Home() {
       </section>
 
       {/* SHOP BY CATEGORY — a row per category, each with its own view-more */}
-      {CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const items = byCategory[cat.key];
         const empty = items && items.length === 0;
         return (

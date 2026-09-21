@@ -140,6 +140,53 @@ export const deleteCuratedEdit = asyncHandler(async (req, res) => {
   res.json({ message: 'Curated edit removed' });
 });
 
+/* ---------------- Category tiles ("Shop by category" on homepage) ---------------- */
+
+const DEFAULT_CATEGORY_TILES = [
+  { key: 'saree',   label: 'Sarees',     note: 'Drape',     image: '/products/mauve-kalamkari-peacock-1.jpg', order: 0 },
+  { key: 'suit',    label: 'Suit Sets',  note: 'Everyday',  image: '/products/rose-emerald-suit-1.jpg',        order: 1 },
+  { key: 'blouse',  label: 'Blouses',    note: 'Statement', image: '/products/magenta-emerald-set-2.jpg',      order: 2 },
+  { key: 'dupatta', label: 'Dupattas',   note: 'Drape',     image: '/products/peach-leheriya-organza-3.jpg',   order: 3 },
+  { key: 'potli',   label: 'Potli Bags', note: 'Finish',    image: '/products/mustard-turquoise-set-2.jpg',    order: 4 },
+];
+
+// First read ever (of either endpoint below) seeds the 5 fixed tiles from
+// the values that used to be hardcoded in Home.jsx, so the homepage never
+// shows blank tiles before an admin has touched this panel.
+async function ensureCategoryTilesSeeded() {
+  const count = await prisma.categoryTile.count();
+  if (count > 0) return;
+  await prisma.categoryTile.createMany({ data: DEFAULT_CATEGORY_TILES, skipDuplicates: true });
+}
+
+// GET /api/category-tiles — public: active tiles in order
+export const getCategoryTiles = asyncHandler(async (req, res) => {
+  await ensureCategoryTilesSeeded();
+  const tiles = await prisma.categoryTile.findMany({ where: { active: true }, orderBy: { order: 'asc' } });
+  res.json(withMongoStyleId(tiles));
+});
+
+// GET /api/category-tiles/all — admin: every tile, including inactive
+export const getAllCategoryTiles = asyncHandler(async (req, res) => {
+  await ensureCategoryTilesSeeded();
+  const tiles = await prisma.categoryTile.findMany({ orderBy: { order: 'asc' } });
+  res.json(withMongoStyleId(tiles));
+});
+
+// PUT /api/category-tiles/:id — admin: edit an existing tile's label/note/
+// image/order/active. Fixed set, so this is update-only, no create/delete.
+export const updateCategoryTile = asyncHandler(async (req, res) => {
+  const { label, note, image, order, active } = req.body;
+  const data = {};
+  if (label !== undefined) data.label = String(label);
+  if (note !== undefined) data.note = String(note);
+  if (image !== undefined) data.image = String(image);
+  if (order !== undefined) data.order = Number(order) || 0;
+  if (active !== undefined) data.active = Boolean(active);
+  const tile = await prisma.categoryTile.update({ where: { id: req.params.id }, data });
+  res.json(withMongoStyleId(tile));
+});
+
 /* ---------------- Announcement bar ---------------- */
 
 // GET /api/announcement — public: the active announcement (or null)

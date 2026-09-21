@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -1211,7 +1211,7 @@ export default function Admin() {
   const { isContentAdmin, isSuperAdmin, role } = useAuth();
   // Staff see only Orders (+ read-only products). Admins & super-admins get the
   // content/UI tabs. Super-admins additionally get the Team tab.
-  const [tab, setTab] = useState(isContentAdmin ? 'products' : 'orders');
+  const [tab, setTab] = useState(isContentAdmin ? 'analytics' : 'orders');
 
   const roleLabel = role === 'superadmin' ? 'Super Admin' : role === 'admin' ? 'Admin' : 'Staff';
 
@@ -1227,6 +1227,10 @@ export default function Admin() {
             <nav className="admin-tabs">
               {isContentAdmin && (
                 <>
+                  <span className="admin-tabs__label">Overview</span>
+                  <button className={tab === 'analytics' ? 'active' : ''} onClick={() => setTab('analytics')}>
+                    Analytics
+                  </button>
                   <span className="admin-tabs__label">Catalog</span>
                   <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
                     Products
@@ -1260,6 +1264,9 @@ export default function Admin() {
                   <button className={tab === 'exhibition' ? 'active' : ''} onClick={() => setTab('exhibition')}>
                     Exhibition
                   </button>
+                  <button className={tab === 'categories' ? 'active' : ''} onClick={() => setTab('categories')}>
+                    Category Images
+                  </button>
                   <button className={tab === 'edits' ? 'active' : ''} onClick={() => setTab('edits')}>
                     Sutaara Edits
                   </button>
@@ -1284,7 +1291,8 @@ export default function Admin() {
               )}
             </nav>
             <div className="admin-content">
-              {tab === 'products' && isContentAdmin ? <ProductsTab />
+              {tab === 'analytics' && isContentAdmin ? <AnalyticsTab />
+                : tab === 'products' && isContentAdmin ? <ProductsTab />
                 : tab === 'orders' ? <OrdersTab />
                 : tab === 'returns' ? <ReturnsTab />
                 : tab === 'appointments' ? <AppointmentsTab />
@@ -1292,6 +1300,7 @@ export default function Admin() {
                 : tab === 'event' && isContentAdmin ? <StudioEventTab />
                 : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
                 : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />
+                : tab === 'categories' && isContentAdmin ? <CategoryTilesTab />
                 : tab === 'edits' && isContentAdmin ? <EditsTab />
                 : tab === 'diaries' && isContentAdmin ? <DiariesTab />
                 : tab === 'announce' && isContentAdmin ? <AnnouncementTab />

@@ -186,6 +186,14 @@ export const api = {
   getAllAnnouncements: () => request('/announcement/all', { auth: true }),
   saveAnnouncement: (body) => request('/announcement', { method: 'PUT', body, auth: true }),
 
+  // category tiles ("Shop by category" on homepage)
+  getCategoryTiles: () => request('/category-tiles'),
+  getAllCategoryTiles: () => request('/category-tiles/all', { auth: true }),
+  updateCategoryTile: (id, body) => request(`/category-tiles/${id}`, { method: 'PUT', body, auth: true }),
+
+  // analytics (admin + super admin)
+  getAnalytics: (days) => request(`/admin/analytics${days ? `?days=${days}` : ''}`, { auth: true }),
+
   // notification settings (super admin)
   getNotificationSettings: () => request('/notification-settings', { auth: true }),
   saveNotificationSettings: (body) => request('/notification-settings', { method: 'PUT', body, auth: true }),

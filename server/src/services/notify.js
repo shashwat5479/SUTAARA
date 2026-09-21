@@ -8,6 +8,7 @@
 // All functions fail soft: if a key is missing or the send errors, we log and
 // carry on — a notification failure must never break placing/updating an order.
 import { prisma } from '../config/db.js';
+import { sendSms } from './sms.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MAIL_FROM = process.env.MAIL_FROM || 'Sutaara <onboarding@resend.dev>';
@@ -100,17 +101,23 @@ function appointmentDetailsHtml(appt) {
 // "requested"), and again whenever an admin changes its status.
 export async function notifyCustomerAppointment(appointment, status) {
   const copy = APPT_STATUS_COPY[status];
-  if (!copy || !appointment.email) return;
-  const html = `
-    <div style="font-family:Georgia,serif;color:#2b211c;max-width:520px">
-      <h2 style="color:#8a1f26">Sutaara Studio</h2>
-      <p>Hi ${appointment.name || 'there'},</p>
-      <p>${copy.line}</p>
-      ${appointmentDetailsHtml(appointment)}
-      <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
-      <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
-    </div>`;
-  await sendEmail({ to: appointment.email, subject: `${copy.subject} · Sutaara`, html });
+  if (!copy) return;
+  if (appointment.email) {
+    const html = `
+      <div style="font-family:Georgia,serif;color:#2b211c;max-width:520px">
+        <h2 style="color:#8a1f26">Sutaara Studio</h2>
+        <p>Hi ${appointment.name || 'there'},</p>
+        <p>${copy.line}</p>
+        ${appointmentDetailsHtml(appointment)}
+        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
+        <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
+      </div>`;
+    await sendEmail({ to: appointment.email, subject: `${copy.subject} · Sutaara`, html });
+  }
+  if (appointment.phone) {
+    const dateStr = new Date(appointment.preferredDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    await sendSms(appointment.phone, `Sutaara Studio: ${copy.line} ${appointment.service}, ${dateStr} at ${appointment.preferredTime}.`).catch(() => {});
+  }
 }
 
 // Sent to the store owner (admin alert addresses) the moment a new
@@ -149,21 +156,26 @@ export async function notifyCustomerStatus(order, status) {
   const copy = STATUS_COPY[status];
   if (!copy) return;
   const email = order.user?.email;
-  if (!email) return;
-
   const track = order.trackingUrl ? `<p>Track your parcel: <a href="${order.trackingUrl}">${order.trackingUrl}</a></p>` : '';
-  const html = `
-    <div style="font-family:Georgia,serif;color:#2b211c;max-width:520px">
-      <h2 style="color:#8a1f26">Sutaara</h2>
-      <p>Hi ${order.fullName || order.user?.name || 'there'},</p>
-      <p>${copy.line}</p>
-      <p><strong>Order ${order.orderNumber || ('#' + (order.id || '').slice(0, 8))}</strong> · ${money(order.totalPrice)}</p>
-      ${orderItemsHtml(order)}
-      ${track}
-      <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
-      <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
-    </div>`;
-  await sendEmail({ to: email, subject: `${copy.subject} · Sutaara`, html });
+  if (email) {
+    const html = `
+      <div style="font-family:Georgia,serif;color:#2b211c;max-width:520px">
+        <h2 style="color:#8a1f26">Sutaara</h2>
+        <p>Hi ${order.fullName || order.user?.name || 'there'},</p>
+        <p>${copy.line}</p>
+        <p><strong>Order ${order.orderNumber || ('#' + (order.id || '').slice(0, 8))}</strong> · ${money(order.totalPrice)}</p>
+        ${orderItemsHtml(order)}
+        ${track}
+        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
+        <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
+      </div>`;
+    await sendEmail({ to: email, subject: `${copy.subject} · Sutaara`, html });
+  }
+  if (order.phone) {
+    const orderNo = order.orderNumber || ('#' + (order.id || '').slice(0, 8));
+    const smsLine = `Sutaara: ${copy.line} Order ${orderNo}, ${money(order.totalPrice)}.${order.trackingUrl ? ` Track: ${order.trackingUrl}` : ''}`;
+    await sendSms(order.phone, smsLine).catch(() => {});
+  }
 }
 
 // Sent to the store owner when a new order is placed.
@@ -179,8 +191,11 @@ export async function notifyOwnerNewOrder(order) {
       ${orderItemsHtml(order)}
       <p>Payment: ${order.paymentMethod || '—'}${order.paymentMethod === 'online' ? (order.isPaid ? ' (paid)' : ' (awaiting payment)') : ''}</p>
     </div>`;
-  await sendEmail({ to: s.alertEmail, subject: `New order · ${money(order.totalPrice)} · Sutaara`, html });
-  // WhatsApp owner alert will be added here in Phase 2 (uses s.alertWhatsApp).
+  const recipients = [s.alertEmail1, s.alertEmail2, s.alertEmail3].filter(Boolean);
+  await Promise.all(recipients.map((to) => sendEmail({ to, subject: `New order · ${money(order.totalPrice)} · Sutaara`, html })));
+  if (s.alertWhatsApp) {
+    await sendSms(s.alertWhatsApp, `Sutaara: New order ${order.orderNumber || ''} for ${money(order.totalPrice)} from ${order.fullName || 'a customer'}.`).catch(() => {});
+  }
 }
 
 // Sent to the store owner the moment a Razorpay payment attempt fails (or
@@ -197,7 +212,8 @@ export async function notifyOwnerPaymentFailed(order, reason) {
       <p>Reason: ${reason || 'Not provided by Razorpay'}</p>
       <p style="color:#5a4d44;font-size:13px">The order is still open — the customer can retry payment from their account.</p>
     </div>`;
-  await sendEmail({ to: s.alertEmail, subject: `Payment failed · ${order.orderNumber || ''} · Sutaara`, html });
+  const recipients = [s.alertEmail1, s.alertEmail2, s.alertEmail3].filter(Boolean);
+  await Promise.all(recipients.map((to) => sendEmail({ to, subject: `Payment failed · ${order.orderNumber || ''} · Sutaara`, html })));
 }
 
 // Sent to the customer right after a successful payment, with the invoice
