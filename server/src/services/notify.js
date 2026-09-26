@@ -35,7 +35,7 @@ async function getSettings() {
     if (!s) s = await prisma.notificationSettings.create({ data: {} });
     return s;
   } catch {
-    return { alertEmail: process.env.ALERT_EMAIL || 'shashwat9252@gmail.com', alertWhatsApp: '9569659272', emailEnabled: true };
+    return { alertEmail: process.env.ALERT_EMAIL || 'shashwat9252@gmail.com', alertWhatsApp: '9569005501', emailEnabled: true };
   }
 }
 
@@ -109,7 +109,7 @@ export async function notifyCustomerAppointment(appointment, status) {
         <p>Hi ${appointment.name || 'there'},</p>
         <p>${copy.line}</p>
         ${appointmentDetailsHtml(appointment)}
-        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
+        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569005501.</p>
         <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
       </div>`;
     await sendEmail({ to: appointment.email, subject: `${copy.subject} · Sutaara`, html });
@@ -166,7 +166,7 @@ export async function notifyCustomerStatus(order, status) {
         <p><strong>Order ${order.orderNumber || ('#' + (order.id || '').slice(0, 8))}</strong> · ${money(order.totalPrice)}</p>
         ${orderItemsHtml(order)}
         ${track}
-        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569659272.</p>
+        <p style="color:#5a4d44;font-size:13px">Questions? Reply to this email or WhatsApp us at 9569005501.</p>
         <p style="color:#5a4d44;font-size:13px">— Team Sutaara, Lucknow</p>
       </div>`;
     await sendEmail({ to: email, subject: `${copy.subject} · Sutaara`, html });

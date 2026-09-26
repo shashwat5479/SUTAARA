@@ -950,11 +950,11 @@ export function NotificationsTab() {
       </p>
       <div className="field">
         <label>Alert email 1</label>
-        <input type="email" value={form.alertEmail1} onChange={(e) => setForm((f) => ({ ...f, alertEmail1: e.target.value }))} placeholder="shashwat9252@gmail.com" />
+        <input type="email" value={form.alertEmail1} onChange={(e) => setForm((f) => ({ ...f, alertEmail1: e.target.value }))} placeholder="sutaara44@gmail.com" />
       </div>
       <div className="field">
         <label>Alert email 2 (optional)</label>
-        <input type="email" value={form.alertEmail2} onChange={(e) => setForm((f) => ({ ...f, alertEmail2: e.target.value }))} placeholder="—" />
+        <input type="email" value={form.alertEmail2} onChange={(e) => setForm((f) => ({ ...f, alertEmail2: e.target.value }))} placeholder="sutaara44@gmail.com" />
       </div>
       <div className="field">
         <label>Alert email 3 (optional)</label>
@@ -962,7 +962,7 @@ export function NotificationsTab() {
       </div>
       <div className="field">
         <label>Alert WhatsApp number</label>
-        <input value={form.alertWhatsApp} onChange={(e) => setForm((f) => ({ ...f, alertWhatsApp: e.target.value }))} placeholder="9569659272" />
+        <input value={form.alertWhatsApp} onChange={(e) => setForm((f) => ({ ...f, alertWhatsApp: e.target.value }))} placeholder="9569005501" />
         <span className="field__hint">Used for WhatsApp order alerts (activates once the WhatsApp provider is connected).</span>
       </div>
       <div style={{ margin: '4px 0 18px' }}>

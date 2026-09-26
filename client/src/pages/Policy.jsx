@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 
-const EMAIL = 'sutara.lucknow@gmail.com';
-const PHONE = '9569659272';
-const WA = 'https://wa.me/919569659272';
+const EMAIL = 'support@sutaara.com';
+const PHONE = '9569005501';
+const WA = 'https://wa.me/919569005501';
 
 function ContactLine() {
   return (

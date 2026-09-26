@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const CARE_EMAIL = 'care@sutaara.com';
+const CARE_EMAIL = 'support@sutaara.com';
 
 const FAQ_SECTIONS = [
   {
@@ -88,7 +88,7 @@ export default function Faq() {
               </div>
             ))}
             <div className="faq-help">
-              <p>Still have a question? Reach us at <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a> or WhatsApp <a href="https://wa.me/919569659272" target="_blank" rel="noreferrer">9569659272</a> — please keep your Order ID handy.</p>
+              <p>Still have a question? Reach us at <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a> or WhatsApp <a href="https://wa.me/919569005501" target="_blank" rel="noreferrer">9569005501</a> — please keep your Order ID handy.</p>
             </div>
           </div>
         </div>

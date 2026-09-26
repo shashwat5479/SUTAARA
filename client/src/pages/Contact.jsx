@@ -37,7 +37,7 @@ export default function Contact() {
               </p>
               <ul className="contact__details">
                 <li><b>Email:</b> <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a></li>
-                <li><b>WhatsApp / Phone:</b> <a href="https://wa.me/919569659272" target="_blank" rel="noreferrer">9569659272</a></li>
+                <li><b>WhatsApp / Phone:</b> <a href="https://wa.me/9569005501" target="_blank" rel="noreferrer">9569005501</a></li>
                 <li><b>Studio:</b> Lucknow, Uttar Pradesh</li>
               </ul>
               <p className="small">For order-related queries, please keep your Order ID handy so we can assist you quickly. We reply through the week, except on Sundays and public holidays.</p>
