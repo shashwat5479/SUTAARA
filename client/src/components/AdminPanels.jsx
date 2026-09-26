@@ -950,11 +950,11 @@ export function NotificationsTab() {
       </p>
       <div className="field">
         <label>Alert email 1</label>
-        <input type="email" value={form.alertEmail1} onChange={(e) => setForm((f) => ({ ...f, alertEmail1: e.target.value }))} placeholder="sutaara44@gmail.com" />
+        <input type="email" value={form.alertEmail1} onChange={(e) => setForm((f) => ({ ...f, alertEmail1: e.target.value }))} placeholder="shashwat9252@gmail.com" />
       </div>
       <div className="field">
         <label>Alert email 2 (optional)</label>
-        <input type="email" value={form.alertEmail2} onChange={(e) => setForm((f) => ({ ...f, alertEmail2: e.target.value }))} placeholder="sutaara44@gmail.com" />
+        <input type="email" value={form.alertEmail2} onChange={(e) => setForm((f) => ({ ...f, alertEmail2: e.target.value }))} placeholder="—" />
       </div>
       <div className="field">
         <label>Alert email 3 (optional)</label>

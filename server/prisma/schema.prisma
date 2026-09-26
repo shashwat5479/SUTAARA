@@ -455,7 +455,7 @@ model NotificationSettings {
   alertEmail1   String   @default("shashwat9252@gmail.com")
   alertEmail2   String   @default("")
   alertEmail3   String   @default("")
-  alertWhatsApp String   @default("9569659272")
+  alertWhatsApp String   @default("9569005501")
   emailEnabled  Boolean  @default(true)
   updatedAt     DateTime @updatedAt
 }

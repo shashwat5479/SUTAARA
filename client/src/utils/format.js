@@ -22,4 +22,4 @@ export const colorHex = (name = '') => {
   return map[key] || '#cbb99a';
 };
 
-export const WHATSAPP_NUMBER = '919876543210'; // TODO: replace with Sutaara's real number
+export const WHATSAPP_NUMBER = '919569005501';

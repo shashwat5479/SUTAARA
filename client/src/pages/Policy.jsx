@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 
-const EMAIL = 'support@sutaara.com';
+const EMAIL = 'sutara.lucknow@gmail.com';
 const PHONE = '9569005501';
 const WA = 'https://wa.me/919569005501';
 
