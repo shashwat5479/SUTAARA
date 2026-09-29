@@ -191,6 +191,11 @@ export const api = {
   getAllCategoryTiles: () => request('/category-tiles/all', { auth: true }),
   updateCategoryTile: (id, body) => request(`/category-tiles/${id}`, { method: 'PUT', body, auth: true }),
 
+  // newsletter
+  subscribe: (email) => request('/subscribe', { method: 'POST', body: { email } }),
+  getSubscribers: () => request('/admin/subscribers', { auth: true }),
+  deleteSubscriber: (id) => request(`/admin/subscribers/${id}`, { method: 'DELETE', auth: true }),
+
   // analytics (admin + super admin)
   getAnalytics: (days) => request(`/admin/analytics${days ? `?days=${days}` : ''}`, { auth: true }),
 

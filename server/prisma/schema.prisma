@@ -425,6 +425,14 @@ model ExhibitionSlide {
   updatedAt DateTime @updatedAt
 }
 
+// Newsletter signups from the homepage "Stay in the loop" form.
+model Subscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  active    Boolean  @default(true) // false = unsubscribed, kept for suppression rather than deleted
+  createdAt DateTime @default(now())
+}
+
 // Announcement bar shown at the very top of every page. Admin-controlled;
 // a single active row drives what's displayed.
 model Announcement {

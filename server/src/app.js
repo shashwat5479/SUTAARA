@@ -19,6 +19,8 @@ import reviewRoutes from './routes/reviews.js';
 import siteContentRoutes from './routes/siteContent.js';
 import adminUserRoutes from './routes/adminUsers.js';
 import analyticsRoutes from './routes/analytics.js';
+import subscribeRoutes from './routes/subscribe.js';
+import adminSubscribersRoutes from './routes/adminSubscribers.js';
 import notificationSettingsRoutes from './routes/notificationSettings.js';
 import paymentRoutes from './routes/payments.js';
 import { handleRazorpayWebhook } from './controllers/paymentController.js';
@@ -109,6 +111,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api', siteContentRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/analytics', analyticsRoutes);
+app.use('/api/subscribe', subscribeRoutes);
+app.use('/api/admin/subscribers', adminSubscribersRoutes);
 app.use('/api/notification-settings', notificationSettingsRoutes);
 
 app.use(notFound);

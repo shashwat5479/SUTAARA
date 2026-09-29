@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -1253,6 +1253,11 @@ export default function Admin() {
                 </button>
               )}
               {isContentAdmin && (
+                <button className={tab === 'subscribers' ? 'active' : ''} onClick={() => setTab('subscribers')}>
+                  Subscribers
+                </button>
+              )}
+              {isContentAdmin && (
                 <>
                   <span className="admin-tabs__label">Site content</span>
                   <button className={tab === 'event' ? 'active' : ''} onClick={() => setTab('event')}>
@@ -1297,6 +1302,7 @@ export default function Admin() {
                 : tab === 'returns' ? <ReturnsTab />
                 : tab === 'appointments' ? <AppointmentsTab />
                 : tab === 'accounts' && isContentAdmin ? <AccountsTab />
+                : tab === 'subscribers' && isContentAdmin ? <SubscribersTab />
                 : tab === 'event' && isContentAdmin ? <StudioEventTab />
                 : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />
                 : tab === 'exhibition' && isContentAdmin ? <ExhibitionTab />

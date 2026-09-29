@@ -858,6 +858,86 @@ export function AnalyticsTab() {
   );
 }
 
+/* ---------------- Subscribers tab (admin + super admin) ----------------
+   Newsletter signups from the homepage "Stay in the loop" form. Read +
+   remove only — there's no create/edit, these are just what people typed in. */
+export function SubscribersTab() {
+  const toast = useToast();
+  const [subs, setSubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState('');
+
+  useEffect(() => {
+    api.getSubscribers().then(setSubs).catch((e) => toast(e.message)).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const remove = async (s) => {
+    if (!window.confirm(`Remove ${s.email} from the list?`)) return;
+    try {
+      await api.deleteSubscriber(s._id);
+      setSubs((prev) => prev.filter((x) => x._id !== s._id));
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  const exportCsv = () => {
+    const rows = ['email,subscribed_at', ...filtered.map((s) => `${s.email},${new Date(s.createdAt).toISOString()}`)];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sutaara-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const filtered = subs.filter((s) => s.email.toLowerCase().includes(q.trim().toLowerCase()));
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, gap: 12, flexWrap: 'wrap' }}>
+        <span className="shop__count">{filtered.length} of {subs.length} subscribers</span>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input className="select" style={{ maxWidth: 220 }} placeholder="Search email…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <button className="btn btn--sm btn--ghost" onClick={exportCsv} disabled={filtered.length === 0}>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Subscribed</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((s) => (
+            <tr key={s._id}>
+              <td>{s.email}</td>
+              <td>{new Date(s.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+              <td className="table__actions">
+                <button onClick={() => remove(s)}>Remove</button>
+              </td>
+            </tr>
+          ))}
+          {filtered.length === 0 && (
+            <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--ink-soft)' }}>
+              {subs.length === 0 ? 'No subscribers yet.' : `No emails match "${q}"`}
+            </td></tr>
+          )}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 /* ---------------- Announcement bar tab (admin + super admin) ---------------- */
 export function AnnouncementTab() {
   const toast = useToast();

@@ -380,11 +380,17 @@ export default function Home() {
               className="newsletter__form"
               onSubmit={(e) => {
                 e.preventDefault();
-                e.currentTarget.reset();
-                toast('Thank you — you’re on the list.');
+                const email = e.currentTarget.email.value;
+                api
+                  .subscribe(email)
+                  .then(() => {
+                    e.currentTarget.reset();
+                    toast('Thank you — you’re on the list.');
+                  })
+                  .catch((err) => toast(err.message));
               }}
             >
-              <input type="email" required placeholder="Your email address" aria-label="Email" />
+              <input type="email" name="email" required placeholder="Your email address" aria-label="Email" />
               <button className="btn btn--gold" type="submit">Subscribe</button>
             </form>
           </div>
