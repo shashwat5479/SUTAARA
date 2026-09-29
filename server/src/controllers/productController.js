@@ -172,6 +172,13 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     res.status(409);
     throw new Error('This product has past orders — unpublish it instead of deleting');
   }
-  await prisma.product.delete({ where: { id: req.params.id } });
+  // Also drop the product from any Sutaara Edit that features it.
+  const edits = await prisma.curatedEdit.findMany({ where: { productIds: { has: req.params.id } } });
+  await prisma.$transaction([
+    ...edits.map((e) =>
+      prisma.curatedEdit.update({ where: { id: e.id }, data: { productIds: e.productIds.filter((id) => id !== req.params.id) } })
+    ),
+    prisma.product.delete({ where: { id: req.params.id } }),
+  ]);
   res.json({ message: 'Product removed' });
 });

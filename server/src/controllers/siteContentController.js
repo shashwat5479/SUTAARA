@@ -23,6 +23,11 @@ const heroData = (b) => ({
   title: String(b.title || ''),
   slug: String(b.slug || ''),
   images: Array.isArray(b.images) ? b.images.filter(Boolean).slice(0, 3) : [],
+  heading: String(b.heading || ''),
+  subheading: String(b.subheading || ''),
+  description: String(b.description || ''),
+  ctaText: String(b.ctaText || ''),
+  ctaLink: String(b.ctaLink || ''),
   order: Number(b.order) || 0,
   active: b.active === undefined ? true : Boolean(b.active),
 });
@@ -113,6 +118,43 @@ export const getCuratedEdits = asyncHandler(async (req, res) => {
 export const getAllCuratedEdits = asyncHandler(async (req, res) => {
   const edits = await prisma.curatedEdit.findMany({ orderBy: { order: 'asc' } });
   res.json(withMongoStyleId(await attachProducts(edits)));
+});
+
+// GET /api/edits/:id — public: one active edit with its own products, for the
+// edit's dedicated page (/edits/:id). Inactive edits 404 for the public.
+export const getCuratedEditById = asyncHandler(async (req, res) => {
+  const edit = await prisma.curatedEdit.findUnique({ where: { id: req.params.id } });
+  if (!edit || !edit.active) {
+    res.status(404);
+    throw new Error('Edit not found');
+  }
+  const [withProducts] = await attachProducts([edit]);
+  res.json(withMongoStyleId(withProducts));
+});
+
+// PUT /api/edits/by-product/:productId — admin: set exactly which edits a
+// product belongs to. Adds the product to every edit in `editIds` and removes
+// it from every other edit, keeping each edit's existing product order.
+export const setProductEdits = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  const product = await prisma.product.findUnique({ where: { id: productId }, select: { id: true } });
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+  const wanted = new Set(Array.isArray(req.body.editIds) ? req.body.editIds.map(String) : []);
+  const edits = await prisma.curatedEdit.findMany({ select: { id: true, productIds: true } });
+  const ops = [];
+  for (const e of edits) {
+    const has = e.productIds.includes(productId);
+    if (wanted.has(e.id) && !has) {
+      ops.push(prisma.curatedEdit.update({ where: { id: e.id }, data: { productIds: [...e.productIds, productId] } }));
+    } else if (!wanted.has(e.id) && has) {
+      ops.push(prisma.curatedEdit.update({ where: { id: e.id }, data: { productIds: e.productIds.filter((id) => id !== productId) } }));
+    }
+  }
+  if (ops.length) await prisma.$transaction(ops);
+  res.json({ message: 'Product edits updated', changed: ops.length });
 });
 
 const editData = (b) => ({

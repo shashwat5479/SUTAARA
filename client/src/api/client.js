@@ -177,6 +177,8 @@ export const api = {
   // curated edits (Sutaara Edits menu + page — admin-controlled)
   getCuratedEdits: () => request('/edits'),
   getAllCuratedEdits: () => request('/edits/all', { auth: true }),
+  getCuratedEdit: (id) => request(`/edits/${id}`),
+  setProductEdits: (productId, editIds) => request(`/edits/by-product/${productId}`, { method: 'PUT', body: { editIds }, auth: true }),
   createCuratedEdit: (body) => request('/edits', { method: 'POST', body, auth: true }),
   updateCuratedEdit: (id, body) => request(`/edits/${id}`, { method: 'PUT', body, auth: true }),
   deleteCuratedEdit: (id) => request(`/edits/${id}`, { method: 'DELETE', auth: true }),

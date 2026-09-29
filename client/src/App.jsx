@@ -12,6 +12,7 @@ import LoginCallback from './pages/LoginCallback.jsx';
 import Register from './pages/Register.jsx';
 import Studio from './pages/Studio.jsx';
 import Story from './pages/Story.jsx';
+import EditPage from './pages/EditPage.jsx';
 import Diaries from './pages/Diaries.jsx';
 import Exhibition from './pages/Exhibition.jsx';
 import Policy from './pages/Policy.jsx';
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="register" element={<Register />} />
         <Route path="studio" element={<Studio />} />
         <Route path="story" element={<Story />} />
+        <Route path="edits/:id" element={<EditPage />} />
         <Route path="diaries" element={<Diaries />} />
         <Route path="exhibition" element={<Exhibition />} />
         <Route path="shipping-policy" element={<Policy which="shipping" />} />

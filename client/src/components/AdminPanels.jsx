@@ -197,7 +197,7 @@ function ExhibitionForm({ initial, onCancel, onDone }) {
       <div className="field"><label>Subtitle</label><input value={form.subtitle} onChange={set('subtitle')} placeholder="Hand-painted saree" /></div>
       <p className="admin-form__legend">Image <span>— upload from your gallery.</span></p>
       <MediaUploader images={form.image ? [form.image] : []} video="" onChange={({ images }) => setForm((f) => ({ ...f, image: images[0] || '' }))} target={2} />
-      <div className="field"><label>Links to (URL)</label><input value={form.link} onChange={set('link')} placeholder="/shop?category=saree" /></div>
+      <div className="field"><label>Links to (URL) <span style={{ fontWeight: 400, color: 'var(--ink-soft)' }}>— only used when no products are added</span></label><input value={form.link} onChange={set('link')} placeholder="/shop?category=saree" /></div>
       <div className="field__row">
         <div className="field"><label>Order</label><input type="number" value={form.order} onChange={set('order')} /></div>
         <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -240,6 +240,7 @@ export function EditsTab() {
     <>
       <p className="admin-form__legend" style={{ marginTop: 0 }}>
         These show under <strong>Sutaara Edits</strong> in the header menu and on the /story page.
+        <span> Add products to an edit and clicking it opens its own page with just those products; with none added it goes to the "Links to" URL instead.</span>
         <span> Drag order isn't supported yet — set the "Order" number instead (lower shows first).</span>
       </p>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>

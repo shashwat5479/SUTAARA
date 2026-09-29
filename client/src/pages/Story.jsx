@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SareeStory from '../components/SareeStory.jsx';
 import { api } from '../api/client.js';
+import { editPath } from '../utils/format.js';
 
 // Full "A Saree's Story" experience on a dark, cinematic theme. Reached from
 // the homepage "Discover the Story" button and the Stories menu.
@@ -46,7 +47,7 @@ export default function Story() {
             </div>
             <div className="story-edits__grid">
               {edits.map((edit) => (
-                <Link key={edit._id} to={edit.link || '/story'} className="edit-card">
+                <Link key={edit._id} to={editPath(edit)} className="edit-card">
                   {edit.products?.length > 0 ? (
                     <div className="edit-card__products">
                       {edit.products.slice(0, 4).map((p) => (

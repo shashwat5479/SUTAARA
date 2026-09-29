@@ -64,6 +64,30 @@ function ProductForm({ initial, onDone, onCancel }) {
   });
   const [busy, setBusy] = useState(false);
 
+  // Sutaara Edits this product should appear in (Founder's picks, Statement
+  // Pieces…). Loaded once; membership is stored on each edit, so for an
+  // existing product we tick the edits that already list it.
+  const [allEdits, setAllEdits] = useState([]);
+  const [editIds, setEditIds] = useState([]);
+  const [editsLoaded, setEditsLoaded] = useState(false);
+  useEffect(() => {
+    let off = false;
+    api.getAllCuratedEdits()
+      .then((list) => {
+        if (off) return;
+        const arr = Array.isArray(list) ? list : [];
+        setAllEdits(arr);
+        if (initial) {
+          setEditIds(arr.filter((e) => (e.productIds || []).includes(initial._id)).map((e) => e._id));
+        }
+        setEditsLoaded(true);
+      })
+      .catch(() => {});
+    return () => { off = true; };
+  }, []);
+  const toggleEdit = (id) =>
+    setEditIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+
   const set = (k) => (e) =>
     setForm((f) => ({
       ...f,
@@ -104,13 +128,24 @@ function ProductForm({ initial, onDone, onCancel }) {
         featured: !!form.featured,
         isNewArrival: !!form.isNewArrival,
       };
+      let productId = initial ? initial._id : null;
       if (initial) {
         await api.updateProduct(initial._id, payload);
-        toast('Product updated');
       } else {
-        await api.createProduct(payload);
-        toast('Product created');
+        const created = await api.createProduct(payload);
+        productId = created && (created._id || created.id);
       }
+      // Only sync edits if they loaded — otherwise we'd wipe memberships.
+      if (editsLoaded && productId) {
+        try {
+          await api.setProductEdits(productId, editIds);
+        } catch (err) {
+          toast(`Product saved, but Sutaara Edits weren't updated: ${err.message}`);
+          onDone();
+          return;
+        }
+      }
+      toast(initial ? 'Product updated' : 'Product created');
       onDone();
     } catch (err) {
       toast(err.message);
@@ -221,6 +256,21 @@ function ProductForm({ initial, onDone, onCancel }) {
         <label>Note (blouse piece, set contents, length…)</label>
         <input value={form.blouseNote} onChange={set('blouseNote')} placeholder="Comes with an unstitched blouse piece (0.8m)." />
       </div>
+
+      {allEdits.length > 0 && (
+        <>
+          <p className="admin-form__legend">
+            Show in Sutaara Edits <span>— tick every edit this product belongs to. It will appear on that edit's page.</span>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 22px', margin: '0 0 18px' }}>
+            {allEdits.map((e) => (
+              <label key={e._id} className="filter-opt">
+                <input type="checkbox" checked={editIds.includes(e._id)} onChange={() => toggleEdit(e._id)} /> {e.title}
+              </label>
+            ))}
+          </div>
+        </>
+      )}
 
       <div style={{ display: 'flex', gap: 20, margin: '4px 0 18px' }}>
         <label className="filter-opt">

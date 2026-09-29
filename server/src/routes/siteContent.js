@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   getHeroSlides, getAllHeroSlides, createHeroSlide, updateHeroSlide, deleteHeroSlide,
   getExhibitionSlides, getAllExhibitionSlides, createExhibitionSlide, updateExhibitionSlide, deleteExhibitionSlide,
-  getCuratedEdits, getAllCuratedEdits, createCuratedEdit, updateCuratedEdit, deleteCuratedEdit,
+  getCuratedEdits, getAllCuratedEdits, getCuratedEditById, setProductEdits, createCuratedEdit, updateCuratedEdit, deleteCuratedEdit,
   getAnnouncement, getAllAnnouncements, saveAnnouncement,
   getCategoryTiles, getAllCategoryTiles, updateCategoryTile,
 } from '../controllers/siteContentController.js';
@@ -27,6 +27,8 @@ router.delete('/exhibition/:id', protect, admin, deleteExhibitionSlide);
 // Curated Edits (Sutaara Edits menu + page)
 router.get('/edits', getCuratedEdits);
 router.get('/edits/all', protect, admin, getAllCuratedEdits);
+router.get('/edits/:id', getCuratedEditById);
+router.put('/edits/by-product/:productId', protect, admin, setProductEdits);
 router.post('/edits', protect, admin, createCuratedEdit);
 router.put('/edits/:id', protect, admin, updateCuratedEdit);
 router.delete('/edits/:id', protect, admin, deleteCuratedEdit);

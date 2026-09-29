@@ -23,3 +23,12 @@ export const colorHex = (name = '') => {
 };
 
 export const WHATSAPP_NUMBER = '919569005501';
+
+// Where a Sutaara Edit should send the shopper. An edit that has its own
+// products opens its dedicated page (/edits/:id) showing exactly those
+// products; an edit with none falls back to its custom link (e.g. a filtered
+// shop view or /story#styling-edit), or /story.
+export const editPath = (edit) =>
+  edit && edit.products && edit.products.length > 0
+    ? `/edits/${edit._id || edit.id}`
+    : (edit && edit.link) || '/story';

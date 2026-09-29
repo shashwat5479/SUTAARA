@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../api/client.js';
+import { editPath } from '../utils/format.js';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import MegaMenu from './MegaMenu.jsx';
 import AboutPanel from './AboutPanel.jsx';
@@ -426,7 +427,7 @@ export default function Header() {
                   ...found.columns,
                   {
                     title: 'Sutaara Edits',
-                    links: curatedEdits.map((e) => ({ label: e.title, to: e.link || '/story' })),
+                    links: curatedEdits.map((e) => ({ label: e.title, to: editPath(e) })),
                   },
                 ],
               };
@@ -628,7 +629,7 @@ export default function Header() {
                       curatedEdits.map((edit) => (
                         <Link
                           key={edit._id}
-                          to={edit.link || '/story'}
+                          to={editPath(edit)}
                           onClick={() => setMenuOpen(false)}
                         >
                           {edit.title}
