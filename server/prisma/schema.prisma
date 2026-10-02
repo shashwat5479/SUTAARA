@@ -135,6 +135,7 @@ model Product {
   sku          String      @default("")
   sareeLength  String      @default("")
   blousePiece  String      @default("")
+  dimensions   String      @default("")
   stylingNote  String      @default("")
   price        Int
   mrp          Int         @default(0)

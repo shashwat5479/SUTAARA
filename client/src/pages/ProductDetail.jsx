@@ -113,8 +113,17 @@ export default function ProductDetail() {
   );
 
   /* ── check if product details table has any filled fields ── */
+  const isSaree = product.category === 'saree';
+  const isSuit = product.category === 'suit';
+  const dimensionsLabel =
+    product.category === 'blouse' ? 'Blouse Dimensions'
+    : product.category === 'potli' ? 'Bag Dimensions'
+    : 'Dimensions';
+  // The note accordion is titled for what the piece actually is — a suit
+  // has no blouse piece, so it must not be labelled "Blouse piece".
+  const noteTitle = isSaree ? 'Blouse piece' : isSuit ? 'Set contents' : 'Details';
   const hasDetails = product.fabric || product.color || product.sareeLength ||
-    product.blousePiece || product.care || product.occasion;
+    (isSaree && product.blousePiece) || product.dimensions || product.care || product.occasion;
 
   return (
     <>
@@ -256,7 +265,8 @@ export default function ProductDetail() {
                         {product.fabric && <tr><td>Fabric</td><td>{product.fabric}</td></tr>}
                         {product.color && <tr><td>Colour</td><td>{product.color}</td></tr>}
                         {product.sareeLength && <tr><td>Saree Length</td><td>{product.sareeLength}</td></tr>}
-                        {product.blousePiece && <tr><td>Blouse Piece</td><td>{product.blousePiece}</td></tr>}
+                        {isSaree && product.blousePiece && <tr><td>Blouse Piece</td><td>{product.blousePiece}</td></tr>}
+                        {product.dimensions && <tr><td>{dimensionsLabel}</td><td>{product.dimensions}</td></tr>}
                         {product.care && <tr><td>Care</td><td>{product.care}</td></tr>}
                         {product.occasion && <tr><td>Occasion</td><td>{product.occasion}</td></tr>}
                       </tbody>
@@ -265,7 +275,7 @@ export default function ProductDetail() {
                 )}
 
                 {product.blouseNote && (
-                  <Accordion title="Blouse piece">
+                  <Accordion title={noteTitle}>
                     <p>{product.blouseNote}</p>
                   </Accordion>
                 )}

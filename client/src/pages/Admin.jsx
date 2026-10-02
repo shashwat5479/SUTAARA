@@ -16,6 +16,7 @@ const EMPTY = {
   sku: '',
   sareeLength: '',
   blousePiece: '',
+  dimensions: '',
   stylingNote: '',
   price: '',
   mrp: '',
@@ -144,6 +145,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         sku: form.sku.trim(),
         sareeLength: form.sareeLength.trim(),
         blousePiece: form.blousePiece.trim(),
+        dimensions: (form.dimensions || '').trim(),
         stylingNote: form.stylingNote.trim(),
         price: Number(form.price),
         mrp: Number(form.mrp) || 0,
@@ -240,7 +242,7 @@ function ProductForm({ initial, onDone, onCancel }) {
 
       <div className="field__row">
         <div className="field">
-          <label>Blouse Piece <span className="field__opt">(if applicable)</span></label>
+          <label>Blouse Piece <span className="field__opt">(sarees only)</span></label>
           <input value={form.blousePiece} onChange={set('blousePiece')} placeholder="Yes; 1 m" />
         </div>
         <div className="field">
@@ -248,6 +250,20 @@ function ProductForm({ initial, onDone, onCancel }) {
           <input value={form.care} onChange={set('care')} placeholder="Dry clean only" />
         </div>
       </div>
+
+      {(form.category === 'blouse' || form.category === 'potli') && (
+        <div className="field">
+          <label>
+            {form.category === 'blouse' ? 'Blouse Dimensions' : 'Bag Dimensions'}{' '}
+            <span className="field__opt">(shown under Product Details)</span>
+          </label>
+          <input
+            value={form.dimensions || ''}
+            onChange={set('dimensions')}
+            placeholder={form.category === 'blouse' ? 'Bust 36 in; Length 15 in; Sleeve 8 in' : '8 in (L) x 6 in (H) x 2 in (W)'}
+          />
+        </div>
+      )}
 
       <div className="field">
         <label>Sutaara Styling Note <span className="field__opt">(optional)</span></label>
@@ -284,7 +300,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         <textarea rows="2" value={form.care} onChange={set('care')} />
       </div>
       <div className="field">
-        <label>Note (blouse piece, set contents, length…)</label>
+        <label>Note (shown as "Blouse piece" on sarees, "Set contents" on suits)</label>
         <input value={form.blouseNote} onChange={set('blouseNote')} placeholder="Comes with an unstitched blouse piece (0.8m)." />
       </div>
 
