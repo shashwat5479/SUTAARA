@@ -3,6 +3,7 @@ import { api } from '../api/client.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
+import { COLORS, OTHER, OTHER_HEX, colorsOf, fabricsOf, occasionsOf } from '../utils/taxonomy.js';
 import MediaUploader from '../components/MediaUploader.jsx';
 import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
@@ -44,6 +45,33 @@ const FABRICS = [
   'Chiffon', 'Net', 'Velvet', 'Brocade', 'Ajrakh Cotton', 'Cotton Silk',
 ];
 const OCCASIONS = ['Wedding', 'Festive', 'Party', 'Everyday', 'Daywear'];
+
+// Shows, as you type, which shop filters this product will appear under.
+// Fabric / occasion / colour are filed automatically from the text, so the
+// swatch is always the real colour — and if a word isn't recognised it says
+// so here instead of silently showing a default colour in the shop.
+function FilterPreview({ kind, text }) {
+  if (!String(text || '').trim()) return null;
+  const found = kind === 'color' ? colorsOf(text) : kind === 'fabric' ? fabricsOf(text) : occasionsOf(text);
+  const unknown = found.length === 1 && found[0] === OTHER;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 6, fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+      <span>Shows under:</span>
+      {found.map((f) => {
+        const hex = kind === 'color' ? (f === OTHER ? OTHER_HEX : COLORS.find((c) => c.value === f)?.hex) : null;
+        return (
+          <span key={f} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            {hex && (
+              <span style={{ width: 14, height: 14, borderRadius: '50%', background: hex, border: '1px solid var(--line-strong)', display: 'inline-block' }} />
+            )}
+            <strong style={{ fontWeight: 600, color: unknown ? '#b5762b' : 'var(--ink)' }}>{f}</strong>
+          </span>
+        );
+      })}
+      {unknown && <span style={{ color: '#b5762b' }}>— not recognised; try a common name like “Rani Pink” or “Mustard”</span>}
+    </div>
+  );
+}
 
 const STATUSES = [
   'pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery',
@@ -176,6 +204,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         <div className="field">
           <label>Fabric</label>
           <input list="fabric-list" value={form.fabric} onChange={set('fabric')} placeholder="Banarasi Silk" />
+          <FilterPreview kind="fabric" text={form.fabric} />
           <datalist id="fabric-list">
             {FABRICS.map((f) => <option key={f} value={f} />)}
           </datalist>
@@ -186,6 +215,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         <div className="field">
           <label>Occasion</label>
           <input list="occasion-list" value={form.occasion} onChange={set('occasion')} placeholder="Wedding" />
+          <FilterPreview kind="occasion" text={form.occasion} />
           <datalist id="occasion-list">
             {OCCASIONS.map((o) => <option key={o} value={o} />)}
           </datalist>
@@ -193,6 +223,7 @@ function ProductForm({ initial, onDone, onCancel }) {
         <div className="field">
           <label>Colour</label>
           <input value={form.color} onChange={set('color')} placeholder="Mustard Yellow" />
+          <FilterPreview kind="color" text={form.color} />
         </div>
       </div>
 

@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
-import { colorHex } from '../utils/format.js';
 
 const CATEGORY_LABEL = {
   saree: 'Sarees',
@@ -10,6 +9,18 @@ const CATEGORY_LABEL = {
   blouse: 'Blouses',
   dupatta: 'Dupattas',
   potli: 'Potli Bags',
+};
+// Facet options come from the server already grouped into a short, fixed set
+// of families ({ value, label, count, hex? }). This guards against an older
+// API response that only has plain string arrays.
+const EMPTY_FACETS = {
+  fabricOptions: [],
+  occasionOptions: [],
+  colorOptions: [],
+};
+const asOptions = (opts, plain) => {
+  if (Array.isArray(opts)) return opts;
+  return (Array.isArray(plain) ? plain : []).map((v) => ({ value: v, label: v }));
 };
 const SORTS = [
   ['featured', 'Featured'],
@@ -22,7 +33,7 @@ const SORTS = [
 export default function Shop() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const [facets, setFacets] = useState({ fabrics: [], occasions: [], colors: [] });
+  const [facets, setFacets] = useState(EMPTY_FACETS);
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -43,7 +54,16 @@ export default function Shop() {
     // (Saree, Suit, Blouse, Potli...) showed the exact same catalog-wide
     // fabric list instead of only the fabrics that actually exist in that
     // category (matching what Shop All shows for "no category selected").
-    api.getFacets({ category }).then(setFacets).catch(() => {});
+    api
+      .getFacets({ category })
+      .then((f) =>
+        setFacets({
+          fabricOptions: asOptions(f?.fabricOptions, f?.fabrics),
+          occasionOptions: asOptions(f?.occasionOptions, f?.occasions),
+          colorOptions: asOptions(f?.colorOptions, f?.colors),
+        })
+      )
+      .catch(() => {});
   }, [category]);
 
   useEffect(() => {
@@ -82,12 +102,28 @@ export default function Shop() {
     ? `Results for “${search}”`
     : CATEGORY_LABEL[category] || 'The Collection';
 
+  // Show the friendly family label on the chip (e.g. "Wedding & Receptions"
+  // rather than the raw "Wedding") — falls back to the raw value for old links.
+  const labelFor = (options, value) =>
+    options.find(
+      (o) =>
+        o.value.toLowerCase() === String(value).toLowerCase() ||
+        (o.aliases || []).some((a) => a.toLowerCase() === String(value).toLowerCase())
+    )?.label || value;
+
   const activeChips = [
-    fabric && ['fabric', fabric],
-    occasion && ['occasion', occasion],
-    color && ['color', color],
+    fabric && ['fabric', fabric, labelFor(facets.fabricOptions, fabric)],
+    occasion && ['occasion', occasion, labelFor(facets.occasionOptions, occasion)],
+    color && ['color', color, labelFor(facets.colorOptions, color)],
   ].filter(Boolean);
 
+  // A selected value is "on" if it matches an option's value or label,
+  // ignoring case, so deep links like ?occasion=wedding still tick the box.
+  const isOn = (selected, o) =>
+    !!selected &&
+    (selected.toLowerCase() === o.value.toLowerCase() ||
+      selected.toLowerCase() === (o.label || '').toLowerCase() ||
+      (o.aliases || []).some((a) => a.toLowerCase() === selected.toLowerCase()));
   const FilterPanel = (
     <aside className={`filters ${openFilters ? 'filters--open' : ''}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -116,45 +152,61 @@ export default function Shop() {
         ))}
       </div>
 
-      {facets.fabrics.length > 0 && (
+      {facets.fabricOptions.length > 0 && (
         <div className="filter-group">
           <h4>Fabric</h4>
-          {facets.fabrics.map((f) => (
-            <label className="filter-opt" key={f}>
-              <input type="radio" name="fabric" checked={fabric === f} onChange={() => update('fabric', f)} />
-              {f}
+          {facets.fabricOptions.map((f) => (
+            <label className="filter-opt" key={f.value}>
+              <input
+                type="radio"
+                name="fabric"
+                checked={isOn(fabric, f)}
+                onChange={() => update('fabric', f.value)}
+              />
+              {f.label}
+              {f.count > 0 && <span className="filter-count">{f.count}</span>}
             </label>
           ))}
         </div>
       )}
 
-      {facets.occasions.length > 0 && (
+      {facets.occasionOptions.length > 0 && (
         <div className="filter-group">
           <h4>Occasion</h4>
-          {facets.occasions.map((o) => (
-            <label className="filter-opt" key={o}>
-              <input type="radio" name="occasion" checked={occasion === o} onChange={() => update('occasion', o)} />
-              {o}
+          {facets.occasionOptions.map((o) => (
+            <label className="filter-opt" key={o.value}>
+              <input
+                type="radio"
+                name="occasion"
+                checked={isOn(occasion, o)}
+                onChange={() => update('occasion', o.value)}
+              />
+              {o.label}
+              {o.count > 0 && <span className="filter-count">{o.count}</span>}
             </label>
           ))}
         </div>
       )}
 
-      {facets.colors.length > 0 && (
+      {facets.colorOptions.length > 0 && (
         <div className="filter-group">
           <h4>Colour</h4>
           <div className="swatches">
-            {facets.colors.map((c) => (
+            {facets.colorOptions.map((c) => (
               <button
-                key={c}
-                className={`swatch ${color === c ? 'active' : ''}`}
-                title={c}
-                aria-label={c}
-                style={{ background: colorHex(c) }}
-                onClick={() => update('color', c)}
+                key={c.value}
+                className={`swatch ${isOn(color, c) ? 'active' : ''}`}
+                title={c.count ? `${c.label} (${c.count})` : c.label}
+                aria-label={c.label}
+                aria-pressed={isOn(color, c)}
+                style={{ background: c.hex || '#cbb99a' }}
+                onClick={() => update('color', c.value)}
               />
             ))}
           </div>
+          {color && (
+            <p className="swatch-selected">{labelFor(facets.colorOptions, color)}</p>
+          )}
         </div>
       )}
 
@@ -209,9 +261,9 @@ export default function Shop() {
                       <button onClick={() => update('category', category)} aria-label="Remove">×</button>
                     </span>
                   )}
-                  {activeChips.map(([key, val]) => (
+                  {activeChips.map(([key, val, text]) => (
                     <span className="chip" key={key}>
-                      {val}
+                      {text}
                       <button onClick={() => update(key, val)} aria-label="Remove">×</button>
                     </span>
                   ))}

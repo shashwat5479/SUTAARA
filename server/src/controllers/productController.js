@@ -1,6 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
+import { buildFacet, rawValuesInFamily, resolveFamily } from '../utils/taxonomy.js';
 
 const slugify = (s) =>
   s
@@ -23,6 +24,29 @@ async function uniqueSlug(base, ignoreId) {
   }
 }
 
+// Distinct raw values of a text column (fabric / occasion / colour) with the
+// number of products using each. `where` scopes it (e.g. to one category).
+async function distinctWithCounts(field, where = {}) {
+  const groups = await prisma.product.groupBy({
+    by: [field],
+    where,
+    _count: { _all: true },
+  });
+  return groups.map((g) => ({ value: g[field], count: g._count._all }));
+}
+
+// Turns what the shopper picked in the sidebar into a Prisma filter.
+// A picked family ("Silk", "Work", "Rani Pink") matches every product whose
+// stored text belongs to that family. Anything that isn't a family (an old
+// bookmarked link such as fabric=Ajrakh Cotton) still works as an exact,
+// case-insensitive match, exactly as before.
+async function familyFilter(field, param) {
+  const family = resolveFamily(field, param);
+  if (!family) return { equals: param, mode: 'insensitive' };
+  const rows = await distinctWithCounts(field);
+  return { in: rawValuesInFamily(field, family, rows) };
+}
+
 // GET /api/products — supports filters, sort, search, pagination
 export const getProducts = asyncHandler(async (req, res) => {
   const {
@@ -42,9 +66,9 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const where = {};
   if (category) where.category = category;
-  if (fabric) where.fabric = { equals: fabric, mode: 'insensitive' };
-  if (occasion) where.occasion = { equals: occasion, mode: 'insensitive' };
-  if (color) where.color = { equals: color, mode: 'insensitive' };
+  if (fabric) where.fabric = await familyFilter('fabric', String(fabric));
+  if (occasion) where.occasion = await familyFilter('occasion', String(occasion));
+  if (color) where.color = await familyFilter('color', String(color));
   if (featured === 'true') where.featured = true;
   if (newArrival === 'true') where.isNewArrival = true;
   if (minPrice || maxPrice) {
@@ -53,7 +77,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     if (maxPrice) where.price.lte = Number(maxPrice);
   }
   if (search) {
-    where.OR = ['name', 'description', 'fabric', 'occasion'].map((field) => ({
+    where.OR = ['name', 'description', 'fabric', 'occasion', 'color'].map((field) => ({
       [field]: { contains: search, mode: 'insensitive' },
     }));
   }
@@ -87,23 +111,38 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// GET /api/products/facets — distinct values for building filter UI.
-// Accepts an optional ?category= so the sidebar only shows fabrics/occasions/
-// colors that actually exist within that category (previously this always
-// queried the whole catalog, so every category showed the same full list).
+// GET /api/products/facets — the sidebar filter options.
+// Accepts an optional ?category= so the sidebar only shows what exists in that
+// category.
+//
+// Fabric / occasion / colour are free text on each product, so listing the
+// raw values produced one sidebar row per distinct string (500 products could
+// mean 500 rows, and occasions were whole sentences). They are now grouped
+// into a short fixed set of families (see utils/taxonomy.js) with a product
+// count and, for colours, the real swatch colour.
+//
+// `fabrics` / `occasions` / `colors` stay plain arrays of family names for
+// backwards compatibility; the richer `*Options` arrays are what the shop
+// page uses.
 export const getFacets = asyncHandler(async (req, res) => {
   const { category } = req.query;
-  const where = category ? { category } : {};
-  const [fabrics, occasions, colors, agg] = await Promise.all([
-    prisma.product.findMany({ where, select: { fabric: true }, distinct: ['fabric'] }),
-    prisma.product.findMany({ where, select: { occasion: true }, distinct: ['occasion'] }),
-    prisma.product.findMany({ where, select: { color: true }, distinct: ['color'] }),
+  const where = category ? { category: String(category) } : {};
+  const [fabricRows, occasionRows, colorRows, agg] = await Promise.all([
+    distinctWithCounts('fabric', where),
+    distinctWithCounts('occasion', where),
+    distinctWithCounts('color', where),
     prisma.product.aggregate({ where, _min: { price: true }, _max: { price: true } }),
   ]);
+  const fabricOptions = buildFacet('fabric', fabricRows);
+  const occasionOptions = buildFacet('occasion', occasionRows);
+  const colorOptions = buildFacet('color', colorRows);
   res.json({
-    fabrics: fabrics.map((f) => f.fabric).filter(Boolean).sort(),
-    occasions: occasions.map((o) => o.occasion).filter(Boolean).sort(),
-    colors: colors.map((c) => c.color).filter(Boolean).sort(),
+    fabrics: fabricOptions.map((o) => o.value),
+    occasions: occasionOptions.map((o) => o.value),
+    colors: colorOptions.map((o) => o.value),
+    fabricOptions,
+    occasionOptions,
+    colorOptions,
     priceRange: { min: agg._min.price || 0, max: agg._max.price || 0 },
   });
 });
