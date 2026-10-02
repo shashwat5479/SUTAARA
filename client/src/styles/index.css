@@ -6056,3 +6056,28 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   .rail__track { gap: 12px; scroll-snap-type: x mandatory; }
   .rail__arrow { display: none; } /* phones swipe */
 }
+
+/* ---------- Collection mega menu: compact craft list ---------- */
+/* The 12 crafts were one tall column running down the whole page. They now
+   sit in 3 columns of 4, so the menu is only about as tall as its images. */
+.mega__list--grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, auto);
+  grid-auto-flow: column;
+  grid-template-rows: repeat(4, auto);
+  gap: 14px 40px !important;
+}
+.mega__list--grid a,
+.mega__list--grid button {
+  font-size: 1rem;
+  white-space: nowrap;
+}
+.mega__list--grid .mega__col-sub {
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+/* Safety net: no menu may ever be taller than the screen. */
+.mega {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+}

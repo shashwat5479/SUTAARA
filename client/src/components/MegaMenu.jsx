@@ -40,7 +40,7 @@ export default function MegaMenu({ menu, onLinkClick, onAction }) {
               ) : (
                 <h4>{col.title}</h4>
               )}
-              <ul>
+              <ul className={col.grid ? 'mega__list--grid' : undefined}>
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <MegaLink to={link.to} action={link.action} onAction={onAction}>

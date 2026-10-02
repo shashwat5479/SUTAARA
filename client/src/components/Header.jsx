@@ -102,6 +102,7 @@ const NAV_LEFT = [
       columns: [
         {
           title: 'By Craft',
+          grid: true, // laid out in 3 columns so the menu stays short
           links: [
             { label: 'Patola', sub: 'Gujarat', to: '/shop?search=Patola' },
             { label: 'Banarasi', sub: 'Varanasi, Uttar Pradesh', to: '/shop?search=Banarasi' },
