@@ -1,7 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
-import { buildFacet, rawValuesInFamily, resolveFamily } from '../utils/taxonomy.js';
+import { buildFacet, colorsOf, fabricsOf, occasionsOf, rawValuesInFamily, resolveFamily } from '../utils/taxonomy.js';
 
 const slugify = (s) =>
   s
@@ -147,6 +147,55 @@ export const getFacets = asyncHandler(async (req, res) => {
   });
 });
 
+// How many "similar / you may also like" products a product page gets.
+const RELATED_LIMIT = 16;
+
+// Ranks other products by how well they go with `product`: same fabric
+// family, colour family and occasion matter most, then a similar price, then
+// new arrivals / featured pieces. Same-category pieces always come first
+// (a saree page shows sarees); if the category is small, the row is topped up
+// from the rest of the catalogue so it's never nearly empty.
+async function findRelated(product) {
+  const overlap = (a, b) => a.some((x) => b.includes(x));
+  const fab = fabricsOf(product.fabric);
+  const col = colorsOf(product.color);
+  const occ = occasionsOf(product.occasion);
+
+  const score = (p) => {
+    let s = 0;
+    if (fab.length && overlap(fab, fabricsOf(p.fabric))) s += 3;
+    if (col.length && overlap(col, colorsOf(p.color))) s += 2;
+    if (occ.length && overlap(occ, occasionsOf(p.occasion))) s += 2;
+    if (product.price > 0 && Math.abs(p.price - product.price) <= product.price * 0.4) s += 1;
+    if (p.isNewArrival) s += 0.5;
+    if (p.featured) s += 0.5;
+    return s;
+  };
+  const rank = (list) =>
+    list
+      .map((p) => ({ p, s: score(p) }))
+      .sort((a, b) => b.s - a.s || new Date(b.p.createdAt) - new Date(a.p.createdAt))
+      .map((x) => x.p);
+
+  // Cap the candidate pool so a very large catalogue stays fast.
+  const same = await prisma.product.findMany({
+    where: { category: product.category, id: { not: product.id } },
+    orderBy: { createdAt: 'desc' },
+    take: 300,
+  });
+  let out = rank(same).slice(0, RELATED_LIMIT);
+
+  if (out.length < RELATED_LIMIT) {
+    const others = await prisma.product.findMany({
+      where: { category: { not: product.category }, id: { not: product.id } },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    out = out.concat(rank(others).slice(0, RELATED_LIMIT - out.length));
+  }
+  return out;
+}
+
 // GET /api/products/:slug
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const product = await prisma.product.findUnique({ where: { slug: req.params.slug } });
@@ -154,10 +203,7 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found');
   }
-  const related = await prisma.product.findMany({
-    where: { category: product.category, id: { not: product.id } },
-    take: 4,
-  });
+  const related = await findRelated(product);
   res.json({ product: withMongoStyleId(product), related: withMongoStyleId(related) });
 });
 

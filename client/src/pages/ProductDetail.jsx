@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { inr, discountPct, WHATSAPP_NUMBER } from '../utils/format.js';
-import ProductCard from '../components/ProductCard.jsx';
+import ProductRail from '../components/ProductRail.jsx';
 import ProductReviews from '../components/ProductReviews.jsx';
 import Lightbox from '../components/Lightbox.jsx';
 import { Heart, Minus, Plus, Whatsapp, Truck } from '../components/Icons.jsx';
@@ -303,8 +303,11 @@ export default function ProductDetail() {
               <h2>Pairs beautifully with</h2>
               <hr className="zari zari--short" />
             </div>
-            <div className="grid">
-              {related.map((p) => <ProductCard product={p} key={p._id} />)}
+            <ProductRail products={related} />
+            <div style={{ textAlign: 'center', marginTop: 28 }}>
+              <Link className="btn btn--ghost" to={`/shop?category=${product.category}`}>
+                View all
+              </Link>
             </div>
           </div>
         </section>

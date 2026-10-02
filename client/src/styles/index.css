@@ -5975,45 +5975,28 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
 }
 .edit-card:hover .edit-card__arrow { color: #fff; }
 
-/* ---- Hero WhatsApp chat button ---- */
-.hero__wa {
-  position: absolute;
-  z-index: 7;
-  right: 28px;
-  bottom: 48px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 20px 6px 6px;
-  background: #fff;
-  color: var(--ink);
-  border-radius: 999px;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
-  text-decoration: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hero__wa:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34); }
-.hero__wa-icon {
-  display: inline-flex;
+/* ---- Floating WhatsApp button (every page, icon only) ---- */
+.wa-float {
+  position: fixed;
+  z-index: 80; /* above page content, below the header (90s), drawers and lightboxes */
+  right: 22px;
+  bottom: 22px;
+  width: 56px;
+  height: 56px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   background: #25d366;
   color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.hero__wa-text {
-  font-variant: small-caps;
-  font-size: 1.15rem;
-  letter-spacing: 0.04em;
-  line-height: 1;
-}
+.wa-float:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36); }
 @media (max-width: 640px) {
-  /* Bottom-left holds the hero text on phones, so the button goes top-right */
-  .hero__wa { right: 14px; bottom: auto; top: 14px; padding: 5px 14px 5px 5px; }
-  .hero__wa-icon { width: 34px; height: 34px; }
-  .hero__wa-text { font-size: 1rem; }
+  .wa-float { right: 14px; bottom: 16px; width: 50px; height: 50px; }
+  .wa-float svg { width: 27px; height: 27px; }
 }
 
 /* Sutaara Edit page description under the page title */
@@ -6021,4 +6004,55 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   max-width: 560px;
   margin: 10px auto 0;
   color: var(--ink-soft);
+}
+
+/* ---- Product rail: horizontal "similar products" row (product page) ---- */
+.rail { position: relative; }
+.rail__track {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* room for the card's hover lift so overflow doesn't clip it */
+  padding: 8px 0 4px;
+}
+.rail__track::-webkit-scrollbar { display: none; }
+.rail__item {
+  flex: 0 0 calc((100% - 3 * 22px) / 4);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.rail__arrow {
+  position: absolute;
+  top: 34%;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.rail__arrow:hover { background: var(--ivory, #f7efe5); transform: scale(1.06); }
+.rail__arrow--prev { left: -18px; }
+.rail__arrow--next { right: -18px; }
+@media (max-width: 1024px) {
+  .rail__item { flex-basis: calc((100% - 2 * 18px) / 3); }
+  .rail__track { gap: 18px; }
+}
+@media (max-width: 640px) {
+  /* ~2.3 cards visible: the next one peeks in to show it's swipeable */
+  .rail__item { flex-basis: 42%; }
+  .rail__track { gap: 12px; scroll-snap-type: x mandatory; }
+  .rail__arrow { display: none; } /* phones swipe */
 }

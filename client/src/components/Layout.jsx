@@ -4,6 +4,7 @@ import Header from './Header.jsx';
 import Footer from './Footer.jsx';
 import BackNav from './BackNav.jsx';
 import CartDrawer from './CartDrawer.jsx';
+import WhatsAppFloat from './WhatsAppFloat.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import useScrollReveal from '../hooks/useScrollReveal.js';
 
@@ -40,6 +41,7 @@ export default function Layout() {
       </main>
       <Footer />
       <CartDrawer />
+      <WhatsAppFloat />
     </>
   );
 }

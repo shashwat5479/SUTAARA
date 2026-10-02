@@ -6,8 +6,6 @@ import HeroCarousel from '../components/HeroCarousel.jsx';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import DiaryBook from '../components/DiaryBook.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { Whatsapp } from '../components/Icons.jsx';
-import { WHATSAPP_NUMBER } from '../utils/format.js';
 
 // Pieces shown in the exhibition coverflow. Each points at a real product
 // image; the `to` link opens that piece (falls back to the shop otherwise).
@@ -107,16 +105,6 @@ export default function Home() {
           })()} onIndexChange={setHeroIndex} heroRef={heroSectionRef} />
         </div>
         <div className="hero__scrim" />
-        <a
-          className="hero__wa"
-          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi Sutaara, I’d like to know more about your collection.')}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Chat with Sutaara on WhatsApp"
-        >
-          <span className="hero__wa-icon"><Whatsapp width="22" height="22" /></span>
-          <span className="hero__wa-text">Chat</span>
-        </a>
         <div className="container">
           <div className="hero__inner reveal reveal--1">
             {(() => {
