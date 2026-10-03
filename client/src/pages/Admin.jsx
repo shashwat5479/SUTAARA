@@ -38,6 +38,56 @@ const CATEGORIES = [
   { value: 'potli', label: 'Potli / Bag' },
 ];
 
+// What each product type needs. Drives the "+ New …" buttons, the form
+// heading, which spec fields are shown, and the placeholders — so adding a
+// saree, a suit, a blouse or a bag each has its own focused form.
+const CAT_CONFIG = {
+  saree: {
+    singular: 'Saree', plural: 'Sarees',
+    namePh: 'Peacock Teal Banarasi Silk Saree',
+    skuPh: 'ABSA154',
+    sareeLength: true, blousePiece: true, dimensions: false,
+    noteLabel: 'Blouse piece note (shown as "Blouse piece")',
+    notePh: 'Comes with an unstitched blouse piece (0.8m).',
+  },
+  suit: {
+    singular: 'Suit Set', plural: 'Suit Sets',
+    namePh: 'Burnt Coral Woven Chanderi Suit',
+    skuPh: 'ABSU021',
+    sareeLength: false, blousePiece: false, dimensions: false,
+    noteLabel: 'Set contents (shown as "Set contents")',
+    notePh: 'Kurta, bottom and dupatta — unstitched, 2.5 m + 2.5 m + 2.25 m.',
+  },
+  blouse: {
+    singular: 'Blouse', plural: 'Blouses',
+    namePh: 'Mustard Raw Silk Blouse',
+    skuPh: 'ABBL012',
+    sareeLength: false, blousePiece: false, dimensions: true,
+    dimensionsLabel: 'Blouse Dimensions',
+    dimensionsPh: 'Bust 36 in; Length 15 in; Sleeve 8 in',
+    noteLabel: 'Note (shown as "Details")',
+    notePh: 'Padded, with back hook closure.',
+  },
+  dupatta: {
+    singular: 'Dupatta', plural: 'Dupattas',
+    namePh: 'Ivory Block Print Cotton Dupatta',
+    skuPh: 'ABDU008',
+    sareeLength: false, blousePiece: false, dimensions: false,
+    noteLabel: 'Note (shown as "Details")',
+    notePh: 'Length 2.25 m.',
+  },
+  potli: {
+    singular: 'Bag', plural: 'Bags',
+    namePh: 'Maroon Zari Potli Bag',
+    skuPh: 'ABPO005',
+    sareeLength: false, blousePiece: false, dimensions: true,
+    dimensionsLabel: 'Bag Dimensions',
+    dimensionsPh: '8 in (L) x 6 in (H) x 2 in (W)',
+    noteLabel: 'Note (shown as "Details")',
+    notePh: 'Drawstring closure with a detachable wrist loop.',
+  },
+};
+
 // Fabric suggestions per category — a datalist, not a hard restriction, so
 // you can still type a fabric that isn't in the list.
 const FABRICS = [
@@ -80,10 +130,10 @@ const STATUSES = [
 ];
 const APPOINTMENT_STATUSES = ['requested', 'confirmed', 'completed', 'cancelled'];
 
-function ProductForm({ initial, onDone, onCancel }) {
+function ProductForm({ initial, newCategory, onDone, onCancel }) {
   const toast = useToast();
   const [form, setForm] = useState(() => {
-    if (!initial) return EMPTY;
+    if (!initial) return { ...EMPTY, category: newCategory || EMPTY.category };
     return {
       ...EMPTY,
       ...initial,
@@ -116,6 +166,10 @@ function ProductForm({ initial, onDone, onCancel }) {
   }, []);
   const toggleEdit = (id) =>
     setEditIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+
+  // A product created from a specific "+ New …" button has its type fixed.
+  const lockCategory = !initial && !!newCategory;
+  const cfg = CAT_CONFIG[form.category] || CAT_CONFIG.saree;
 
   const set = (k) => (e) =>
     setForm((f) => ({
@@ -186,18 +240,18 @@ function ProductForm({ initial, onDone, onCancel }) {
 
   return (
     <form onSubmit={submit} className="checkout__panel admin-form">
-      <h3>{initial ? 'Edit product' : 'New product'}</h3>
+      <h3>{initial ? `Edit ${cfg.singular.toLowerCase()}` : `New ${cfg.singular.toLowerCase()}`}</h3>
 
       <div className="field">
         <label>Name</label>
-        <input value={form.name} onChange={set('name')} required placeholder="Peacock Teal Banarasi Silk Saree" />
+        <input value={form.name} onChange={set('name')} required placeholder={cfg.namePh} />
       </div>
 
       <p className="admin-form__legend">Specifications</p>
       <div className="field__row">
         <div className="field">
           <label>Category</label>
-          <select value={form.category} onChange={set('category')}>
+          <select value={form.category} onChange={set('category')} disabled={lockCategory}>
             {CATEGORIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
@@ -232,38 +286,34 @@ function ProductForm({ initial, onDone, onCancel }) {
       <div className="field__row">
         <div className="field">
           <label>SKU</label>
-          <input value={form.sku} onChange={set('sku')} placeholder="ABSA154" />
+          <input value={form.sku} onChange={set('sku')} placeholder={cfg.skuPh} />
         </div>
-        <div className="field">
-          <label>Saree Length <span className="field__opt">(sarees only)</span></label>
-          <input value={form.sareeLength} onChange={set('sareeLength')} placeholder="5.5 m" />
-        </div>
+        {cfg.sareeLength && (
+          <div className="field">
+            <label>Saree Length</label>
+            <input value={form.sareeLength} onChange={set('sareeLength')} placeholder="5.5 m" />
+          </div>
+        )}
+        {cfg.dimensions && (
+          <div className="field">
+            <label>{cfg.dimensionsLabel} <span className="field__opt">(shown under Product Details)</span></label>
+            <input value={form.dimensions || ''} onChange={set('dimensions')} placeholder={cfg.dimensionsPh} />
+          </div>
+        )}
       </div>
 
       <div className="field__row">
-        <div className="field">
-          <label>Blouse Piece <span className="field__opt">(sarees only)</span></label>
-          <input value={form.blousePiece} onChange={set('blousePiece')} placeholder="Yes; 1 m" />
-        </div>
+        {cfg.blousePiece && (
+          <div className="field">
+            <label>Blouse Piece</label>
+            <input value={form.blousePiece} onChange={set('blousePiece')} placeholder="Yes; 1 m" />
+          </div>
+        )}
         <div className="field">
           <label>Care</label>
           <input value={form.care} onChange={set('care')} placeholder="Dry clean only" />
         </div>
       </div>
-
-      {(form.category === 'blouse' || form.category === 'potli') && (
-        <div className="field">
-          <label>
-            {form.category === 'blouse' ? 'Blouse Dimensions' : 'Bag Dimensions'}{' '}
-            <span className="field__opt">(shown under Product Details)</span>
-          </label>
-          <input
-            value={form.dimensions || ''}
-            onChange={set('dimensions')}
-            placeholder={form.category === 'blouse' ? 'Bust 36 in; Length 15 in; Sleeve 8 in' : '8 in (L) x 6 in (H) x 2 in (W)'}
-          />
-        </div>
-      )}
 
       <div className="field">
         <label>Sutaara Styling Note <span className="field__opt">(optional)</span></label>
@@ -300,8 +350,8 @@ function ProductForm({ initial, onDone, onCancel }) {
         <textarea rows="2" value={form.care} onChange={set('care')} />
       </div>
       <div className="field">
-        <label>Note (shown as "Blouse piece" on sarees, "Set contents" on suits)</label>
-        <input value={form.blouseNote} onChange={set('blouseNote')} placeholder="Comes with an unstitched blouse piece (0.8m)." />
+        <label>{cfg.noteLabel}</label>
+        <input value={form.blouseNote} onChange={set('blouseNote')} placeholder={cfg.notePh} />
       </div>
 
       {allEdits.length > 0 && (
@@ -389,15 +439,19 @@ function StockCell({ product, onSaved }) {
 function ProductsTab() {
   const toast = useToast();
   const [products, setProducts] = useState([]);
-  const [editing, setEditing] = useState(null); // product | 'new' | null
+  const [editing, setEditing] = useState(null); // product | { newCategory } | null
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all'); // 'all' | category value
+  const [search, setSearch] = useState('');
 
+  // Loads EVERY product from the uncached admin endpoint (the public list is
+  // capped at 60 per page, which hid products beyond the 60th).
   const load = () => {
     setLoading(true);
     api
-      .getProducts({ limit: 60, sort: 'newest' })
+      .getAdminProducts()
       .then((res) => setProducts(res.products))
-      .catch(() => {})
+      .catch((err) => toast(err.message || 'Could not load products'))
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
@@ -414,11 +468,15 @@ function ProductsTab() {
   };
 
   if (editing) {
+    const isNew = !!editing.newCategory;
     return (
       <ProductForm
-        initial={editing === 'new' ? null : editing}
+        initial={isNew ? null : editing}
+        newCategory={isNew ? editing.newCategory : undefined}
         onCancel={() => setEditing(null)}
         onDone={() => {
+          // Jump to the type just saved so the product is visible straight away.
+          if (isNew) setFilter(editing.newCategory);
           setEditing(null);
           load();
         }}
@@ -426,29 +484,77 @@ function ProductsTab() {
     );
   }
 
+  const countOf = (c) => products.filter((p) => p.category === c).length;
+  const term = search.trim().toLowerCase();
+  const visible = products.filter(
+    (p) =>
+      (filter === 'all' || p.category === filter) &&
+      (!term ||
+        [p.name, p.sku, p.fabric, p.color].some((v) => String(v || '').toLowerCase().includes(term)))
+  );
+  const outOfStock = visible.filter((p) => p.stock === 0).length;
+
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14, alignItems: 'center' }}>
+        <span style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginRight: 4 }}>Add new:</span>
+        {Object.entries(CAT_CONFIG).map(([value, c]) => (
+          <button
+            key={value}
+            className="btn btn--primary btn--sm"
+            onClick={() => setEditing({ newCategory: value })}
+          >
+            + {c.singular}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+        <button
+          className={`btn btn--sm ${filter === 'all' ? 'btn--primary' : 'btn--ghost'}`}
+          onClick={() => setFilter('all')}
+        >
+          All ({products.length})
+        </button>
+        {Object.entries(CAT_CONFIG).map(([value, c]) => (
+          <button
+            key={value}
+            className={`btn btn--sm ${filter === value ? 'btn--primary' : 'btn--ghost'}`}
+            onClick={() => setFilter(value)}
+          >
+            {c.plural} ({countOf(value)})
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
         <span className="shop__count">
-          {products.length} products
-          {products.some((p) => p.stock === 0) && (
+          {visible.length} {visible.length === 1 ? 'product' : 'products'}
+          {outOfStock > 0 && (
             <span style={{ color: 'var(--sindoor)', fontWeight: 600, marginLeft: 10 }}>
-              · {products.filter((p) => p.stock === 0).length} out of stock
+              · {outOfStock} out of stock
             </span>
           )}
         </span>
-        <button className="btn btn--primary btn--sm" onClick={() => setEditing('new')}>
-          + New product
-        </button>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search name, SKU, fabric, colour…"
+          style={{ minWidth: 240, padding: '8px 12px', border: '1px solid var(--line-strong)', background: 'transparent' }}
+        />
       </div>
       {loading ? (
         <div className="loader"><div className="spinner" /></div>
+      ) : visible.length === 0 ? (
+        <p style={{ color: 'var(--ink-soft)' }}>No products here yet.</p>
       ) : (
         <table className="table">
           <thead>
             <tr>
               <th></th>
               <th>Name</th>
+              <th>SKU</th>
               <th>Category</th>
               <th>Price</th>
               <th>Stock</th>
@@ -456,11 +562,12 @@ function ProductsTab() {
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => (
+            {visible.map((p) => (
               <tr key={p._id}>
                 <td><img src={p.images?.[0]} alt="" /></td>
                 <td>{p.name}</td>
-                <td style={{ textTransform: 'capitalize' }}>{p.category}</td>
+                <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{p.sku || '—'}</td>
+                <td>{CAT_CONFIG[p.category]?.singular || p.category}</td>
                 <td>{inr(p.price)}</td>
                 <td>
                   <StockCell

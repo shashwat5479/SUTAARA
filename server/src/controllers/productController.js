@@ -196,6 +196,29 @@ async function findRelated(product) {
   return out;
 }
 
+// GET /api/products/admin/list (admin)
+// The admin products table needs EVERY product. The public list endpoint is
+// capped at 60 per page and CDN-cached for 60s, so an admin with more than 60
+// products only ever saw the first 60 (the rest looked "removed"), and a
+// product added a moment ago could be missing from a stale cached list.
+// This endpoint has no page cap and is never cached.
+export const getAdminProducts = asyncHandler(async (req, res) => {
+  const { category, search } = req.query;
+  const where = {};
+  if (category) where.category = String(category);
+  if (search) {
+    where.OR = ['name', 'sku', 'fabric', 'color'].map((field) => ({
+      [field]: { contains: String(search), mode: 'insensitive' },
+    }));
+  }
+  const [items, total] = await Promise.all([
+    prisma.product.findMany({ where, orderBy: [{ createdAt: 'desc' }] }),
+    prisma.product.count({ where }),
+  ]);
+  res.set('Cache-Control', 'no-store');
+  res.json({ products: withMongoStyleId(items), total });
+});
+
 // GET /api/products/:slug
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const product = await prisma.product.findUnique({ where: { slug: req.params.slug } });

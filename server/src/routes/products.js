@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getProducts,
+  getAdminProducts,
   getFacets,
   getProductBySlug,
   createProduct,
@@ -23,6 +24,8 @@ const cdnCache = (req, res, next) => {
 
 router.get('/', cdnCache, getProducts);
 router.get('/facets', cdnCache, getFacets);
+// Must stay above '/:slug' or "admin" would be treated as a product slug.
+router.get('/admin/list', protect, admin, getAdminProducts);
 router.get('/:slug', cdnCache, getProductBySlug);
 
 router.post('/', protect, admin, createProduct);
