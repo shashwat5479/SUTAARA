@@ -14,6 +14,7 @@ import {
   updateMe,
   getAddresses,
   addAddress,
+  updateAddress,
   deleteAddress,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
@@ -35,6 +36,7 @@ router.put('/me', protect, updateMe);
 
 router.get('/addresses', protect, getAddresses);
 router.post('/addresses', protect, addAddress);
+router.put('/addresses/:id', protect, updateAddress);
 router.delete('/addresses/:id', protect, deleteAddress);
 
 export default router;

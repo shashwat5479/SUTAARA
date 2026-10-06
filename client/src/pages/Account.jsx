@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { api } from '../api/client.js';
 import { inr } from '../utils/format.js';
+import AddressFields from '../components/AddressFields.jsx';
 import { fmtDate, statusText, statusHeadline, orderNo, OrderItemRow, OrderActions, useOrderActions } from '../components/OrderParts.jsx';
 
 const ORDER_FILTERS = [
@@ -101,6 +102,137 @@ function OrdersTab() {
   );
 }
 
+const blankAddress = (user) => ({
+  label: 'Home', fullName: user?.name || '', phone: user?.phone || '',
+  line1: '', line2: '', city: '', state: '', pincode: '',
+});
+
+// Manage saved delivery addresses: add (optionally from the current
+// location), edit, delete and choose the default. Checkout offers the same list.
+function AddressesTab() {
+  const { user } = useAuth();
+  const toast = useToast();
+  const [addresses, setAddresses] = useState(null);
+  const [editing, setEditing] = useState(null); // null | 'new' | address id
+  const [form, setForm] = useState(blankAddress(user));
+  const [makeDefault, setMakeDefault] = useState(false);
+  const [locateTick, setLocateTick] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  const load = () =>
+    api.getAddresses().then(setAddresses).catch((err) => { setAddresses([]); toast(err.message); });
+  useEffect(() => { load(); }, []);
+
+  const openNew = (locate) => {
+    setForm(blankAddress(user));
+    setMakeDefault(false);
+    setEditing('new');
+    if (locate) setLocateTick((n) => n + 1);
+  };
+  const openEdit = (a) => {
+    setForm({
+      label: a.label || 'Home', fullName: a.fullName, phone: a.phone, line1: a.line1,
+      line2: a.line2 || '', city: a.city, state: a.state, pincode: a.pincode,
+    });
+    setMakeDefault(a.isDefault);
+    setEditing(a._id);
+  };
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (editing === 'new') await api.addAddress({ ...form, isDefault: makeDefault });
+      else await api.updateAddress(editing, { ...form, ...(makeDefault ? { isDefault: true } : {}) });
+      toast('Address saved');
+      setEditing(null);
+      await load();
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (a) => {
+    if (!window.confirm('Remove this address?')) return;
+    try {
+      await api.deleteAddress(a._id);
+      toast('Address removed');
+      load();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  const setDefault = async (a) => {
+    try {
+      await api.updateAddress(a._id, { isDefault: true });
+      load();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  if (addresses === null) return <div className="loader"><div className="spinner" /></div>;
+
+  if (editing) {
+    return (
+      <form className="checkout__panel" onSubmit={save}>
+        <h3>{editing === 'new' ? 'Add a new address' : 'Edit address'}</h3>
+        <AddressFields form={form} setForm={setForm} autoLocate={locateTick} />
+        <label className="addr-save">
+          <input type="checkbox" checked={makeDefault} onChange={(e) => setMakeDefault(e.target.checked)} />
+          Make this my default address
+        </label>
+        <div className="addr-form-actions">
+          <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save address'}</button>
+          <button type="button" className="addr-link" onClick={() => setEditing(null)}>Cancel</button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <div>
+      <div className="addr-head">
+        <h3 style={{ margin: 0 }}>Saved addresses</h3>
+        <button type="button" className="addr-link" onClick={() => openNew(true)}>◎ Use my current location</button>
+      </div>
+      {addresses.length === 0 && (
+        <p style={{ color: 'var(--ink-soft)', margin: '14px 0' }}>
+          No saved addresses yet. Add one and checkout will be a single tap.
+        </p>
+      )}
+      <div className="addr-list" style={{ marginTop: 16 }}>
+        {addresses.map((a) => (
+          <div key={a._id} className="addr-card addr-card--static">
+            <div className="addr-card__body">
+              <div className="addr-card__top">
+                <strong>{a.fullName}</strong>
+                <span className="addr-tag">{a.label}</span>
+                {a.isDefault && <span className="addr-tag addr-tag--default">Default</span>}
+              </div>
+              <p>
+                {a.line1}{a.line2 ? `, ${a.line2}` : ''}
+                <br />
+                {a.city}, {a.state} – {a.pincode}
+              </p>
+              <p className="addr-card__phone">Mobile: {a.phone}</p>
+              <div className="addr-card__actions">
+                <button type="button" onClick={() => openEdit(a)}>Edit</button>
+                <button type="button" onClick={() => remove(a)}>Remove</button>
+                {!a.isDefault && <button type="button" onClick={() => setDefault(a)}>Set as default</button>}
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" className="addr-add" onClick={() => openNew(false)}>+ Add a new address</button>
+      </div>
+    </div>
+  );
+}
+
 function ProfileTab() {
   const { user, updateProfile } = useAuth();
   const toast = useToast();
@@ -167,6 +299,9 @@ export default function Account() {
               <button className={tab === 'orders' ? 'active' : ''} onClick={() => setTab('orders')}>
                 My Orders
               </button>
+              <button className={tab === 'addresses' ? 'active' : ''} onClick={() => setTab('addresses')}>
+                Addresses
+              </button>
               <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>
                 Profile
               </button>
@@ -180,7 +315,7 @@ export default function Account() {
               )}
               <button onClick={logout} style={{ color: 'var(--sindoor)' }}>Sign out</button>
             </div>
-            <div>{tab === 'orders' ? <OrdersTab /> : <ProfileTab />}</div>
+            <div>{tab === 'orders' ? <OrdersTab /> : tab === 'addresses' ? <AddressesTab /> : <ProfileTab />}</div>
           </div>
         </div>
       </section>

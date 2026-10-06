@@ -3,6 +3,7 @@ import {
   createAppointment,
   getMyAppointments,
   getAllAppointments,
+  exportAppointments,
   updateAppointmentStatus,
 } from '../controllers/appointmentController.js';
 import { protect, admin } from '../middleware/auth.js';
@@ -18,6 +19,7 @@ const optionalAuth = (req, res, next) => {
 
 router.post('/', optionalAuth, createAppointment);
 router.get('/mine', protect, getMyAppointments);
+router.get('/export', protect, admin, exportAppointments);
 router.get('/', protect, admin, getAllAppointments);
 router.put('/:id/status', protect, admin, updateAppointmentStatus);
 

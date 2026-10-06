@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  createOrder, getMyOrders, getOrderById, getAllOrders,
+  createOrder, getMyOrders, getOrderById, getAllOrders, exportOrders,
   updateOrderStatus, setReturnEligibility, requestReturn,
   getShiprocketStatus, shipWithShiprocket, shipManually, getShippingLabelUrl,
 } from '../controllers/orderController.js';
@@ -13,6 +13,7 @@ router.post('/', protect, createOrder);
 router.get('/mine', protect, getMyOrders);
 router.get('/shiprocket/status', protect, staffOrAbove, getShiprocketStatus);
 router.get('/', protect, staffOrAbove, getAllOrders);
+router.get('/export', protect, admin, exportOrders);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, staffOrAbove, updateOrderStatus);
 router.patch('/:id/return-eligibility', protect, staffOrAbove, setReturnEligibility);

@@ -1,4 +1,5 @@
 import { prisma } from '../config/db.js';
+import { sendXlsx, istDayStart, istDayEnd } from '../utils/xlsx.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { createShipment, isShiprocketConfigured, getShiprocketLabel } from '../services/shipping.js';
@@ -76,7 +77,8 @@ export async function markOrderPaymentFailed(orderId) {
 // original version, which never touched stock at all and could oversell
 // a product under concurrent orders.
 export const createOrder = asyncHandler(async (req, res) => {
-  const { items, shippingAddress, paymentMethod = 'cod', couponCode } = req.body;
+  const { items, shippingAddress, couponCode } = req.body;
+  const paymentMethod = req.body.paymentMethod === 'online' ? 'online' : 'cod';
   if (!items || items.length === 0) {
     res.status(400);
     throw new Error('Your bag is empty');
@@ -108,6 +110,19 @@ export const createOrder = asyncHandler(async (req, res) => {
         qty,
       };
     });
+
+    // Cash on delivery only for products an admin has switched COD on for.
+    if (paymentMethod === 'cod') {
+      const blocked = [...new Set(items.map((i) => map.get(i.product)).filter((p) => p && !p.codAvailable).map((p) => p.name))];
+      if (blocked.length) {
+        throw Object.assign(
+          new Error(
+            `Cash on delivery isn't available for ${blocked.map((n) => `"${n}"`).join(', ')}. Please choose online payment.`
+          ),
+          { status: 400 }
+        );
+      }
+    }
 
     const itemsPrice = orderItemsData.reduce((sum, i) => sum + i.price * i.qty, 0);
 
@@ -208,7 +223,7 @@ async function withItemLinks(orders) {
   const products = ids.length
     ? await prisma.product.findMany({
         where: { id: { in: ids } },
-        select: { id: true, slug: true, archived: true, stock: true, images: true },
+        select: { id: true, slug: true, archived: true, stock: true, images: true, sku: true, category: true },
       })
     : [];
   const byId = new Map(products.map((p) => [p.id, p]));
@@ -220,6 +235,8 @@ async function withItemLinks(orders) {
         ...i,
         slug: p ? p.slug : i.slug,
         image: i.image || (p && p.images && p.images[0]) || '',
+        sku: (p && p.sku) || '',
+        category: (p && p.category) || '',
         available: !!p && !p.archived,
         inStock: !!p && !p.archived && p.stock > 0,
       };
@@ -273,7 +290,126 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     },
     orderBy: { createdAt: 'desc' },
   });
-  res.json(withMongoStyleId(orders));
+  res.json(withMongoStyleId(await withItemLinks(orders)));
+});
+
+// GET /api/orders/export?from=YYYY-MM-DD&to=YYYY-MM-DD&status=… (admin) — .xlsx
+// Sheet 1: one row per order. Sheet 2: one row per item, so the file can be
+// pivoted by product. Dates are filtered and shown in IST.
+export const exportOrders = asyncHandler(async (req, res) => {
+  const { from, to, status } = req.query;
+  const where = {};
+  const gte = istDayStart(from);
+  const lte = istDayEnd(to);
+  if (gte || lte) where.createdAt = { ...(gte && { gte }), ...(lte && { lte }) };
+  if (status && status !== 'all') where.status = String(status);
+
+  const orders = await prisma.order.findMany({
+    where,
+    include: { items: true, user: { select: { name: true, email: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const productIds = [...new Set(orders.flatMap((o) => o.items.map((i) => i.productId)))];
+  const products = productIds.length
+    ? await prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, sku: true, category: true } })
+    : [];
+  const prod = new Map(products.map((p) => [p.id, p]));
+  const label = (s) => String(s || '').replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+  const orderRows = orders.map((o) => ({
+    orderNumber: o.orderNumber,
+    date: o.createdAt,
+    status: label(o.status),
+    customer: o.fullName,
+    accountName: o.user?.name || '',
+    email: o.user?.email || '',
+    phone: o.phone,
+    address: [o.line1, o.line2].filter(Boolean).join(', '),
+    city: o.city,
+    state: o.state,
+    pincode: o.pincode,
+    items: o.items.map((i) => `${i.name} × ${i.qty}`).join('\n'),
+    qty: o.items.reduce((n, i) => n + i.qty, 0),
+    itemsPrice: o.itemsPrice,
+    shipping: o.shippingPrice,
+    discount: o.discountPrice,
+    tax: o.taxPrice,
+    total: o.totalPrice,
+    payment: o.paymentMethod === 'cod' ? 'Cash on delivery' : 'Online',
+    paymentStatus: label(o.paymentStatus === 'not_applicable' ? '' : o.paymentStatus),
+    paid: o.isPaid ? 'Yes' : 'No',
+    courier: o.courierName || '',
+    awb: o.awbNumber || '',
+    invoice: o.invoiceNumber || '',
+    shippedAt: o.shippedAt,
+  }));
+
+  const itemRows = orders.flatMap((o) =>
+    o.items.map((i) => ({
+      orderNumber: o.orderNumber,
+      date: o.createdAt,
+      status: label(o.status),
+      customer: o.fullName,
+      sku: prod.get(i.productId)?.sku || '',
+      category: prod.get(i.productId)?.category || '',
+      product: i.name,
+      qty: i.qty,
+      price: i.price,
+      lineTotal: i.price * i.qty,
+    }))
+  );
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  sendXlsx(res, `sutaara-orders-${stamp}.xlsx`, [
+    {
+      name: 'Orders',
+      columns: [
+        { header: 'Order #', key: 'orderNumber', width: 14 },
+        { header: 'Order date (IST)', key: 'date', type: 'datetime', width: 19 },
+        { header: 'Status', key: 'status', width: 16 },
+        { header: 'Ship-to name', key: 'customer', width: 22 },
+        { header: 'Account name', key: 'accountName', width: 22 },
+        { header: 'Email', key: 'email', width: 28 },
+        { header: 'Phone', key: 'phone', width: 14 },
+        { header: 'Address', key: 'address', width: 38 },
+        { header: 'City', key: 'city', width: 16 },
+        { header: 'State', key: 'state', width: 18 },
+        { header: 'PIN', key: 'pincode', width: 9 },
+        { header: 'Items', key: 'items', width: 44, wrap: true },
+        { header: 'Qty', key: 'qty', type: 'number', width: 6 },
+        { header: 'Items (₹)', key: 'itemsPrice', type: 'number', width: 11 },
+        { header: 'Shipping (₹)', key: 'shipping', type: 'number', width: 12 },
+        { header: 'Discount (₹)', key: 'discount', type: 'number', width: 12 },
+        { header: 'Tax (₹)', key: 'tax', type: 'number', width: 9 },
+        { header: 'Total (₹)', key: 'total', type: 'number', width: 11 },
+        { header: 'Payment', key: 'payment', width: 17 },
+        { header: 'Payment status', key: 'paymentStatus', width: 15 },
+        { header: 'Paid', key: 'paid', width: 7 },
+        { header: 'Courier', key: 'courier', width: 16 },
+        { header: 'AWB / tracking no.', key: 'awb', width: 20 },
+        { header: 'Invoice #', key: 'invoice', width: 16 },
+        { header: 'Shipped on', key: 'shippedAt', type: 'datetime', width: 19 },
+      ],
+      rows: orderRows,
+    },
+    {
+      name: 'Order items',
+      columns: [
+        { header: 'Order #', key: 'orderNumber', width: 14 },
+        { header: 'Order date (IST)', key: 'date', type: 'datetime', width: 19 },
+        { header: 'Status', key: 'status', width: 16 },
+        { header: 'Ship-to name', key: 'customer', width: 22 },
+        { header: 'SKU', key: 'sku', width: 14 },
+        { header: 'Category', key: 'category', width: 12 },
+        { header: 'Product', key: 'product', width: 46 },
+        { header: 'Qty', key: 'qty', type: 'number', width: 6 },
+        { header: 'Price (₹)', key: 'price', type: 'number', width: 11 },
+        { header: 'Line total (₹)', key: 'lineTotal', type: 'number', width: 14 },
+      ],
+      rows: itemRows,
+    },
+  ]);
 });
 
 const VALID_STATUSES = [

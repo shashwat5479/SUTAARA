@@ -1,6 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
+import { sendXlsx, istDayStart, istDayEnd } from '../utils/xlsx.js';
 import { notifyCustomerAppointment, notifyOwnerNewAppointment } from '../services/notify.js';
 
 export const SERVICES = [
@@ -79,6 +80,47 @@ export const getAllAppointments = asyncHandler(async (req, res) => {
     include: { user: { select: { name: true, email: true } } },
   });
   res.json(withMongoStyleId(appointments));
+});
+
+// GET /api/appointments/export?from=YYYY-MM-DD&to=YYYY-MM-DD&status=… — admin, .xlsx
+// from/to filter on the appointment date (not when it was requested).
+export const exportAppointments = asyncHandler(async (req, res) => {
+  const { from, to, status } = req.query;
+  const where = {};
+  const gte = istDayStart(from);
+  const lte = istDayEnd(to);
+  if (gte || lte) where.preferredDate = { ...(gte && { gte }), ...(lte && { lte }) };
+  if (status && status !== 'all') where.status = String(status);
+  const list = await prisma.appointment.findMany({ where, orderBy: { preferredDate: 'asc' } });
+  const label = (s) => String(s || '').replace(/^./, (c) => c.toUpperCase());
+  const stamp = new Date().toISOString().slice(0, 10);
+  sendXlsx(res, `sutaara-appointments-${stamp}.xlsx`, [
+    {
+      name: 'Appointments',
+      columns: [
+        { header: 'Appointment date', key: 'date', type: 'date', width: 17 },
+        { header: 'Time slot', key: 'time', width: 12 },
+        { header: 'Name', key: 'name', width: 22 },
+        { header: 'Phone', key: 'phone', width: 14 },
+        { header: 'Email', key: 'email', width: 28 },
+        { header: 'Service', key: 'service', width: 28 },
+        { header: 'Status', key: 'status', width: 12 },
+        { header: 'Notes', key: 'notes', width: 44, wrap: true },
+        { header: 'Requested on (IST)', key: 'created', type: 'datetime', width: 19 },
+      ],
+      rows: list.map((a) => ({
+        date: a.preferredDate,
+        time: a.preferredTime,
+        name: a.name,
+        phone: a.phone,
+        email: a.email,
+        service: a.service,
+        status: label(a.status),
+        notes: a.notes,
+        created: a.createdAt,
+      })),
+    },
+  ]);
 });
 
 // PUT /api/appointments/:id/status — admin only

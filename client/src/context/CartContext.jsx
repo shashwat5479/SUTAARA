@@ -61,6 +61,7 @@ export function CartProvider({ children }) {
           price: product.price,
           qty: nextQty,
           stock,
+          codAvailable: !!product.codAvailable,
         },
       ];
     });
@@ -116,6 +117,7 @@ export function CartProvider({ children }) {
           image: p.images?.[0] || i.image,
           price: p.price,
           stock: p.stock,
+          codAvailable: !!p.codAvailable,
         });
       }
     }

@@ -139,6 +139,9 @@ model Product {
   // Hidden from the shop/cart but kept so past orders still reference it.
   // A product with orders is archived instead of hard-deleted.
   archived     Boolean     @default(false)
+  // Cash on delivery is OFF for every product (new and existing) until an
+  // admin switches it on for that product.
+  codAvailable Boolean     @default(false)
   stylingNote  String      @default("")
   price        Int
   mrp          Int         @default(0)

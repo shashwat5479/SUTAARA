@@ -586,7 +586,14 @@ export const addAddress = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Full name, phone, address line 1, city, state and pincode are required');
   }
-  if (isDefault) {
+  const existing = await prisma.address.count({ where: { userId: req.user.id } });
+  if (existing >= 15) {
+    res.status(400);
+    throw new Error('You can save up to 15 addresses — please remove one first');
+  }
+  // The very first address becomes the default automatically.
+  const makeDefault = Boolean(isDefault) || existing === 0;
+  if (makeDefault) {
     await prisma.address.updateMany({ where: { userId: req.user.id }, data: { isDefault: false } });
   }
   const address = await prisma.address.create({
@@ -600,10 +607,40 @@ export const addAddress = asyncHandler(async (req, res) => {
       city,
       state,
       pincode,
-      isDefault: Boolean(isDefault),
+      isDefault: makeDefault,
     },
   });
   res.status(201).json(withMongoStyleId(address));
+});
+
+// PUT /api/auth/addresses/:id — edit a saved address (and/or make it the default)
+export const updateAddress = asyncHandler(async (req, res) => {
+  const address = await prisma.address.findUnique({ where: { id: req.params.id } });
+  if (!address || address.userId !== req.user.id) {
+    res.status(404);
+    throw new Error('Address not found');
+  }
+  const b = req.body;
+  const next = {
+    label: b.label ?? address.label,
+    fullName: b.fullName ?? address.fullName,
+    phone: b.phone ?? address.phone,
+    line1: b.line1 ?? address.line1,
+    line2: b.line2 ?? address.line2,
+    city: b.city ?? address.city,
+    state: b.state ?? address.state,
+    pincode: b.pincode ?? address.pincode,
+  };
+  if (!next.fullName || !next.phone || !next.line1 || !next.city || !next.state || !next.pincode) {
+    res.status(400);
+    throw new Error('Full name, phone, address line 1, city, state and pincode are required');
+  }
+  if (b.isDefault === true) {
+    await prisma.address.updateMany({ where: { userId: req.user.id }, data: { isDefault: false } });
+    next.isDefault = true;
+  }
+  const updated = await prisma.address.update({ where: { id: address.id }, data: next });
+  res.json(withMongoStyleId(updated));
 });
 
 // DELETE /api/auth/addresses/:id
@@ -614,5 +651,10 @@ export const deleteAddress = asyncHandler(async (req, res) => {
     throw new Error('Address not found');
   }
   await prisma.address.delete({ where: { id: req.params.id } });
+  // Deleting the default promotes the most recent remaining address.
+  if (address.isDefault) {
+    const next = await prisma.address.findFirst({ where: { userId: req.user.id }, orderBy: { createdAt: 'desc' } });
+    if (next) await prisma.address.update({ where: { id: next.id }, data: { isDefault: true } });
+  }
   res.json({ message: 'Address removed' });
 });

@@ -1,5 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { api } from '../api/client.js';
+import ExportBar from '../components/ExportBar.jsx';
+import AdminOrderModal from '../components/AdminOrderModal.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
@@ -28,6 +30,7 @@ const EMPTY = {
   stock: 10,
   featured: false,
   isNewArrival: false,
+  codAvailable: false,
 };
 
 const CATEGORIES = [
@@ -211,6 +214,7 @@ function ProductForm({ initial, newCategory, onDone, onCancel }) {
         blouseNote: form.blouseNote.trim(),
         featured: !!form.featured,
         isNewArrival: !!form.isNewArrival,
+        codAvailable: !!form.codAvailable,
       };
       let productId = initial ? initial._id : null;
       if (initial) {
@@ -376,6 +380,9 @@ function ProductForm({ initial, newCategory, onDone, onCancel }) {
         <label className="filter-opt">
           <input type="checkbox" checked={form.isNewArrival} onChange={set('isNewArrival')} /> New arrival
         </label>
+        <label className="filter-opt" title="Off by default. When off, customers must pay online for this product.">
+          <input type="checkbox" checked={!!form.codAvailable} onChange={set('codAvailable')} /> Allow cash on delivery
+        </label>
       </div>
 
       <div style={{ display: 'flex', gap: 12 }}>
@@ -472,6 +479,21 @@ function ProductsTab() {
     }
   };
 
+  // Quick switch in the list: turn cash on delivery on/off for one product.
+  const toggleCod = async (p) => {
+    const next = !p.codAvailable;
+    const apply = (value) =>
+      setProducts((cur) => cur.map((x) => (x._id === p._id ? { ...x, codAvailable: value } : x)));
+    apply(next);
+    try {
+      await api.updateProduct(p._id, { codAvailable: next });
+      toast(next ? 'Cash on delivery turned ON for this product' : 'Cash on delivery turned OFF for this product');
+    } catch (err) {
+      apply(!next);
+      toast(err.message);
+    }
+  };
+
   const restore = async (p) => {
     try {
       await api.updateProduct(p._id, { archived: false });
@@ -507,7 +529,9 @@ function ProductsTab() {
   const term = search.trim().toLowerCase();
   const visible = products.filter(
     (p) =>
-      (filter === 'archived' ? p.archived : !p.archived && (filter === 'all' || p.category === filter)) &&
+      (filter === 'archived'
+        ? p.archived
+        : !p.archived && (filter === 'all' || (filter === 'cod' ? p.codAvailable : p.category === filter))) &&
       (!term ||
         [p.name, p.sku, p.fabric, p.color].some((v) => String(v || '').toLowerCase().includes(term)))
   );
@@ -515,6 +539,7 @@ function ProductsTab() {
 
   return (
     <>
+      <ExportBar path="/products/admin/export" filePrefix="sutaara-products" label="Download products (Excel)" />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14, alignItems: 'center' }}>
         <span style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginRight: 4 }}>Add new:</span>
         {Object.entries(CAT_CONFIG).map(([value, c]) => (
@@ -544,6 +569,12 @@ function ProductsTab() {
             {c.plural} ({countOf(value)})
           </button>
         ))}
+        <button
+          className={`btn btn--sm ${filter === 'cod' ? 'btn--primary' : 'btn--ghost'}`}
+          onClick={() => setFilter('cod')}
+        >
+          COD on ({live.filter((p) => p.codAvailable).length})
+        </button>
         {archivedCount > 0 && (
           <button
             className={`btn btn--sm ${filter === 'archived' ? 'btn--primary' : 'btn--ghost'}`}
@@ -585,6 +616,7 @@ function ProductsTab() {
               <th>Category</th>
               <th>Price</th>
               <th>Stock</th>
+              <th title="Cash on delivery">COD</th>
               <th></th>
             </tr>
           </thead>
@@ -606,6 +638,12 @@ function ProductsTab() {
                       setProducts((prev) => prev.map((x) => (x._id === updated._id ? updated : x)))
                     }
                   />
+                </td>
+                <td>
+                  <label className="cod-switch" title="Allow cash on delivery for this product">
+                    <input type="checkbox" checked={!!p.codAvailable} onChange={() => toggleCod(p)} />
+                    <span>{p.codAvailable ? 'On' : 'Off'}</span>
+                  </label>
                 </td>
                 <td className="table__actions">
                   <button onClick={() => setEditing(p)}>Edit</button>
@@ -701,6 +739,7 @@ function OrdersTab() {
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [shiprocketReady, setShiprocketReady] = useState(false);
   const [manualShipFor, setManualShipFor] = useState(null); // order id currently in the manual-ship form
+  const [viewing, setViewing] = useState(null); // order whose items/details are open
 
   const load = () => {
     setLoading(true);
@@ -800,6 +839,14 @@ function OrdersTab() {
 
   return (
     <div>
+      {viewing && <AdminOrderModal order={viewing} onClose={() => setViewing(null)} />}
+      <ExportBar
+        path="/orders/export"
+        filePrefix="sutaara-orders"
+        dateLabel="Order date"
+        statuses={STATUSES}
+        label="Download orders (Excel)"
+      />
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         {[
           ['all', `All (${orders.length})`],
@@ -823,7 +870,7 @@ function OrdersTab() {
           <tr>
             <th>Order</th>
             <th>Customer</th>
-            <th>Items</th>
+            <th>Items ordered</th>
             <th>Total</th>
             <th>Payment</th>
             <th>Status</th>
@@ -840,7 +887,25 @@ function OrdersTab() {
                 <tr>
                   <td style={{ fontFamily: 'monospace' }}>{o.orderNumber || `#${o._id.slice(-8)}`}</td>
                   <td>{o.user?.name || '—'}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{o.user?.email}</span></td>
-                  <td>{o.items.reduce((n, i) => n + i.qty, 0)}</td>
+                  <td>
+                    <div className="adm-items">
+                      <div className="adm-items__thumbs">
+                        {o.items.slice(0, 3).map((i) => (
+                          <div className="adm-items__thumb" key={i.id || i.slug + i.name} title={`${i.name} × ${i.qty}`}>
+                            {i.image && <img src={i.image} alt="" />}
+                            {i.qty > 1 && <span>×{i.qty}</span>}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="adm-items__text">
+                        <span className="adm-items__name">{o.items[0]?.name}</span>
+                        {o.items.length > 1 && <span className="adm-items__more">+ {o.items.length - 1} more</span>}
+                      </div>
+                      <button type="button" className="adm-items__view" onClick={() => setViewing(o)}>
+                        View order ({o.items.reduce((n, i) => n + i.qty, 0)})
+                      </button>
+                    </div>
+                  </td>
                   <td>{inr(o.totalPrice)}</td>
                   <td>
                     <PaymentBadge order={o} />
@@ -1037,10 +1102,22 @@ function AppointmentsTab() {
     }
   };
 
+  const exportBar = (
+    <ExportBar
+      path="/appointments/export"
+      filePrefix="sutaara-appointments"
+      dateLabel="Appointment date"
+      statuses={APPOINTMENT_STATUSES}
+      label="Download appointments (Excel)"
+    />
+  );
+
   if (loading) return <div className="loader"><div className="spinner" /></div>;
   if (appointments.length === 0) return <div className="empty"><h3>No studio appointments yet</h3></div>;
 
   return (
+    <>
+    {exportBar}
     <table className="table">
       <thead>
         <tr>
@@ -1076,6 +1153,7 @@ function AppointmentsTab() {
         ))}
       </tbody>
     </table>
+    </>
   );
 }
 

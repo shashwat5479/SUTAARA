@@ -51,6 +51,10 @@ export const api = {
   // products
   getProducts: (params) => request(`/products${qs(params)}`),
   getAdminProducts: (params) => request(`/products/admin/list${qs(params)}`, { auth: true }),
+  getAddresses: () => request('/auth/addresses', { auth: true }),
+  addAddress: (body) => request('/auth/addresses', { method: 'POST', body, auth: true }),
+  updateAddress: (id, body) => request(`/auth/addresses/${id}`, { method: 'PUT', body, auth: true }),
+  deleteAddress: (id) => request(`/auth/addresses/${id}`, { method: 'DELETE', auth: true }),
   getProductsByIds: (ids) => request(`/products/by-ids?ids=${encodeURIComponent(ids.join(','))}`),
   getFacets: (params) => request(`/products/facets${qs(params)}`),
   getProduct: (slug) => request(`/products/${slug}`),

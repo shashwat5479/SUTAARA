@@ -1,5 +1,6 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
+import { sendXlsx } from '../utils/xlsx.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { buildFacet, colorsOf, fabricsOf, occasionsOf, rawValuesInFamily, resolveFamily } from '../utils/taxonomy.js';
 
@@ -217,6 +218,73 @@ export const getAdminProducts = asyncHandler(async (req, res) => {
   ]);
   res.set('Cache-Control', 'no-store');
   res.json({ products: withMongoStyleId(items), total });
+});
+
+// GET /api/products/admin/export (admin) — every product (incl. archived) as .xlsx
+export const exportProducts = asyncHandler(async (req, res) => {
+  const items = await prisma.product.findMany({ orderBy: [{ category: 'asc' }, { createdAt: 'desc' }] });
+  const yn = (b) => (b ? 'Yes' : 'No');
+  const rows = items.map((p) => ({
+    sku: p.sku,
+    name: p.name,
+    category: p.category,
+    status: p.archived ? 'Archived' : p.stock <= 0 ? 'Out of stock' : 'Live',
+    price: p.price,
+    mrp: p.mrp || '',
+    cod: p.codAvailable ? 'On' : 'Off',
+    stock: p.stock,
+    fabric: p.fabric,
+    color: p.color,
+    occasion: p.occasion,
+    sareeLength: p.sareeLength,
+    blousePiece: p.blousePiece,
+    dimensions: p.dimensions,
+    care: p.care,
+    note: p.blouseNote,
+    featured: yn(p.featured),
+    newArrival: yn(p.isNewArrival),
+    rating: p.rating,
+    reviews: p.numReviews,
+    images: (p.images || []).length,
+    image1: (p.images || [])[0] || '',
+    slug: p.slug,
+    added: p.createdAt,
+    updated: p.updatedAt,
+  }));
+  const stamp = new Date().toISOString().slice(0, 10);
+  sendXlsx(res, `sutaara-products-${stamp}.xlsx`, [
+    {
+      name: 'Products',
+      columns: [
+        { header: 'SKU', key: 'sku', width: 14 },
+        { header: 'Name', key: 'name', width: 44 },
+        { header: 'Category', key: 'category', width: 12 },
+        { header: 'Status', key: 'status', width: 13 },
+        { header: 'Price (₹)', key: 'price', type: 'number', width: 11 },
+        { header: 'MRP (₹)', key: 'mrp', type: 'number', width: 11 },
+        { header: 'Stock', key: 'stock', type: 'number', width: 8 },
+        { header: 'Cash on delivery', key: 'cod', width: 16 },
+        { header: 'Fabric', key: 'fabric', width: 22 },
+        { header: 'Colour', key: 'color', width: 18 },
+        { header: 'Occasion', key: 'occasion', width: 18 },
+        { header: 'Saree length', key: 'sareeLength', width: 13 },
+        { header: 'Blouse piece', key: 'blousePiece', width: 14 },
+        { header: 'Dimensions', key: 'dimensions', width: 24 },
+        { header: 'Care', key: 'care', width: 22 },
+        { header: 'Note', key: 'note', width: 30 },
+        { header: 'Featured', key: 'featured', width: 10 },
+        { header: 'New arrival', key: 'newArrival', width: 11 },
+        { header: 'Rating', key: 'rating', type: 'number', width: 8 },
+        { header: 'Reviews', key: 'reviews', type: 'number', width: 9 },
+        { header: 'Images', key: 'images', type: 'number', width: 8 },
+        { header: 'First image URL', key: 'image1', width: 40 },
+        { header: 'Slug', key: 'slug', width: 36 },
+        { header: 'Added', key: 'added', type: 'datetime', width: 19 },
+        { header: 'Last updated', key: 'updated', type: 'datetime', width: 19 },
+      ],
+      rows,
+    },
+  ]);
 });
 
 // GET /api/products/by-ids?ids=a,b,c
