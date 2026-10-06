@@ -457,10 +457,25 @@ function ProductsTab() {
   useEffect(load, []);
 
   const del = async (p) => {
-    if (!window.confirm(`Delete “${p.name}”?`)) return;
+    if (
+      !window.confirm(
+        `Delete “${p.name}”?\n\nIf it has past orders it can't be erased (order history needs it), so it will be archived — hidden from the shop and bags — instead. You can restore it later.`
+      )
+    )
+      return;
     try {
-      await api.deleteProduct(p._id);
-      toast('Product deleted');
+      const res = await api.deleteProduct(p._id);
+      toast(res?.message || 'Product deleted');
+      load();
+    } catch (err) {
+      toast(err.message);
+    }
+  };
+
+  const restore = async (p) => {
+    try {
+      await api.updateProduct(p._id, { archived: false });
+      toast('Product restored to the shop');
       load();
     } catch (err) {
       toast(err.message);
@@ -484,11 +499,15 @@ function ProductsTab() {
     );
   }
 
-  const countOf = (c) => products.filter((p) => p.category === c).length;
+  // Archived products (deleted but kept because they have past orders) are
+  // tucked into their own tab so they don't clutter the live catalogue.
+  const live = products.filter((p) => !p.archived);
+  const archivedCount = products.length - live.length;
+  const countOf = (c) => live.filter((p) => p.category === c).length;
   const term = search.trim().toLowerCase();
   const visible = products.filter(
     (p) =>
-      (filter === 'all' || p.category === filter) &&
+      (filter === 'archived' ? p.archived : !p.archived && (filter === 'all' || p.category === filter)) &&
       (!term ||
         [p.name, p.sku, p.fabric, p.color].some((v) => String(v || '').toLowerCase().includes(term)))
   );
@@ -514,7 +533,7 @@ function ProductsTab() {
           className={`btn btn--sm ${filter === 'all' ? 'btn--primary' : 'btn--ghost'}`}
           onClick={() => setFilter('all')}
         >
-          All ({products.length})
+          All ({live.length})
         </button>
         {Object.entries(CAT_CONFIG).map(([value, c]) => (
           <button
@@ -525,6 +544,14 @@ function ProductsTab() {
             {c.plural} ({countOf(value)})
           </button>
         ))}
+        {archivedCount > 0 && (
+          <button
+            className={`btn btn--sm ${filter === 'archived' ? 'btn--primary' : 'btn--ghost'}`}
+            onClick={() => setFilter('archived')}
+          >
+            Archived ({archivedCount})
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -565,7 +592,10 @@ function ProductsTab() {
             {visible.map((p) => (
               <tr key={p._id}>
                 <td><img src={p.images?.[0]} alt="" /></td>
-                <td>{p.name}</td>
+                <td>
+                  {p.name}
+                  {p.archived && <span className="badge-archived">Archived</span>}
+                </td>
                 <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{p.sku || '—'}</td>
                 <td>{CAT_CONFIG[p.category]?.singular || p.category}</td>
                 <td>{inr(p.price)}</td>
@@ -579,7 +609,11 @@ function ProductsTab() {
                 </td>
                 <td className="table__actions">
                   <button onClick={() => setEditing(p)}>Edit</button>
-                  <button onClick={() => del(p)}>Delete</button>
+                  {p.archived ? (
+                    <button onClick={() => restore(p)}>Restore</button>
+                  ) : (
+                    <button className="is-danger" onClick={() => del(p)}>Delete</button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -1418,6 +1452,26 @@ export default function Admin() {
   const [tab, setTab] = useState(isContentAdmin ? 'analytics' : 'orders');
 
   const roleLabel = role === 'superadmin' ? 'Super Admin' : role === 'admin' ? 'Admin' : 'Staff';
+
+  // The site header is sticky and its height changes with screen size. The
+  // admin sidebar sticks just below it, so publish the live height as a CSS
+  // variable — otherwise the sidebar slid underneath the header and its
+  // lower items (Notifications, Team) could not be reached.
+  useEffect(() => {
+    const header = document.querySelector('.header');
+    if (!header) return undefined;
+    const apply = () =>
+      document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    apply();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(apply) : null;
+    if (ro) ro.observe(header);
+    window.addEventListener('resize', apply);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', apply);
+      document.documentElement.style.removeProperty('--header-h');
+    };
+  }, []);
 
   return (
     <>

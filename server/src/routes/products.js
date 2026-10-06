@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getProducts,
   getAdminProducts,
+  getProductsByIds,
   getFacets,
   getProductBySlug,
   createProduct,
@@ -26,6 +27,7 @@ router.get('/', cdnCache, getProducts);
 router.get('/facets', cdnCache, getFacets);
 // Must stay above '/:slug' or "admin" would be treated as a product slug.
 router.get('/admin/list', protect, admin, getAdminProducts);
+router.get('/by-ids', getProductsByIds);
 router.get('/:slug', cdnCache, getProductBySlug);
 
 router.post('/', protect, admin, createProduct);

@@ -3,61 +3,30 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { api } from '../api/client.js';
-import { payForOrder } from '../utils/razorpay.js';
 import { inr } from '../utils/format.js';
+import { fmtDate, statusText, statusHeadline, orderNo, OrderItemRow, OrderActions, useOrderActions } from '../components/OrderParts.jsx';
 
+const ORDER_FILTERS = [
+  { key: 'all', label: 'All orders', test: () => true },
+  { key: 'active', label: 'In progress', test: (o) => ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery'].includes(o.status) },
+  { key: 'delivered', label: 'Delivered', test: (o) => o.status === 'delivered' },
+  { key: 'closed', label: 'Cancelled & returns', test: (o) => ['cancelled', 'return_requested', 'return_approved', 'refund_initiated', 'refunded'].includes(o.status) },
+];
+
+// Amazon-style order list: each order is a card with a summary strip (date,
+// total, ship-to, order number, "View order details"), then every item with a
+// thumbnail and name that link to the product page.
 function OrdersTab() {
-  const { user } = useAuth();
-  const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const actions = useOrderActions((updated) =>
+    setOrders((cur) => cur.map((o) => (o._id === updated._id ? { ...o, ...updated, items: updated.items || o.items } : o)))
+  );
 
   useEffect(() => {
     api.getMyOrders().then(setOrders).catch(() => {}).finally(() => setLoading(false));
   }, []);
-
-  const retryPayment = async (order) => {
-    setBusyId(order._id);
-    try {
-      const result = await payForOrder(order, { customerEmail: user?.email });
-      if (result.ok) {
-        setOrders((cur) => cur.map((o) => (o._id === order._id ? result.order : o)));
-        toast('Payment successful');
-      } else if (!result.dismissed) {
-        toast(result.message || 'Payment failed — please try again');
-      }
-    } catch (err) {
-      toast(err.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const downloadInvoice = async (order) => {
-    setBusyId(order._id);
-    try {
-      await api.downloadInvoice(order._id, order.orderNumber);
-    } catch (err) {
-      toast(err.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const requestReturn = async (order) => {
-    const reason = window.prompt('Briefly tell us why you\u2019d like to return/refund this order (optional):') || '';
-    setBusyId(order._id);
-    try {
-      const updated = await api.requestReturn(order._id, reason);
-      setOrders((cur) => cur.map((o) => (o._id === order._id ? updated : o)));
-      toast('Return/refund request sent — we\u2019ll be in touch shortly');
-    } catch (err) {
-      toast(err.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
 
   if (loading) return <div className="loader"><div className="spinner" /></div>;
   if (orders.length === 0) {
@@ -70,86 +39,61 @@ function OrdersTab() {
     );
   }
 
+  const current = ORDER_FILTERS.find((f) => f.key === filter) || ORDER_FILTERS[0];
+  const shown = orders.filter(current.test);
+
   return (
     <div>
-      {orders.map((o) => {
-        const paymentFailed = o.paymentMethod === 'online' && o.paymentStatus === 'failed';
-        const paymentPending = o.paymentMethod === 'online' && o.paymentStatus === 'pending';
-        const canRetry = paymentFailed || paymentPending;
-        const canDownload = Boolean(o.invoiceNumber);
-        const canRequestReturn = o.returnEligible && o.status === 'delivered';
+      <div className="ord-filters">
+        {ORDER_FILTERS.map((f) => (
+          <button
+            key={f.key}
+            className={filter === f.key ? 'active' : ''}
+            onClick={() => setFilter(f.key)}
+          >
+            {f.label} ({orders.filter(f.test).length})
+          </button>
+        ))}
+      </div>
+
+      {shown.length === 0 && <p style={{ color: 'var(--ink-soft)' }}>No orders in this view.</p>}
+
+      {shown.map((o) => {
+        const inProgressReturn = ['return_requested', 'return_approved', 'refund_initiated'].includes(o.status);
         return (
-          <div className="order-card" key={o._id}>
-            <div className="order-card__head">
-              <div>
-                <strong style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{o.orderNumber || `#${o._id.slice(-8)}`}</strong>
-                <span style={{ color: 'var(--ink-soft)', fontSize: '0.82rem', marginLeft: 10 }}>
-                  {new Date(o.createdAt).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </span>
+          <div className="ord-card" key={o._id}>
+            <div className="ord-card__strip">
+              <div><span>Order placed</span><strong>{fmtDate(o.createdAt)}</strong></div>
+              <div><span>Total</span><strong>{inr(o.totalPrice)}</strong></div>
+              <div><span>Ship to</span><strong>{o.fullName}</strong></div>
+              <div className="ord-card__no">
+                <span>Order # {orderNo(o)}</span>
+                <Link to={`/account/orders/${o._id}`}>View order details</Link>
               </div>
-              <span className={`status-pill status-${o.status}`}>{o.status}</span>
             </div>
-            {o.items.map((i) => (
-              <div className="summary-row" key={i.slug + i.name}>
-                <span>{i.name} × {i.qty}</span>
-                <span>{inr(i.price * i.qty)}</span>
+
+            <div className="ord-card__body">
+              <div className="ord-card__top">
+                <h3>{statusHeadline(o)}</h3>
+                <span className={`status-pill status-${o.status}`}>{statusText(o.status)}</span>
               </div>
-            ))}
-            <div className="summary-row summary-row--total">
-              <span>
-                {o.paymentMethod === 'cod'
-                  ? 'Cash on delivery'
-                  : paymentFailed
-                    ? 'Pay online — failed'
-                    : paymentPending
-                      ? 'Pay online — pending'
-                      : 'Pay online — paid ✓'}
-              </span>
-              <span>{inr(o.totalPrice)}</span>
+              <div className="ord-card__cols">
+                <div className="ord-items">
+                  {o.items.map((i) => (
+                    <OrderItemRow key={i.id || i._id || i.slug + i.name} item={i} />
+                  ))}
+                </div>
+                <div className="ord-card__side">
+                  <Link to={`/account/orders/${o._id}`} className="btn btn--primary ord-btn">
+                    {['shipped', 'out_for_delivery'].includes(o.status) ? 'Track package' : 'View order details'}
+                  </Link>
+                  <OrderActions order={o} actions={actions} />
+                </div>
+              </div>
+              {inProgressReturn && (
+                <p className="ord-note">Your return/refund is in progress — we’ll keep you updated by email.</p>
+              )}
             </div>
-            {(canRetry || canDownload || canRequestReturn) && (
-              <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                {canRetry && (
-                  <button
-                    className="btn btn--primary"
-                    style={{ padding: '8px 18px', fontSize: '0.82rem' }}
-                    onClick={() => retryPayment(o)}
-                    disabled={busyId === o._id}
-                  >
-                    {busyId === o._id ? 'Opening…' : 'Retry payment'}
-                  </button>
-                )}
-                {canDownload && (
-                  <button
-                    className="btn btn--ghost"
-                    style={{ padding: '8px 18px', fontSize: '0.82rem' }}
-                    onClick={() => downloadInvoice(o)}
-                    disabled={busyId === o._id}
-                  >
-                    {busyId === o._id ? 'Preparing…' : 'Download bill (PDF)'}
-                  </button>
-                )}
-                {canRequestReturn && (
-                  <button
-                    className="btn btn--ghost"
-                    style={{ padding: '8px 18px', fontSize: '0.82rem' }}
-                    onClick={() => requestReturn(o)}
-                    disabled={busyId === o._id}
-                  >
-                    {busyId === o._id ? 'Sending…' : 'Request return / refund'}
-                  </button>
-                )}
-              </div>
-            )}
-            {['return_requested', 'return_approved', 'refund_initiated'].includes(o.status) && (
-              <p style={{ fontSize: '0.8rem', color: 'var(--ink-soft)', marginTop: 10 }}>
-                Your return/refund is in progress — we’ll keep you updated by email.
-              </p>
-            )}
           </div>
         );
       })}

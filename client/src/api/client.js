@@ -51,6 +51,7 @@ export const api = {
   // products
   getProducts: (params) => request(`/products${qs(params)}`),
   getAdminProducts: (params) => request(`/products/admin/list${qs(params)}`, { auth: true }),
+  getProductsByIds: (ids) => request(`/products/by-ids?ids=${encodeURIComponent(ids.join(','))}`),
   getFacets: (params) => request(`/products/facets${qs(params)}`),
   getProduct: (slug) => request(`/products/${slug}`),
   createProduct: (body) => request('/products', { method: 'POST', body, auth: true }),

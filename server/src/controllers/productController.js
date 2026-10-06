@@ -64,7 +64,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     newArrival,
   } = req.query;
 
-  const where = {};
+  const where = { archived: false };
   if (category) where.category = category;
   if (fabric) where.fabric = await familyFilter('fabric', String(fabric));
   if (occasion) where.occasion = await familyFilter('occasion', String(occasion));
@@ -126,7 +126,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 // page uses.
 export const getFacets = asyncHandler(async (req, res) => {
   const { category } = req.query;
-  const where = category ? { category: String(category) } : {};
+  const where = category ? { category: String(category), archived: false } : { archived: false };
   const [fabricRows, occasionRows, colorRows, agg] = await Promise.all([
     distinctWithCounts('fabric', where),
     distinctWithCounts('occasion', where),
@@ -179,7 +179,7 @@ async function findRelated(product) {
 
   // Cap the candidate pool so a very large catalogue stays fast.
   const same = await prisma.product.findMany({
-    where: { category: product.category, id: { not: product.id } },
+    where: { category: product.category, id: { not: product.id }, archived: false },
     orderBy: { createdAt: 'desc' },
     take: 300,
   });
@@ -187,7 +187,7 @@ async function findRelated(product) {
 
   if (out.length < RELATED_LIMIT) {
     const others = await prisma.product.findMany({
-      where: { category: { not: product.category }, id: { not: product.id } },
+      where: { category: { not: product.category }, id: { not: product.id }, archived: false },
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
@@ -219,10 +219,26 @@ export const getAdminProducts = asyncHandler(async (req, res) => {
   res.json({ products: withMongoStyleId(items), total });
 });
 
+// GET /api/products/by-ids?ids=a,b,c
+// Lets the cart check, against the live catalogue, which of its saved items
+// still exist (deleted / archived products come back missing) and what the
+// current price and stock are. Never cached.
+export const getProductsByIds = asyncHandler(async (req, res) => {
+  const ids = String(req.query.ids || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 60);
+  res.set('Cache-Control', 'no-store');
+  if (ids.length === 0) return res.json({ products: [] });
+  const items = await prisma.product.findMany({ where: { id: { in: ids }, archived: false } });
+  res.json({ products: withMongoStyleId(items) });
+});
+
 // GET /api/products/:slug
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const product = await prisma.product.findUnique({ where: { slug: req.params.slug } });
-  if (!product) {
+  if (!product || product.archived) {
     res.status(404);
     throw new Error('Product not found');
   }
@@ -271,22 +287,26 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found');
   }
-  // Bug fix: the Mongo version hard-deleted products even if they were
-  // referenced by past orders, which would corrupt order history via the
-  // ref. Postgres now enforces this via FK — block deletion if orders exist,
-  // and tell the admin why instead of throwing a raw 500.
+  // A product that appears on past orders can't be hard-deleted without
+  // corrupting order history (OrderItem has a foreign key to it). Instead of
+  // refusing — which looked like "delete doesn't work" — archive it: it
+  // disappears from the shop, search, edits and carts straight away, while
+  // old orders keep their product reference. An admin can restore it later.
   const orderCount = await prisma.orderItem.count({ where: { productId: req.params.id } });
-  if (orderCount > 0) {
-    res.status(409);
-    throw new Error('This product has past orders — unpublish it instead of deleting');
-  }
+  const hasOrders = orderCount > 0;
   // Also drop the product from any Sutaara Edit that features it.
   const edits = await prisma.curatedEdit.findMany({ where: { productIds: { has: req.params.id } } });
   await prisma.$transaction([
     ...edits.map((e) =>
       prisma.curatedEdit.update({ where: { id: e.id }, data: { productIds: e.productIds.filter((id) => id !== req.params.id) } })
     ),
-    prisma.product.delete({ where: { id: req.params.id } }),
+    hasOrders
+      ? prisma.product.update({ where: { id: req.params.id }, data: { archived: true } })
+      : prisma.product.delete({ where: { id: req.params.id } }),
   ]);
-  res.json({ message: 'Product removed' });
+  res.json(
+    hasOrders
+      ? { message: 'This product has past orders, so it was archived (hidden from the shop) instead of deleted', archived: true }
+      : { message: 'Product removed', archived: false }
+  );
 });

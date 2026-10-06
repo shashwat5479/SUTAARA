@@ -94,7 +94,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
     const orderItemsData = items.map((i) => {
       const p = map.get(i.product);
-      if (!p) throw Object.assign(new Error('One of the items is no longer available'), { status: 400 });
+      if (!p || p.archived) throw Object.assign(new Error(`"${(p && p.name) || i.name || 'An item'}" is no longer available — please remove it from your bag`), { status: 400 });
       const qty = Math.max(1, Number(i.qty) || 1);
       if (p.stock < qty) {
         throw Object.assign(new Error(`Only ${p.stock} left in stock for "${p.name}"`), { status: 409 });
@@ -196,6 +196,38 @@ export const createOrder = asyncHandler(async (req, res) => {
   res.status(201).json(withMongoStyleId(order));
 });
 
+// Adds what the order pages need to link each line back to its product:
+// the product's CURRENT slug (a rename changes the slug, so the one saved on
+// the order can go stale), whether it can still be bought, and a fresh image
+// if the saved one is blank. Items whose product was archived/deleted get
+// available:false so the page shows "no longer available" instead of a link
+// that 404s.
+async function withItemLinks(orders) {
+  const list = Array.isArray(orders) ? orders : [orders];
+  const ids = [...new Set(list.flatMap((o) => (o.items || []).map((i) => i.productId)))];
+  const products = ids.length
+    ? await prisma.product.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, slug: true, archived: true, stock: true, images: true },
+      })
+    : [];
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const decorate = (o) => ({
+    ...o,
+    items: (o.items || []).map((i) => {
+      const p = byId.get(i.productId);
+      return {
+        ...i,
+        slug: p ? p.slug : i.slug,
+        image: i.image || (p && p.images && p.images[0]) || '',
+        available: !!p && !p.archived,
+        inStock: !!p && !p.archived && p.stock > 0,
+      };
+    }),
+  });
+  return Array.isArray(orders) ? list.map(decorate) : decorate(orders);
+}
+
 // GET /api/orders/mine (auth)
 export const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await prisma.order.findMany({
@@ -203,7 +235,7 @@ export const getMyOrders = asyncHandler(async (req, res) => {
     include: { items: true, paymentAttempts: { orderBy: { createdAt: 'desc' } } },
     orderBy: { createdAt: 'desc' },
   });
-  res.json(withMongoStyleId(orders));
+  res.json(withMongoStyleId(await withItemLinks(orders)));
 });
 
 // GET /api/orders/:id (auth — own order or admin)
@@ -222,11 +254,11 @@ export const getOrderById = asyncHandler(async (req, res) => {
     throw new Error('Order not found');
   }
   const owns = order.userId === req.user.id;
-  if (!owns && req.user.role !== 'admin') {
+  if (!owns && !['staff', 'admin', 'superadmin'].includes(req.user.role)) {
     res.status(403);
     throw new Error('Not your order');
   }
-  res.json(withMongoStyleId(order));
+  res.json(withMongoStyleId(await withItemLinks(order)));
 });
 
 // GET /api/orders (admin)

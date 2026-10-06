@@ -97,7 +97,7 @@ export const deleteExhibitionSlide = asyncHandler(async (req, res) => {
 async function attachProducts(edits) {
   const allIds = [...new Set(edits.flatMap((e) => e.productIds || []))];
   if (allIds.length === 0) return edits.map((e) => ({ ...e, products: [] }));
-  const products = await prisma.product.findMany({ where: { id: { in: allIds } } });
+  const products = await prisma.product.findMany({ where: { id: { in: allIds }, archived: false } });
   const byId = new Map(products.map((p) => [p.id, p]));
   return edits.map((e) => ({
     ...e,

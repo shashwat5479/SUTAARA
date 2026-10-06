@@ -1,10 +1,16 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { inr } from '../utils/format.js';
-import { Minus, Plus, Bag } from '../components/Icons.jsx';
+import { Minus, Plus, Bag, Trash } from '../components/Icons.jsx';
 
 export default function Cart() {
-  const { items, setQty, remove, subtotal, shipping, total, freeShipAbove } = useCart();
+  const { items, setQty, remove, sync, subtotal, shipping, total, freeShipAbove } = useCart();
+
+  // Re-check the bag against the live catalogue every time this page opens.
+  useEffect(() => {
+    sync();
+  }, [sync]);
 
   return (
     <>
@@ -37,14 +43,24 @@ export default function Cart() {
                       <div className="line-item__fabric">{i.fabric}</div>
                       <div className="price-now" style={{ fontSize: '0.9rem' }}>{inr(i.price)}</div>
                       <div className="stepper" style={{ height: 36, width: 'fit-content', marginTop: 10 }}>
-                        <button aria-label="Decrease" onClick={() => setQty(i._id, i.qty - 1)}>
-                          <Minus width="14" height="14" />
+                        <button
+                          aria-label={i.qty <= 1 ? 'Remove from bag' : 'Decrease'}
+                          onClick={() => setQty(i._id, i.qty - 1)}
+                        >
+                          {i.qty <= 1 ? <Trash width="14" height="14" /> : <Minus width="14" height="14" />}
                         </button>
                         <span>{i.qty}</span>
-                        <button aria-label="Increase" onClick={() => setQty(i._id, i.qty + 1)}>
+                        <button
+                          aria-label="Increase"
+                          disabled={i.stock != null && i.qty >= i.stock}
+                          onClick={() => setQty(i._id, i.qty + 1)}
+                        >
                           <Plus width="14" height="14" />
                         </button>
                       </div>
+                      {i.stock != null && i.qty >= i.stock && (
+                        <div className="line-item__stock-note">Only {i.stock} in stock</div>
+                      )}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div className="price-now">{inr(i.price * i.qty)}</div>

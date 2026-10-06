@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { api } from '../api/client.js';
+import { useToast } from './ToastContext.jsx';
 
 const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
@@ -18,6 +20,11 @@ function load() {
 export function CartProvider({ children }) {
   const [items, setItems] = useState(load);
   const [open, setOpen] = useState(false);
+  const toast = useToast();
+
+  // Latest items, readable from async code without re-creating callbacks.
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
 
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(items));
@@ -62,19 +69,82 @@ export function CartProvider({ children }) {
     return result;
   }, []);
 
+  // Going below 1 removes the line (like Amazon's bin button) — it used to be
+  // clamped at 1, so pressing minus on a single item did nothing.
   const setQty = useCallback((id, qty) => {
     setItems((cur) =>
-      cur
-        .map((i) => (i._id === id ? { ...i, qty: Math.max(1, Math.min(qty, i.stock ?? Infinity)) } : i))
-        .filter((i) => i.qty > 0)
+      qty < 1
+        ? cur.filter((i) => i._id !== id)
+        : cur.map((i) => (i._id === id ? { ...i, qty: Math.min(qty, i.stock ?? Infinity) } : i))
     );
   }, []);
 
   const remove = useCallback((id) => {
-    setItems((cur) => cur.filter((i) => i._id !== id));
+    setItems((cur) => cur.filter((i) => i._id !== id && i.product !== id));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
+
+  // The cart lives in this browser (localStorage), so on its own it never
+  // finds out that a product was deleted/archived, sold out, or repriced.
+  // This checks every saved line against the live catalogue: lines whose
+  // product is gone are dropped (with a note), and price / stock / name are
+  // refreshed so nobody checks out with stale data.
+  const sync = useCallback(async () => {
+    const snapshot = itemsRef.current;
+    if (snapshot.length === 0) return;
+    let live;
+    try {
+      const res = await api.getProductsByIds(snapshot.map((i) => i._id));
+      live = new Map((res.products || []).map((p) => [p._id, p]));
+    } catch {
+      return; // offline / server hiccup — keep the cart as it is
+    }
+    const dropped = [];
+    const updates = new Map();
+    for (const i of snapshot) {
+      const p = live.get(i._id);
+      if (!p) {
+        dropped.push(i.name);
+      } else if ((p.stock ?? 0) <= 0) {
+        dropped.push(`${i.name} (sold out)`);
+      } else {
+        updates.set(i._id, {
+          name: p.name,
+          slug: p.slug,
+          fabric: p.fabric,
+          image: p.images?.[0] || i.image,
+          price: p.price,
+          stock: p.stock,
+        });
+      }
+    }
+    setItems((cur) =>
+      cur
+        .filter((i) => updates.has(i._id) || !snapshot.some((s) => s._id === i._id))
+        .map((i) => {
+          const u = updates.get(i._id);
+          return u ? { ...i, ...u, qty: Math.min(i.qty, u.stock) } : i;
+        })
+    );
+    if (dropped.length) {
+      toast(
+        dropped.length === 1
+          ? `${dropped[0]} is no longer available and was removed from your bag`
+          : `${dropped.length} items are no longer available and were removed from your bag`
+      );
+    }
+  }, [toast]);
+
+  // Check on first load, whenever the bag is opened, and when the tab regains focus.
+  useEffect(() => {
+    sync();
+  }, [open, sync]);
+  useEffect(() => {
+    const onVisible = () => document.visibilityState === 'visible' && sync();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [sync]);
 
   const totals = useMemo(() => {
     const count = items.reduce((n, i) => n + i.qty, 0);
@@ -85,7 +155,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, open, setOpen, add, setQty, remove, clear, ...totals }}
+      value={{ items, open, setOpen, add, setQty, remove, clear, sync, ...totals }}
     >
       {children}
     </CartContext.Provider>

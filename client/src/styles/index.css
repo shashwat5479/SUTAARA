@@ -6081,3 +6081,442 @@ body.theme-dark-page .backnav__btn:hover { color: var(--gold-soft, #cdae76); }
   max-height: calc(100vh - 150px);
   overflow-y: auto;
 }
+
+/* =====================================================================
+   Admin layout fixes
+   ===================================================================== */
+
+/* The site header is sticky and ~170px tall on desktop. The sidebar used to
+   stick at top:24px, i.e. underneath the header, and was taller than the
+   screen so its last items could never be scrolled into view. It now sticks
+   just below the header (--header-h is set from Admin.jsx) and scrolls inside
+   itself when the screen is short. */
+@media (min-width: 861px) {
+  .admin-tabs {
+    top: calc(var(--header-h, 130px) + 16px);
+    max-height: calc(100vh - var(--header-h, 130px) - 32px);
+    overflow-y: auto;
+    padding-right: 6px;
+    scrollbar-width: thin;
+  }
+}
+
+/* Wide tables scroll inside the content area instead of pushing the page. */
+.admin-content {
+  overflow-x: auto;
+}
+.table td {
+  vertical-align: middle;
+}
+.table__actions {
+  white-space: nowrap;
+}
+.table__actions button {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  padding: 5px 12px;
+  margin: 0 6px 0 0;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.table__actions button:hover {
+  background: var(--ivory-2);
+}
+.table__actions button.is-danger {
+  color: var(--sindoor);
+  border-color: rgba(140, 42, 46, 0.35);
+}
+.table__actions button.is-danger:hover {
+  background: rgba(140, 42, 46, 0.08);
+}
+.badge-archived {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(90, 77, 68, 0.14);
+  color: var(--ink-soft);
+}
+
+@media (max-width: 760px) {
+  .field__row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  /* keep columns readable and let the table scroll sideways */
+  .admin-content .table {
+    min-width: 620px;
+  }
+  .admin-content .table th,
+  .admin-content .table td {
+    padding: 10px 12px;
+  }
+}
+
+/* =====================================================================
+   My Orders — Amazon-style list and order detail
+   ===================================================================== */
+.ord-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ord-filters button {
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  color: var(--ink-soft);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.ord-filters button.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ord-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.ord-card__strip {
+  display: grid;
+  grid-template-columns: 1.1fr 0.8fr 1fr 1.4fr;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--ivory-2);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.84rem;
+}
+.ord-card__strip span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+}
+.ord-card__strip strong {
+  font-weight: 500;
+}
+.ord-card__no {
+  text-align: right;
+}
+.ord-card__no a {
+  color: var(--sindoor);
+  font-size: 0.84rem;
+  text-decoration: underline;
+}
+.ord-card__body {
+  padding: 18px 20px 20px;
+}
+.ord-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ord-card__top h3,
+.ord-panel h3 {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  margin: 0;
+}
+.ord-card__cols {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 24px;
+  align-items: start;
+}
+.ord-card__side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ord-card__side .ord-btn {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+.ord-items {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ord-item {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 16px;
+}
+.ord-item__img {
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--ivory-2);
+}
+.ord-item__img img,
+.ord-item__noimg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ord-item__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.ord-item__name {
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.35;
+}
+a.ord-item__name:hover {
+  color: var(--sindoor);
+  text-decoration: underline;
+}
+.ord-item__meta {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.ord-item__price {
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.ord-item__gone {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.ord-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  font-size: 0.82rem;
+}
+.ord-note {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* progress tracker */
+.ord-track {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 18px 0 22px;
+  padding: 0;
+}
+.ord-track li {
+  position: relative;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}
+.ord-track li::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: -50%;
+  width: 100%;
+  height: 3px;
+  background: var(--line-strong);
+}
+.ord-track li:first-child::before {
+  display: none;
+}
+.ord-track__dot {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 17px;
+  height: 17px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 3px solid var(--line-strong);
+}
+.ord-track li.is-done::before,
+.ord-track li.is-current::before {
+  background: var(--sage);
+}
+.ord-track li.is-done .ord-track__dot,
+.ord-track li.is-current .ord-track__dot {
+  background: var(--sage);
+  border-color: var(--sage);
+}
+.ord-track li.is-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* order detail page */
+.ord-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+}
+.ord-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.ord-headline__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ord-sep {
+  margin: 0 12px;
+  color: var(--line-strong);
+}
+.ord-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  padding: 20px;
+}
+.ord-box h4 {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ord-box p {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.ord-box__sub {
+  color: var(--ink-soft);
+  font-size: 0.8rem !important;
+}
+.ord-sumrow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  padding: 3px 0;
+}
+.ord-sumrow--total {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding-top: 8px;
+  font-weight: 600;
+}
+.ord-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  padding: 20px 22px;
+}
+.ord-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.ord-shipinfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 32px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  background: var(--ivory-2);
+  border-radius: var(--radius);
+  font-size: 0.86rem;
+}
+.ord-shipinfo span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ord-history {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--line-strong);
+}
+.ord-history li {
+  position: relative;
+  padding: 0 0 16px 14px;
+  font-size: 0.86rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ord-history li::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sage);
+}
+.ord-history span {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+.ord-history em {
+  color: var(--ink-soft);
+}
+
+@media (max-width: 860px) {
+  .ord-card__strip {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ord-card__no {
+    text-align: left;
+  }
+  .ord-card__cols {
+    grid-template-columns: 1fr;
+  }
+  .ord-card__side {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .ord-card__side .ord-btn {
+    width: auto;
+  }
+  .ord-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .ord-item {
+    grid-template-columns: 70px 1fr;
+  }
+  .ord-track li {
+    font-size: 0.64rem;
+  }
+}

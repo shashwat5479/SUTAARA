@@ -20,6 +20,7 @@ import Faq from './pages/Faq.jsx';
 import Legal from './pages/Legal.jsx';
 import Contact from './pages/Contact.jsx';
 import Account from './pages/Account.jsx';
+import OrderDetail from './pages/OrderDetail.jsx';
 import Admin from './pages/Admin.jsx';
 import NotFound from './pages/NotFound.jsx';
 
@@ -69,6 +70,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Account />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="account/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetail />
             </ProtectedRoute>
           }
         />

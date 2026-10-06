@@ -136,6 +136,9 @@ model Product {
   sareeLength  String      @default("")
   blousePiece  String      @default("")
   dimensions   String      @default("")
+  // Hidden from the shop/cart but kept so past orders still reference it.
+  // A product with orders is archived instead of hard-deleted.
+  archived     Boolean     @default(false)
   stylingNote  String      @default("")
   price        Int
   mrp          Int         @default(0)

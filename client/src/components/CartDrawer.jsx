@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { inr } from '../utils/format.js';
-import { Close, Minus, Plus, Bag } from './Icons.jsx';
+import { Close, Minus, Plus, Bag, Trash } from './Icons.jsx';
 
 export default function CartDrawer() {
   const { open, setOpen, items, setQty, remove, subtotal, shipping, total, freeShipAbove } =
@@ -45,8 +45,11 @@ export default function CartDrawer() {
                     <div className="line-item__name">{i.name}</div>
                     <div className="line-item__fabric">{i.fabric}</div>
                     <div className="stepper" style={{ height: 34, width: 'fit-content' }}>
-                      <button aria-label="Decrease" onClick={() => setQty(i._id, i.qty - 1)}>
-                        <Minus width="14" height="14" />
+                      <button
+                        aria-label={i.qty <= 1 ? 'Remove from bag' : 'Decrease'}
+                        onClick={() => setQty(i._id, i.qty - 1)}
+                      >
+                        {i.qty <= 1 ? <Trash width="14" height="14" /> : <Minus width="14" height="14" />}
                       </button>
                       <span>{i.qty}</span>
                       <button
