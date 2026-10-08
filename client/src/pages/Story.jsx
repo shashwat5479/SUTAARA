@@ -61,7 +61,7 @@ export default function Story() {
                     <h3>{edit.title}</h3>
                     <p>{edit.description}</p>
                     <span className="edit-card__arrow">
-                      {edit.products?.length > 0 ? `Explore ${edit.products.length} pieces →` : 'Explore →'}
+                      Explore →
                     </span>
                   </div>
                 </Link>

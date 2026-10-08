@@ -164,7 +164,6 @@ export default function Shop() {
                 onChange={() => update('fabric', f.value)}
               />
               {f.label}
-              {f.count > 0 && <span className="filter-count">{f.count}</span>}
             </label>
           ))}
         </div>
@@ -182,7 +181,6 @@ export default function Shop() {
                 onChange={() => update('occasion', o.value)}
               />
               {o.label}
-              {o.count > 0 && <span className="filter-count">{o.count}</span>}
             </label>
           ))}
         </div>
@@ -196,7 +194,7 @@ export default function Shop() {
               <button
                 key={c.value}
                 className={`swatch ${isOn(color, c) ? 'active' : ''}`}
-                title={c.count ? `${c.label} (${c.count})` : c.label}
+                title={c.label}
                 aria-label={c.label}
                 aria-pressed={isOn(color, c)}
                 style={{ background: c.hex || '#cbb99a' }}
@@ -239,7 +237,7 @@ export default function Shop() {
                   Filters
                 </button>
                 <span className="shop__count">
-                  {loading ? 'Loading…' : `${total} piece${total === 1 ? '' : 's'}`}
+                  {loading ? 'Loading…' : ''}
                 </span>
                 <select
                   className="select"

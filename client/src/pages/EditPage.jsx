@@ -58,9 +58,6 @@ export default function EditPage() {
             </div>
           ) : (
             <>
-              <p className="shop__count" style={{ marginBottom: 18 }}>
-                {products.length} piece{products.length === 1 ? '' : 's'}
-              </p>
               <div className="grid">
                 {products.map((p) => (
                   <ProductCard product={p} key={p._id || p.id} />
