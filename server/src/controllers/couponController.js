@@ -41,6 +41,14 @@ export const createCoupon = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Code, discount type and value are required');
   }
+  if (!['percent', 'flat'].includes(discountType)) {
+    res.status(400);
+    throw new Error('Discount type must be percent or flat');
+  }
+  if (Number(value) <= 0 || (discountType === 'percent' && Number(value) > 100)) {
+    res.status(400);
+    throw new Error(discountType === 'percent' ? 'Percent must be between 1 and 100' : 'Value must be greater than 0');
+  }
   const coupon = await prisma.coupon.create({
     data: {
       code: code.toUpperCase().trim(),
@@ -74,4 +82,20 @@ export const updateCoupon = asyncHandler(async (req, res) => {
 export const deleteCoupon = asyncHandler(async (req, res) => {
   await prisma.coupon.delete({ where: { id: req.params.id } });
   res.json({ message: 'Coupon removed' });
+});
+
+
+// GET /api/coupons/generate?prefix=DIWALI (admin) — returns a unique random code
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I to avoid mix-ups
+export const generateCode = asyncHandler(async (req, res) => {
+  const prefix = String(req.query.prefix || 'SUTAARA').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+  for (let attempt = 0; attempt < 10; attempt++) {
+    let suffix = '';
+    for (let i = 0; i < 5; i++) suffix += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+    const code = `${prefix}-${suffix}`;
+    const exists = await prisma.coupon.findUnique({ where: { code } });
+    if (!exists) return res.json({ code });
+  }
+  res.status(500);
+  throw new Error('Could not generate a unique code, please try again');
 });

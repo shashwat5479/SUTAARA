@@ -1055,3 +1055,152 @@ export function NotificationsTab() {
     </form>
   );
 }
+
+
+/* ---------------- Coupons tab (admin + super admin) ---------------- */
+const BLANK_COUPON = { code: '', prefix: '', discountType: 'percent', value: '', minOrderValue: '', maxDiscount: '', usageLimit: '', expiresAt: '' };
+
+export function CouponsTab() {
+  const toast = useToast();
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(BLANK_COUPON);
+  const [busy, setBusy] = useState(false);
+
+  const load = () =>
+    api.getCoupons().then(setCoupons).catch((e) => toast(e.message)).finally(() => setLoading(false));
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const generate = async () => {
+    try {
+      const { code } = await api.generateCouponCode(form.prefix);
+      setForm((f) => ({ ...f, code }));
+    } catch (err) { toast(err.message); }
+  };
+
+  const create = async (e) => {
+    e.preventDefault();
+    if (!form.code.trim()) return toast('Enter a code or tap Generate');
+    setBusy(true);
+    try {
+      await api.createCoupon({
+        code: form.code, discountType: form.discountType, value: form.value,
+        minOrderValue: form.minOrderValue, maxDiscount: form.discountType === 'percent' ? form.maxDiscount : '',
+        usageLimit: form.usageLimit, expiresAt: form.expiresAt || null,
+      });
+      toast(`Coupon ${form.code.toUpperCase()} created`);
+      setForm(BLANK_COUPON);
+      await load();
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  const toggle = async (c) => {
+    try {
+      await api.updateCoupon(c._id, { active: !c.active });
+      setCoupons((prev) => prev.map((x) => (x._id === c._id ? { ...x, active: !c.active } : x)));
+    } catch (err) { toast(err.message); }
+  };
+
+  const remove = async (c) => {
+    if (!window.confirm(`Delete coupon ${c.code}? Past orders that used it are kept.`)) return;
+    try {
+      await api.deleteCoupon(c._id);
+      setCoupons((prev) => prev.filter((x) => x._id !== c._id));
+    } catch (err) { toast('Could not delete (it may be linked to orders). Deactivate it instead.'); }
+  };
+
+  const copy = (code) => {
+    navigator.clipboard?.writeText(code).then(() => toast(`Copied ${code}`)).catch(() => {});
+  };
+
+  const describe = (c) => (c.discountType === 'percent' ? `${c.value}% off` : `${inr(c.value)} off`);
+  const status = (c) => {
+    if (!c.active) return 'Inactive';
+    if (c.expiresAt && new Date(c.expiresAt) < new Date()) return 'Expired';
+    if (c.usageLimit && c.timesUsed >= c.usageLimit) return 'Used up';
+    return 'Active';
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <>
+      <form onSubmit={create} className="checkout__panel admin-form" style={{ maxWidth: 720, marginBottom: 28 }}>
+        <h3>Create a coupon</h3>
+        <p className="admin-form__legend">Customers enter the code at checkout. Generate a random one or type your own.</p>
+
+        <div className="field">
+          <label>Coupon code</label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <input style={{ flex: '1 1 160px', textTransform: 'uppercase' }} value={form.code} onChange={set('code')} placeholder="e.g. DIWALI10" />
+            <input style={{ flex: '0 1 130px' }} value={form.prefix} onChange={set('prefix')} placeholder="Prefix (optional)" maxLength={12} />
+            <button type="button" className="btn btn--ghost btn--sm" onClick={generate}>Generate</button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
+          <div className="field">
+            <label>Discount type</label>
+            <select value={form.discountType} onChange={set('discountType')}>
+              <option value="percent">Percentage (%)</option>
+              <option value="flat">Flat amount (₹)</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>{form.discountType === 'percent' ? 'Percent off' : 'Rupees off'}</label>
+            <input type="number" min="1" max={form.discountType === 'percent' ? 100 : undefined} required value={form.value} onChange={set('value')} />
+          </div>
+          <div className="field">
+            <label>Min. order (₹)</label>
+            <input type="number" min="0" value={form.minOrderValue} onChange={set('minOrderValue')} placeholder="0" />
+          </div>
+          {form.discountType === 'percent' && (
+            <div className="field">
+              <label>Max discount (₹)</label>
+              <input type="number" min="0" value={form.maxDiscount} onChange={set('maxDiscount')} placeholder="No cap" />
+            </div>
+          )}
+          <div className="field">
+            <label>Usage limit</label>
+            <input type="number" min="1" value={form.usageLimit} onChange={set('usageLimit')} placeholder="Unlimited" />
+          </div>
+          <div className="field">
+            <label>Expires on</label>
+            <input type="date" value={form.expiresAt} onChange={set('expiresAt')} />
+          </div>
+        </div>
+        <button className="btn btn--primary" disabled={busy} style={{ marginTop: 8 }}>{busy ? 'Creating…' : 'Create coupon'}</button>
+      </form>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table className="table">
+          <thead>
+            <tr><th>Code</th><th>Offer</th><th>Min order</th><th>Used</th><th>Expires</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {coupons.map((c) => (
+              <tr key={c._id}>
+                <td><strong>{c.code}</strong></td>
+                <td>{describe(c)}{c.maxDiscount ? ` (max ${inr(c.maxDiscount)})` : ''}</td>
+                <td>{c.minOrderValue ? inr(c.minOrderValue) : '—'}</td>
+                <td>{c.timesUsed}{c.usageLimit ? ` / ${c.usageLimit}` : ''}</td>
+                <td>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never'}</td>
+                <td>{status(c)}</td>
+                <td className="table__actions">
+                  <button onClick={() => copy(c.code)}>Copy</button>
+                  <button onClick={() => toggle(c)}>{c.active ? 'Deactivate' : 'Activate'}</button>
+                  <button onClick={() => remove(c)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+            {coupons.length === 0 && (
+              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--ink-soft)' }}>No coupons yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}

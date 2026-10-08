@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import { COLORS, OTHER, OTHER_HEX, colorsOf, fabricsOf, occasionsOf } from '../utils/taxonomy.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, CouponsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -1589,6 +1589,11 @@ export default function Admin() {
                 </button>
               )}
               {isContentAdmin && (
+                <button className={tab === 'coupons' ? 'active' : ''} onClick={() => setTab('coupons')}>
+                  Coupons
+                </button>
+              )}
+              {isContentAdmin && (
                 <button className={tab === 'subscribers' ? 'active' : ''} onClick={() => setTab('subscribers')}>
                   Subscribers
                 </button>
@@ -1638,6 +1643,7 @@ export default function Admin() {
                 : tab === 'returns' ? <ReturnsTab />
                 : tab === 'appointments' ? <AppointmentsTab />
                 : tab === 'accounts' && isContentAdmin ? <AccountsTab />
+                : tab === 'coupons' && isContentAdmin ? <CouponsTab />
                 : tab === 'subscribers' && isContentAdmin ? <SubscribersTab />
                 : tab === 'event' && isContentAdmin ? <StudioEventTab />
                 : tab === 'hero' && isContentAdmin ? <HeroSlidesTab />

@@ -23,6 +23,44 @@ export default function Checkout() {
   useEffect(() => {
     if (!codOk && payment === 'cod') setPayment('online');
   }, [codOk, payment]);
+  // Coupon: `applied` = { code, discount } once the server has validated it.
+  const [couponInput, setCouponInput] = useState('');
+  const [applied, setApplied] = useState(null);
+  const [couponMsg, setCouponMsg] = useState('');
+  const [couponBusy, setCouponBusy] = useState(false);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponBusy(true);
+    setCouponMsg('');
+    try {
+      const res = await api.validateCoupon(code, subtotal);
+      setApplied({ code: res.coupon.code, discount: res.discount });
+      setCouponInput('');
+    } catch (err) {
+      setApplied(null);
+      setCouponMsg(err.message);
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  // Re-check whenever the bag changes so the discount never goes stale.
+  useEffect(() => {
+    if (!applied) return;
+    api
+      .validateCoupon(applied.code, subtotal)
+      .then((res) => setApplied({ code: res.coupon.code, discount: res.discount }))
+      .catch((err) => { setApplied(null); setCouponMsg(err.message); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotal]);
+
+  const discount = applied?.discount || 0;
+  const taxable = subtotal - discount;
+  const payShipping = taxable >= 4999 || subtotal === 0 ? 0 : 100; // mirrors the server rule
+  const payTotal = taxable + payShipping;
+
   const [placing, setPlacing] = useState(false);
   const [placingLabel, setPlacingLabel] = useState('Place order');
   const [error, setError] = useState('');
@@ -157,6 +195,7 @@ export default function Checkout() {
           city: chosen.city, state: chosen.state, pincode: chosen.pincode,
         },
         paymentMethod: payment,
+        couponCode: applied?.code,
       });
 
       if (payment === 'cod') {
@@ -333,16 +372,48 @@ export default function Checkout() {
                 <span>Subtotal</span>
                 <span>{inr(subtotal)}</span>
               </div>
+              {discount > 0 && (
+                <div className="summary-row" style={{ color: 'var(--sage)' }}>
+                  <span>Coupon ({applied.code})</span>
+                  <span>− {inr(discount)}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span>Shipping</span>
-                <span>{shipping === 0 ? 'Free' : inr(shipping)}</span>
+                <span>{payShipping === 0 ? 'Free' : inr(payShipping)}</span>
               </div>
               <div className="summary-row summary-row--total">
                 <span>Total</span>
-                <span>{inr(total)}</span>
+                <span>{inr(payTotal)}</span>
+              </div>
+
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
+                {applied ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                    <span>✓ <strong>{applied.code}</strong> applied</span>
+                    <button type="button" className="addr-link" onClick={() => { setApplied(null); setCouponMsg(''); }}>Remove</button>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } }}
+                        placeholder="Coupon code"
+                        aria-label="Coupon code"
+                        style={{ flex: 1, minWidth: 0, textTransform: 'uppercase', padding: '10px 12px', border: '1px solid var(--line)', background: 'transparent' }}
+                      />
+                      <button type="button" className="btn btn--ghost btn--sm" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()}>
+                        {couponBusy ? '…' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponMsg && <p style={{ color: '#a33', fontSize: '0.8rem', margin: '8px 0 0' }}>{couponMsg}</p>}
+                  </>
+                )}
               </div>
               <button className="btn btn--primary btn--block" style={{ marginTop: 18 }} disabled={placing}>
-                {placing ? placingLabel : payment === 'online' ? `Pay ${inr(total)}` : 'Place order'}
+                {placing ? placingLabel : payment === 'online' ? `Pay ${inr(payTotal)}` : 'Place order'}
               </button>
             </div>
           </form>

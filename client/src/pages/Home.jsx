@@ -380,11 +380,13 @@ export default function Home() {
               className="newsletter__form"
               onSubmit={(e) => {
                 e.preventDefault();
-                const email = e.currentTarget.email.value;
+                // e.currentTarget is null once the async call resolves, so grab the form first
+                const formEl = e.currentTarget;
+                const email = formEl.email.value;
                 api
                   .subscribe(email)
                   .then(() => {
-                    e.currentTarget.reset();
+                    formEl.reset();
                     toast('Thank you — you’re on the list.');
                   })
                   .catch((err) => toast(err.message));

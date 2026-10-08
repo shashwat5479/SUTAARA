@@ -200,6 +200,12 @@ export const api = {
   updateCategoryTile: (id, body) => request(`/category-tiles/${id}`, { method: 'PUT', body, auth: true }),
 
   // newsletter
+  validateCoupon: (code, itemsPrice) => request('/coupons/validate', { method: 'POST', body: { code, itemsPrice }, auth: true }),
+  getCoupons: () => request('/coupons', { auth: true }),
+  generateCouponCode: (prefix) => request(`/coupons/generate${qs({ prefix })}`, { auth: true }),
+  createCoupon: (body) => request('/coupons', { method: 'POST', body, auth: true }),
+  updateCoupon: (id, body) => request(`/coupons/${id}`, { method: 'PUT', body, auth: true }),
+  deleteCoupon: (id) => request(`/coupons/${id}`, { method: 'DELETE', auth: true }),
   subscribe: (email) => request('/subscribe', { method: 'POST', body: { email } }),
   getSubscribers: () => request('/admin/subscribers', { auth: true }),
   deleteSubscriber: (id) => request(`/admin/subscribers/${id}`, { method: 'DELETE', auth: true }),
