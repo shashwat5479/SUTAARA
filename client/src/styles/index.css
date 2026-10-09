@@ -2159,10 +2159,18 @@ textarea {
   border-bottom: 0;
 }
 .table img {
-  width: 40px;
-  height: 52px;
+  width: 64px;
+  height: 84px;
+  min-width: 64px; /* stop the column squeezing the photo into a thin strip */
+  flex-shrink: 0;
   object-fit: cover;
-  border-radius: 3px;
+  object-position: center top;
+  border-radius: 4px;
+  display: block;
+}
+.table td:first-child:has(> img) {
+  width: 84px;
+  min-width: 84px;
 }
 .stock-cell {
   display: flex;
