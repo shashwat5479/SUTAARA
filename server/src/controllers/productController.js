@@ -2,6 +2,7 @@ import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { sendXlsx } from '../utils/xlsx.js';
 import { withMongoStyleId } from '../utils/serialize.js';
+import { releaseExpiredReservations } from './orderController.js';
 import { buildFacet, colorsOf, fabricsOf, occasionsOf, rawValuesInFamily, resolveFamily } from '../utils/taxonomy.js';
 
 const slugify = (s) =>
@@ -94,15 +95,26 @@ export const getProducts = asyncHandler(async (req, res) => {
   const pageNum = Math.max(1, Number(page) || 1);
   const perPage = Math.min(60, Number(limit) || 24);
 
-  const [items, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy: sortMap[sort] || sortMap.featured,
-      skip: (pageNum - 1) * perPage,
-      take: perPage,
-    }),
-    prisma.product.count({ where }),
+  // Myntra-style: in-stock products first, sold-out ones after them — across
+  // pages too (so a sold-out item never shows up on page 1 above available ones).
+  await releaseExpiredReservations();
+  const orderBy = sortMap[sort] || sortMap.featured;
+  const offset = (pageNum - 1) * perPage;
+  const inWhere = { ...where, stock: { gt: 0 } };
+  const soldWhere = { ...where, stock: { lte: 0 } };
+  const [inCount, soldCount] = await Promise.all([
+    prisma.product.count({ where: inWhere }),
+    prisma.product.count({ where: soldWhere }),
   ]);
+  const total = inCount + soldCount;
+  let items = offset < inCount
+    ? await prisma.product.findMany({ where: inWhere, orderBy, skip: offset, take: perPage })
+    : [];
+  if (items.length < perPage) {
+    const soldSkip = Math.max(0, offset - inCount);
+    const more = await prisma.product.findMany({ where: soldWhere, orderBy, skip: soldSkip, take: perPage - items.length });
+    items = items.concat(more);
+  }
 
   res.json({
     products: withMongoStyleId(items),

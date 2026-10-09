@@ -8,7 +8,7 @@ import {
   isRazorpayConfigured,
   razorpayKeyId,
 } from '../services/razorpay.js';
-import { markOrderPaid, markOrderPaymentFailed } from './orderController.js';
+import { markOrderPaid, markOrderPaymentFailed, releaseExpiredReservations, PAYMENT_HOLD_MINUTES } from './orderController.js';
 import { notifyCustomerStatus, notifyOwnerNewOrder, notifyOwnerPaymentFailed, sendInvoiceEmail } from '../services/notify.js';
 
 async function loadOwnedOrder(req) {
@@ -32,7 +32,13 @@ export const getRazorpayKey = asyncHandler(async (req, res) => {
 // PaymentAttempt row. Safe to call again for the same order (e.g. retrying
 // after a failure) — each call is its own attempt.
 export const createPaymentOrder = asyncHandler(async (req, res) => {
+  await releaseExpiredReservations({ force: true }); // expire stale holds first
   const order = await loadOwnedOrder(req);
+
+  if (order.status === 'cancelled') {
+    res.status(409);
+    throw new Error(`This order was cancelled because payment wasn't completed within ${PAYMENT_HOLD_MINUTES} minutes. Please place the order again.`);
+  }
 
   if (order.isPaid) {
     res.status(409);

@@ -213,7 +213,7 @@ export default function Checkout() {
         clear();
         navigate(`/order-success/${order._id}`, { state: { order: result.order } });
       } else if (result.dismissed) {
-        setError('Payment was not completed. Your order is saved — you can retry payment from "My orders".');
+        setError('Payment was not completed. We're holding your items for 15 minutes — retry from "My orders" before they're released.');
         setPlacing(false);
       } else {
         setError(result.message || 'Payment failed. Your order is saved — you can retry payment from "My orders".');

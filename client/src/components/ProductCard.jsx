@@ -11,7 +11,7 @@ export default function ProductCard({ product }) {
   const toast = useToast();
   const off = discountPct(product.mrp, product.price);
   const wished = has(product._id);
-  const outOfStock = product.stock === 0;
+  const outOfStock = product.stock <= 0;
 
   return (
     <article className={`card ${outOfStock ? 'card--oos' : ''}`}>
@@ -20,7 +20,7 @@ export default function ProductCard({ product }) {
           <img src={product.images?.[0]} alt={product.name} loading="lazy" />
         </Link>
         {outOfStock ? (
-          <span className="card__tag card__tag--oos">Out of Stock</span>
+          <span className="card__tag card__tag--oos">Sold out</span>
         ) : (
           product.isNewArrival && <span className="card__tag">New</span>
         )}
@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
               else toast('Added to bag');
             }}
           >
-            {outOfStock ? 'Out of Stock' : 'Add to bag'}
+            {outOfStock ? 'Sold out' : 'Add to bag'}
           </button>
         </div>
       </div>

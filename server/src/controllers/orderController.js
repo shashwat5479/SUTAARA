@@ -20,6 +20,59 @@ export const nextInvoiceNumber = async (tx) => {
   return `INV-${year}-${String(count + 1).padStart(6, '0')}`;
 };
 
+// ---------------------------------------------------------------------
+// Payment hold (Myntra-style). When a customer starts an ONLINE payment the
+// items are reserved for PAYMENT_HOLD_MINUTES. If the payment is not completed
+// in that window (failed, abandoned, tab closed) the order is auto-cancelled
+// and the stock (and coupon use) goes back, so products never stay "sold out"
+// because of an unpaid order. COD orders are unaffected.
+// ---------------------------------------------------------------------
+export const PAYMENT_HOLD_MINUTES = Number(process.env.PAYMENT_HOLD_MINUTES || 15);
+let lastSweepAt = 0;
+
+export async function releaseExpiredReservations({ force = false } = {}) {
+  const now = Date.now();
+  if (!force && now - lastSweepAt < 30000) return 0; // throttle: at most every 30s per process
+  lastSweepAt = now;
+  try {
+    const cutoff = new Date(now - PAYMENT_HOLD_MINUTES * 60 * 1000);
+    const stale = await prisma.order.findMany({
+      where: { paymentMethod: 'online', isPaid: false, status: 'pending', createdAt: { lt: cutoff } },
+      include: { items: true },
+      take: 50,
+    });
+    let released = 0;
+    for (const order of stale) {
+      await prisma.$transaction(async (tx) => {
+        // Claim the order first so two sweeps can never restock it twice.
+        const claimed = await tx.order.updateMany({
+          where: { id: order.id, status: 'pending', isPaid: false },
+          data: { status: 'cancelled', paymentStatus: 'failed' },
+        });
+        if (claimed.count === 0) return;
+        for (const item of order.items) {
+          await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.qty } } });
+        }
+        if (order.couponId) {
+          await tx.coupon.updateMany({ where: { id: order.couponId, timesUsed: { gt: 0 } }, data: { timesUsed: { decrement: 1 } } });
+        }
+        await tx.statusEvent.create({
+          data: {
+            orderId: order.id,
+            status: 'cancelled',
+            note: `Payment not completed within ${PAYMENT_HOLD_MINUTES} minutes — order cancelled and stock released`,
+          },
+        });
+        released += 1;
+      });
+    }
+    return released;
+  } catch (err) {
+    console.error('[orders] releaseExpiredReservations failed:', err.message);
+    return 0;
+  }
+}
+
 // Shared by the Razorpay "verify" endpoint and the webhook handler — both can
 // fire for the same payment (the browser redirect and Razorpay's server-to-
 // server webhook are independent signals), so this is written to be safe to
@@ -33,6 +86,41 @@ export async function markOrderPaid(orderId, { razorpayPaymentId, razorpaySignat
     const data = { isPaid: true, paidAt: new Date(), paymentStatus: 'paid' };
     if (razorpayPaymentId) data.razorpayPaymentId = razorpayPaymentId;
     if (razorpaySignature) data.razorpaySignature = razorpaySignature;
+
+    // Money arrived AFTER the payment hold expired and the order was auto-
+    // cancelled. Try to take the stock back; if someone else already bought
+    // it, keep the order cancelled but record the payment so it gets refunded.
+    if (order.status === 'cancelled' && order.paymentMethod === 'online') {
+      const taken = [];
+      let ok = true;
+      for (const item of order.items) {
+        const u = await tx.product.updateMany({
+          where: { id: item.productId, stock: { gte: item.qty } },
+          data: { stock: { decrement: item.qty } },
+        });
+        if (u.count === 0) { ok = false; break; }
+        taken.push(item);
+      }
+      if (ok) {
+        if (order.couponId) await tx.coupon.update({ where: { id: order.couponId }, data: { timesUsed: { increment: 1 } } });
+        await tx.order.update({ where: { id: order.id }, data: { status: 'pending' } });
+        order.status = 'pending';
+      } else {
+        for (const t of taken) {
+          await tx.product.update({ where: { id: t.productId }, data: { stock: { increment: t.qty } } });
+        }
+        return tx.order.update({
+          where: { id: order.id },
+          data: {
+            ...data,
+            statusHistory: {
+              create: { status: 'cancelled', note: 'Payment received after the hold expired and the item is no longer in stock — please refund this payment' },
+            },
+          },
+          include: { items: true, statusHistory: { orderBy: { createdAt: 'asc' } }, user: { select: { id: true, name: true, email: true } } },
+        });
+      }
+    }
 
     // Auto-confirm the moment payment clears, and generate the invoice right
     // then — this is the "Mark Order = PAID -> Confirm Sutaara Order" step
@@ -88,6 +176,9 @@ export const createOrder = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('A complete shipping address is required');
   }
+
+  // Free up stock held by unpaid online orders before checking availability.
+  await releaseExpiredReservations();
 
   const order = await prisma.$transaction(async (tx) => {
     const ids = [...new Set(items.map((i) => i.product))];
@@ -201,9 +292,14 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   // Fire notifications after the order is committed. Wrapped so a failure here
   // never affects the order response the customer sees.
+  // Online orders are NOT announced yet — the "we've received your order" email
+  // and the owner alert go out only once payment succeeds (see verifyPayment /
+  // the Razorpay webhook). Only cash-on-delivery orders are announced here.
   try {
-    await notifyOwnerNewOrder(order);
-    await notifyCustomerStatus(order, 'pending');
+    if (order.paymentMethod === 'cod') {
+      await notifyOwnerNewOrder(order);
+      await notifyCustomerStatus(order, 'pending');
+    }
   } catch (err) {
     console.error('[order] notification error:', err.message);
   }

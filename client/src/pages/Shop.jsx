@@ -36,6 +36,8 @@ export default function Shop() {
   const [facets, setFacets] = useState(EMPTY_FACETS);
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openFilters, setOpenFilters] = useState(false);
 
@@ -75,6 +77,7 @@ export default function Shop() {
         // .map() something that isn't an array.
         setProducts(Array.isArray(res?.products) ? res.products : []);
         setTotal(res?.total ?? 0);
+        setPage(1);
       })
       .catch(() => {
         // On any failure (including the API being down), clear the list so the
@@ -85,6 +88,25 @@ export default function Shop() {
       })
       .finally(() => setLoading(false));
   }, [category, fabric, occasion, color, search, sort, minPrice, maxPrice]);
+
+  // The API returns 48 at a time; this fetches the next batch so every product
+  // is reachable (previously anything past the first 48 was never shown).
+  const loadMore = () => {
+    setLoadingMore(true);
+    api
+      .getProducts({ category, fabric, occasion, color, search, sort, minPrice, maxPrice, limit: 48, page: page + 1 })
+      .then((res) => {
+        const more = Array.isArray(res?.products) ? res.products : [];
+        setProducts((prev) => {
+          const seen = new Set(prev.map((p) => p._id));
+          return prev.concat(more.filter((p) => !seen.has(p._id)));
+        });
+        setPage(page + 1);
+        setTotal(res?.total ?? total);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false));
+  };
 
   const update = useCallback(
     (key, value) => {
@@ -313,11 +335,23 @@ export default function Shop() {
                   );
                 })()
               ) : (
-                <div className="grid grid--3">
-                  {products.map((p) => (
-                    <ProductCard product={p} key={p._id} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid--3">
+                    {products.map((p) => (
+                      <ProductCard product={p} key={p._id} />
+                    ))}
+                  </div>
+                  {products.length < total && (
+                    <div style={{ textAlign: 'center', marginTop: 32 }}>
+                      <p style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', marginBottom: 12 }}>
+                        Showing {products.length} of {total}
+                      </p>
+                      <button className="btn btn--ghost" onClick={loadMore} disabled={loadingMore}>
+                        {loadingMore ? 'Loading…' : 'Load more'}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

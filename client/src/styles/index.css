@@ -920,6 +920,11 @@ textarea {
    reads clearly without needing to open the product page. */
 .card--oos .card__media img {
   opacity: 0.55;
+  filter: grayscale(0.85);
+}
+.card--oos .card__name,
+.card--oos .card__price {
+  opacity: 0.6;
 }
 .card--oos .card__quick .btn:disabled {
   background: var(--ink-soft);
