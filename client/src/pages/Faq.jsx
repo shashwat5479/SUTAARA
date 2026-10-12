@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const CARE_EMAIL = 'care@sutaara.com';
+const CARE_EMAIL = 'support@sutaara.com';
 
 const FAQ_SECTIONS = [
   {

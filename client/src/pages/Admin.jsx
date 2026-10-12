@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { inr } from '../utils/format.js';
 import { COLORS, OTHER, OTHER_HEX, colorsOf, fabricsOf, occasionsOf } from '../utils/taxonomy.js';
 import MediaUploader from '../components/MediaUploader.jsx';
-import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, CouponsTab, AnnouncementTab, NotificationsTab } from '../components/AdminPanels.jsx';
+import { HeroSlidesTab, ExhibitionTab, EditsTab, DiariesTab, TeamTab, AccountsTab, CategoryTilesTab, AnalyticsTab, SubscribersTab, CouponsTab, AnnouncementTab, NotificationsTab, SiteTextTab } from '../components/AdminPanels.jsx';
 
 const EMPTY = {
   name: '',
@@ -1619,6 +1619,9 @@ export default function Admin() {
                   <button className={tab === 'diaries' ? 'active' : ''} onClick={() => setTab('diaries')}>
                     Diaries / Reviews
                   </button>
+                  <button className={tab === 'sitetext' ? 'active' : ''} onClick={() => setTab('sitetext')}>
+                    Site Text
+                  </button>
                   <button className={tab === 'announce' ? 'active' : ''} onClick={() => setTab('announce')}>
                     Announcement
                   </button>
@@ -1651,6 +1654,7 @@ export default function Admin() {
                 : tab === 'categories' && isContentAdmin ? <CategoryTilesTab />
                 : tab === 'edits' && isContentAdmin ? <EditsTab />
                 : tab === 'diaries' && isContentAdmin ? <DiariesTab />
+                : tab === 'sitetext' && isContentAdmin ? <SiteTextTab />
                 : tab === 'announce' && isContentAdmin ? <AnnouncementTab />
                 : tab === 'notify' && isContentAdmin ? <NotificationsTab />
                 : tab === 'team' && isSuperAdmin ? <TeamTab />

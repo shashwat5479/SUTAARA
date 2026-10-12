@@ -194,6 +194,10 @@ export const api = {
   getAllAnnouncements: () => request('/announcement/all', { auth: true }),
   saveAnnouncement: (body) => request('/announcement', { method: 'PUT', body, auth: true }),
 
+  // editable site text (story blocks)
+  getSiteText: () => request('/site-text'),
+  saveSiteText: (body) => request('/site-text', { method: 'PUT', body, auth: true }),
+
   // category tiles ("Shop by category" on homepage)
   getCategoryTiles: () => request('/category-tiles'),
   getAllCategoryTiles: () => request('/category-tiles/all', { auth: true }),

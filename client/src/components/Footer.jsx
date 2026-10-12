@@ -50,7 +50,7 @@ export default function Footer() {
           <AccordionSection title="Reach Us">
             <ul>
               <li>Lucknow, Uttar Pradesh</li>
-              <li><a href="mailto:care@sutaara.com">care@sutaara.com</a></li>
+              <li><a href="mailto:support@sutaara.com">support@sutaara.com</a></li>
               <li><Link to="/contact">Contact us</Link></li>
             </ul>
           </AccordionSection>

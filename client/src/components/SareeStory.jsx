@@ -1,57 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useSiteText, Rich } from '../utils/siteText.jsx';
 
 // Scroll-driven "A Saree's Story" sequence, styled after the reference video:
 // a "Discover / Our Story" split card, then alternating chapters that slide in
 // from opposite sides as they scroll into view. Everything is Sutaara's own
 // palette, copy and pieces — no restaurant/menu content.
 
-const STORY = {
-  intro: {
-    kicker: 'Discover',
-    title: 'Our Story',
-    body:
-      'Sutaara began in a small Lucknow studio with a single belief — that a ' +
-      'saree should carry the mark of the hand that made it. Every piece is ' +
-      'painted, woven or embroidered in small batches by artisans we know by ' +
-      'name, so what you drape is never mass-produced, and never quite like ' +
-      'anyone else\u2019s.',
-    image: '/products/maroon-patola-ikat-1.jpg',
-    link: { to: '/shop', label: 'More about us' },
-  },
+// Images stay here; all wording (kickers, headings, paragraphs, links) is
+// editable from Admin → Site Text (see utils/siteText.jsx for the defaults).
+const IMAGES = {
+  intro: '/products/maroon-patola-ikat-1.jpg',
   chapters: [
-    {
-      kicker: 'The Cloth',
-      title: 'Barish & Dhoop',
-      body:
-        'Our signature red mul cotton was born of two seasons at once — light ' +
-        'as monsoon air, warm as afternoon sun. Woven to move with you, and to ' +
-        'last long enough to be handed down.',
-      image: '/products/green-gold-leheriya-1.jpg',
-      link: { to: '/product/maroon-patola-ikat', label: 'Discover the piece' },
-    },
-    {
-      kicker: 'The Hand',
-      title: 'Painted, not printed',
-      body:
-        'Kalamkari and madhubani motifs are drawn by hand, one line at a time. ' +
-        'No two peacocks turn their head the same way — the small differences ' +
-        'are the signature of a real maker, not a machine.',
-      image: '/products/mauve-kalamkari-peacock-1.jpg',
-      link: { to: '/shop?category=saree', label: 'See the sarees' },
-    },
-    {
-      kicker: 'The Wardrobe',
-      title: 'Made to be worn',
-      body:
-        'Chikankari suits, one-of-a-kind blouses and festive sets — pieces meant ' +
-        'for the everyday and the once-in-a-lifetime alike. Kept in small ' +
-        'batches so each finds the person it was made for.',
-      image: '/products/magenta-emerald-set-1.jpg',
-      link: { to: '/shop', label: 'Explore the collection' },
-    },
+    '/products/green-gold-leheriya-1.jpg',
+    '/products/mauve-kalamkari-peacock-1.jpg',
+    '/products/magenta-emerald-set-1.jpg',
   ],
 };
+const CHAPTER_KEYS = ['story_cloth', 'story_hand', 'story_wardrobe'];
 
 function useReveal() {
   const ref = useRef(null);
@@ -84,13 +50,13 @@ function Chapter({ data, flip }) {
   return (
     <div ref={ref} className={`saree-chapter ${flip ? 'saree-chapter--flip' : ''}`}>
       <div className="saree-chapter__media">
-        <img src={data.image} alt={data.title} loading="lazy" />
+        <img src={data.image} alt={String(data.title).replace(/\*/g, '')} loading="lazy" />
       </div>
       <div className="saree-chapter__body">
         <span className="saree-chapter__kicker">{data.kicker}</span>
-        <h3>{data.title}</h3>
+        <h3><Rich text={data.title} /></h3>
         <p>{data.body}</p>
-        {data.link && (
+        {data.link && data.link.label && (
           <Link to={data.link.to} className="saree-chapter__link">
             {data.link.label} <span aria-hidden="true">→</span>
           </Link>
@@ -102,7 +68,10 @@ function Chapter({ data, flip }) {
 
 export default function SareeStory() {
   const introRef = useReveal();
-  const { intro, chapters } = STORY;
+  const text = useSiteText();
+  const toCard = (s) => ({ kicker: s.kicker, title: s.title, body: s.body, link: { to: s.link, label: s.linkLabel } });
+  const intro = { ...toCard(text.story_intro), image: IMAGES.intro };
+  const chapters = CHAPTER_KEYS.map((k, i) => ({ ...toCard(text[k]), image: IMAGES.chapters[i] }));
 
   return (
     <div className="saree-story">
@@ -113,9 +82,9 @@ export default function SareeStory() {
         </div>
         <div className="saree-intro__card">
           <span className="saree-intro__kicker">{intro.kicker}</span>
-          <h2>{intro.title}</h2>
+          <h2><Rich text={intro.title} /></h2>
           <p>{intro.body}</p>
-          {intro.link && (
+          {intro.link && intro.link.label && (
             <Link to={intro.link.to} className="saree-chapter__link">
               {intro.link.label} <span aria-hidden="true">→</span>
             </Link>
@@ -124,7 +93,7 @@ export default function SareeStory() {
       </div>
 
       {chapters.map((ch, i) => (
-        <Chapter key={ch.title} data={ch} flip={i % 2 === 1} />
+        <Chapter key={CHAPTER_KEYS[i]} data={ch} flip={i % 2 === 1} />
       ))}
     </div>
   );

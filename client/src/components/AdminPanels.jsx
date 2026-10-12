@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import MediaUploader from './MediaUploader.jsx';
 import { inr } from '../utils/format.js';
+import { SITE_TEXT_DEFAULTS, SITE_TEXT_SECTIONS, mergeSiteText, invalidateSiteText } from '../utils/siteText.jsx';
 
 /* ---------------- Hero slides tab ---------------- */
 export function HeroSlidesTab() {
@@ -988,6 +989,75 @@ export function AnnouncementTab() {
         </label>
       </div>
       <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save announcement'}</button>
+    </form>
+  );
+}
+
+/* ---------------- Site Text tab (admin + super admin) ---------------- */
+// Edit the story wording on the homepage and the Sutaara Edits page.
+// Format: *word* = italic, Enter = new line. Blank fields fall back to the original text.
+export function SiteTextTab() {
+  const toast = useToast();
+  const [form, setForm] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.getSiteText()
+      .then((saved) => setForm(mergeSiteText(saved)))
+      .catch(() => setForm(mergeSiteText({})));
+  }, []);
+
+  const set = (section, key) => (e) => setForm((f) => ({ ...f, [section]: { ...f[section], [key]: e.target.value } }));
+  const reset = (section) => setForm((f) => ({ ...f, [section]: { ...SITE_TEXT_DEFAULTS[section] } }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      // Only store what differs from the built-in wording.
+      const payload = {};
+      for (const [section, defs] of Object.entries(SITE_TEXT_DEFAULTS)) {
+        for (const k of Object.keys(defs)) {
+          if (form[section][k] !== defs[k]) (payload[section] = payload[section] || {})[k] = form[section][k];
+        }
+      }
+      await api.saveSiteText(payload);
+      invalidateSiteText();
+      toast('Site text saved');
+    } catch (err) { toast(err.message); } finally { setBusy(false); }
+  };
+
+  if (!form) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <form onSubmit={save} className="admin-form" style={{ maxWidth: 760 }}>
+      <div className="checkout__panel" style={{ marginBottom: 16 }}>
+        <h3>Site text</h3>
+        <p className="admin-form__legend">
+          Edit the story wording shown on the homepage and the Sutaara Edits page. Type <b>*word*</b> to make a
+          word italic (gold on dark pages) and press Enter for a new line. Clearing a box restores the original wording.
+        </p>
+        <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save all changes'}</button>
+      </div>
+      {SITE_TEXT_SECTIONS.map((sec) => (
+        <div key={sec.key} className="checkout__panel" style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <h3 style={{ margin: 0 }}>{sec.label}</h3>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => reset(sec.key)}>Reset to original</button>
+          </div>
+          {sec.fields.map(([key, label, kind]) => (
+            <div className="field" key={key}>
+              <label>{label}</label>
+              {kind === 'area' || kind === 'area2' ? (
+                <textarea rows={kind === 'area' ? 4 : 2} value={form[sec.key][key]} onChange={set(sec.key, key)} />
+              ) : (
+                <input value={form[sec.key][key]} onChange={set(sec.key, key)} />
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+      <button className="btn btn--primary" disabled={busy}>{busy ? 'Saving…' : 'Save all changes'}</button>
     </form>
   );
 }

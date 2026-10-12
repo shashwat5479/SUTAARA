@@ -5,6 +5,7 @@ import {
   getCuratedEdits, getAllCuratedEdits, getCuratedEditById, setProductEdits, createCuratedEdit, updateCuratedEdit, deleteCuratedEdit,
   getAnnouncement, getAllAnnouncements, saveAnnouncement,
   getCategoryTiles, getAllCategoryTiles, updateCategoryTile,
+  getSiteText, saveSiteText,
 } from '../controllers/siteContentController.js';
 import { protect, admin } from '../middleware/auth.js';
 
@@ -42,5 +43,9 @@ router.put('/announcement', protect, admin, saveAnnouncement);
 router.get('/category-tiles', getCategoryTiles);
 router.get('/category-tiles/all', protect, admin, getAllCategoryTiles);
 router.put('/category-tiles/:id', protect, admin, updateCategoryTile);
+
+// Editable site text (homepage story band, Sutaara Edits page)
+router.get('/site-text', getSiteText);
+router.put('/site-text', protect, admin, saveSiteText);
 
 export default router;

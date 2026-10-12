@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import SareeStory from '../components/SareeStory.jsx';
 import { api } from '../api/client.js';
 import { editPath } from '../utils/format.js';
+import { useSiteText, Rich } from '../utils/siteText.jsx';
 
 // Full "A Saree's Story" experience on a dark, cinematic theme. Reached from
 // the homepage "Discover the Story" button and the Stories menu.
 export default function Story() {
   const [edits, setEdits] = useState([]);
+  const text = useSiteText();
+  const hero = text.edits_hero;
 
   // Add a class to <body> so the dark theme can extend edge-to-edge behind
   // the header while this page is mounted; removed on unmount.
@@ -27,13 +30,10 @@ export default function Story() {
         <div className="story-hero__bg" style={{ backgroundImage: 'url(/products/maroon-patola-ikat-1.jpg)' }} />
         <div className="story-hero__scrim" />
         <div className="container story-hero__inner">
-          <span className="story-hero__kicker">Sutaara Edits</span>
-          <h1>Woven by hand,<br /><em>worn with meaning</em></h1>
-          <p>
-            Every Sutaara piece begins as a story, not a stock number. Scroll on to
-            follow the thread — from the loom in Lucknow to the drape that becomes yours.
-          </p>
-          <a href="#story-begins" className="btn btn--gold">Begin the story</a>
+          <span className="story-hero__kicker">{hero.kicker}</span>
+          <h1><Rich text={hero.title} /></h1>
+          <p>{hero.body}</p>
+          <a href="#story-begins" className="btn btn--gold">{hero.button}</a>
         </div>
       </section>
 

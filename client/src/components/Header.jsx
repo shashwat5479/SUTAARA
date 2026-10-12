@@ -715,7 +715,7 @@ export default function Header() {
                           <path d="M20.463 3.488C18.217 1.24 15.231.001 12.05 0 5.495 0 .16 5.335.157 11.892c-.001 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413zm-8.413 18.297h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884a9.826 9.826 0 016.988 2.898 9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885z" />
                         </svg>
                       </a>
-                      <a href="mailto:care@sutaara.com" aria-label="Email" title="Email">
+                      <a href="mailto:support@sutaara.com" aria-label="Email" title="Email">
                         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                       </a>
                       <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram">

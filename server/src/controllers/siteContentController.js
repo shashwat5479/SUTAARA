@@ -260,3 +260,46 @@ export const saveAnnouncement = asyncHandler(async (req, res) => {
   res.json(withMongoStyleId(a));
 });
 
+/* ---------------- Editable site text (story blocks, Sutaara Edits hero) ---------------- */
+
+// Stored as one JSON blob in AppKV (no migration needed). The storefront
+// merges it over its built-in defaults, so any field left unset keeps the
+// original wording.
+const SITE_TEXT_KEY = 'site_text';
+const clean = (v, max = 4000) => String(v == null ? '' : v).slice(0, max);
+
+function sanitizeSiteText(input) {
+  const out = {};
+  if (!input || typeof input !== 'object') return out;
+  for (const [section, fields] of Object.entries(input)) {
+    if (!/^[a-zA-Z0-9_]{1,40}$/.test(section) || !fields || typeof fields !== 'object') continue;
+    out[section] = {};
+    for (const [k, v] of Object.entries(fields)) {
+      if (!/^[a-zA-Z0-9_]{1,40}$/.test(k)) continue;
+      out[section][k] = clean(v);
+    }
+  }
+  return out;
+}
+
+async function readSiteText() {
+  const row = await prisma.appKV.findUnique({ where: { key: SITE_TEXT_KEY } });
+  if (!row) return {};
+  try { return JSON.parse(row.value) || {}; } catch { return {}; }
+}
+
+// GET /api/site-text — public
+export const getSiteText = asyncHandler(async (req, res) => {
+  res.json(await readSiteText());
+});
+
+// PUT /api/site-text — admin: replace the saved overrides
+export const saveSiteText = asyncHandler(async (req, res) => {
+  const data = sanitizeSiteText(req.body);
+  await prisma.appKV.upsert({
+    where: { key: SITE_TEXT_KEY },
+    create: { key: SITE_TEXT_KEY, value: JSON.stringify(data) },
+    update: { value: JSON.stringify(data) },
+  });
+  res.json(data);
+});

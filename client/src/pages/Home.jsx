@@ -6,6 +6,7 @@ import HeroCarousel from '../components/HeroCarousel.jsx';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import DiaryBook from '../components/DiaryBook.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import { useSiteText, Rich } from '../utils/siteText.jsx';
 
 // Pieces shown in the exhibition coverflow. Each points at a real product
 // image; the `to` link opens that piece (falls back to the shop otherwise).
@@ -39,6 +40,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export default function Home() {
+  const storyText = useSiteText().home_story;
   const [arrivals, setArrivals] = useState([]);
   // One row per category on the homepage, each with its own "view more".
   const [byCategory, setByCategory] = useState({});
@@ -273,16 +275,12 @@ export default function Home() {
               <img className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Maroon Patola ikat saree, styled" />
             </div>
             <div className="editorial__body">
-              <div className="chapter-mark">Chapter III — Sutaara Edits</div>
-              <span className="eyebrow">The story of a saree</span>
-              <h2>Barish &amp; <em>Dhoop</em></h2>
-              <p className="drop-cap">
-                Our signature red mul cotton was born of two seasons at once — light as monsoon
-                air, warm as afternoon sun. Woven to move with you, and to last long enough to be
-                handed down.
-              </p>
-              <Link to="/story" className="btn btn--gold">
-                Explore Sutaara Edits
+              <div className="chapter-mark">{storyText.chapter}</div>
+              <span className="eyebrow">{storyText.eyebrow}</span>
+              <h2><Rich text={storyText.title} /></h2>
+              <p className="drop-cap">{storyText.body}</p>
+              <Link to={storyText.link || '/story'} className="btn btn--gold">
+                {storyText.button}
               </Link>
             </div>
           </div>
