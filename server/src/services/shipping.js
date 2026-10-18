@@ -73,23 +73,31 @@ export async function createShipment(order) {
 
   const token = await getToken();
 
-  // Build the Shiprocket order payload from our Order object
-  const addr = order.shippingAddress || {};
+  // Build the Shiprocket order payload from our Order object.
+  // NOTE: the address is stored FLAT on the order (fullName, phone, line1,
+  // line2, city, state, pincode) — there is no nested shippingAddress.
+  const digits = (v) => String(v || '').replace(/\D/g, '');
+  const phone = digits(order.phone).slice(-10);            // Shiprocket wants 10 digits, no +91
+  const pincode = digits(order.pincode).slice(0, 6);
+  const nameParts = String(order.fullName || 'Customer').trim().split(/\s+/);
+  const firstName = nameParts[0] || 'Customer';
+  const lastName = nameParts.slice(1).join(' ');
+
   const payload = {
     order_id: order.orderNumber || order.id,
     order_date: new Date(order.createdAt).toISOString().split('T')[0],
     pickup_location: SR_PICKUP,
     ...(SR_CHANNEL && { channel_id: SR_CHANNEL }),
-    billing_customer_name: order.fullName || addr.fullName || 'Customer',
-    billing_last_name: '',
-    billing_address: addr.line1 || '',
-    billing_address_2: addr.line2 || '',
-    billing_city: addr.city || '',
-    billing_pincode: addr.pincode || '',
-    billing_state: addr.state || '',
+    billing_customer_name: firstName,
+    billing_last_name: lastName,
+    billing_address: order.line1 || '',
+    billing_address_2: order.line2 || '',
+    billing_city: order.city || '',
+    billing_pincode: pincode,
+    billing_state: order.state || '',
     billing_country: 'India',
     billing_email: order.user?.email || '',
-    billing_phone: order.phone || addr.phone || '',
+    billing_phone: phone,
     shipping_is_billing: true,
     order_items: (order.items || []).map((item) => ({
       name: item.name,
@@ -97,7 +105,7 @@ export async function createShipment(order) {
       units: item.qty,
       selling_price: item.price,
     })),
-    payment_method: order.isPaid ? 'Prepaid' : 'COD',
+    payment_method: order.isPaid || order.paymentMethod === 'online' ? 'Prepaid' : 'COD',
     sub_total: order.totalPrice,
     length: 30, // cm — update these to match your actual package sizes
     breadth: 20,
@@ -112,7 +120,7 @@ export async function createShipment(order) {
   });
   const createData = await createRes.json();
   if (!createRes.ok || !createData.shipment_id) {
-    throw new Error(`Shiprocket order creation failed: ${createData.message || JSON.stringify(createData)}`);
+    throw new Error(`Shiprocket order creation failed: ${createData.message || ""} ${createData.errors ? JSON.stringify(createData.errors) : JSON.stringify(createData)}`);
   }
 
   const shipmentId = createData.shipment_id;
