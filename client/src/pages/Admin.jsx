@@ -95,7 +95,7 @@ const CAT_CONFIG = {
 // you can still type a fabric that isn't in the list.
 const FABRICS = [
   'Banarasi Silk', 'Silk', 'Cotton', 'Mul Cotton', 'Chanderi', 'Linen',
-  'Tissue', 'Organza', 'Maheshwari', 'Kota', 'Modal', 'Georgette',
+  'Tissue', 'Organza', 'Maheshwari', 'Kota', 'Modal', 'Georgette', 'Crepe',
   'Chiffon', 'Net', 'Velvet', 'Brocade', 'Ajrakh Cotton', 'Cotton Silk',
 ];
 const OCCASIONS = ['Wedding', 'Festive', 'Party', 'Everyday', 'Daywear'];

@@ -54,7 +54,8 @@ const NAV_LEFT = [
             { label: 'Cotton', to: '/shop?category=saree&fabric=Cotton' },
             { label: 'Chanderi', to: '/shop?category=saree&fabric=Chanderi' },
             { label: 'Chiffon', to: '/shop?category=saree&fabric=Chiffon' },
-            { label: 'Crepe Georgette', to: '/shop?category=saree&fabric=Crepe%20Georgette' },
+            { label: 'Crepe', to: '/shop?category=saree&fabric=Crepe' },
+            { label: 'Georgette', to: '/shop?category=saree&fabric=Georgette' },
             { label: 'Silk', to: '/shop?category=saree&fabric=Silk' },
             { label: 'Linen', to: '/shop?category=saree&fabric=Linen' },
             { label: 'Tissue', to: '/shop?category=saree&fabric=Tissue' },
@@ -73,6 +74,7 @@ const NAV_LEFT = [
             { label: 'Chanderi', to: '/shop?category=suit&fabric=Chanderi' },
             { label: 'Corduroy', to: '/shop?category=suit&fabric=Corduroy' },
             { label: 'Crepe', to: '/shop?category=suit&fabric=Crepe' },
+            { label: 'Georgette', to: '/shop?category=suit&fabric=Georgette' },
             { label: 'Silk', to: '/shop?category=suit&fabric=Silk' },
             { label: 'Linen', to: '/shop?category=suit&fabric=Linen' },
             { label: 'Modal', to: '/shop?category=suit&fabric=Modal' },
@@ -549,7 +551,8 @@ export default function Header() {
                       <Link to="/shop?category=saree&fabric=Cotton" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Cotton</Link>
                       <Link to="/shop?category=saree&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
                       <Link to="/shop?category=saree&fabric=Chiffon" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chiffon</Link>
-                      <Link to="/shop?category=saree&fabric=Crepe%20Georgette" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe Georgette</Link>
+                      <Link to="/shop?category=saree&fabric=Crepe" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe</Link>
+                      <Link to="/shop?category=saree&fabric=Georgette" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Georgette</Link>
                       <Link to="/shop?category=saree&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
                       <Link to="/shop?category=saree&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
                       <Link to="/shop?category=saree&fabric=Tissue" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Tissue</Link>
@@ -564,6 +567,7 @@ export default function Header() {
                       <Link to="/shop?category=suit&fabric=Chanderi" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Chanderi</Link>
                       <Link to="/shop?category=suit&fabric=Corduroy" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Corduroy</Link>
                       <Link to="/shop?category=suit&fabric=Crepe" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Crepe</Link>
+                      <Link to="/shop?category=suit&fabric=Georgette" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Georgette</Link>
                       <Link to="/shop?category=suit&fabric=Silk" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Silk</Link>
                       <Link to="/shop?category=suit&fabric=Linen" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Linen</Link>
                       <Link to="/shop?category=suit&fabric=Modal" className="mmenu__sub" onClick={() => setMenuOpen(false)}>Modal</Link>

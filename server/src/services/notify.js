@@ -35,7 +35,7 @@ async function getSettings() {
     if (!s) s = await prisma.notificationSettings.create({ data: {} });
     return s;
   } catch {
-    return { alertEmail: process.env.ALERT_EMAIL || 'shashwat9252@gmail.com', alertWhatsApp: '9569005501', emailEnabled: true };
+    return { alertEmail1: process.env.ALERT_EMAIL || 'shashwat9252@gmail.com', alertEmail2: '', alertEmail3: '', alertWhatsApp: '9569005501', emailEnabled: true };
   }
 }
 
