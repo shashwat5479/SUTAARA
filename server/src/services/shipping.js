@@ -65,6 +65,28 @@ function srHeaders(token) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
+// ─── Pickup location ─────────────────────────────────────────────────────────
+// Shiprocket only accepts the exact nickname of a pickup address saved in the
+// account. Rather than trusting the env var blindly, ask Shiprocket for the
+// real list and use the one matching SHIPROCKET_PICKUP_LOCATION (any case /
+// spacing); if none matches, fall back to the account's first pickup address.
+async function resolvePickupLocation(token) {
+  try {
+    const res = await fetch(`${SR_BASE}/settings/company/pickup`, { headers: srHeaders(token) });
+    const data = await res.json();
+    const list = (data?.data?.shipping_address || [])
+      .map((a) => String(a.pickup_location || '').trim())
+      .filter(Boolean);
+    if (list.length) {
+      const want = SR_PICKUP.trim().toLowerCase();
+      return list.find((n) => n.toLowerCase() === want) || list[0];
+    }
+  } catch {
+    // fall through to the env value
+  }
+  return SR_PICKUP.trim();
+}
+
 // ─── Create a Shiprocket order + auto-assign the best courier ────────────────
 export async function createShipment(order) {
   if (!isShiprocketConfigured()) {
@@ -72,6 +94,7 @@ export async function createShipment(order) {
   }
 
   const token = await getToken();
+  const pickupLocation = await resolvePickupLocation(token);
 
   // Build the Shiprocket order payload from our Order object.
   // NOTE: the address is stored FLAT on the order (fullName, phone, line1,
@@ -86,7 +109,7 @@ export async function createShipment(order) {
   const payload = {
     order_id: order.orderNumber || order.id,
     order_date: new Date(order.createdAt).toISOString().split('T')[0],
-    pickup_location: SR_PICKUP,
+    pickup_location: pickupLocation,
     ...(SR_CHANNEL && { channel_id: SR_CHANNEL }),
     billing_customer_name: firstName,
     billing_last_name: lastName,
