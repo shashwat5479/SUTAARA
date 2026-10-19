@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { inr, discountPct, WHATSAPP_NUMBER } from '../utils/format.js';
 import ProductRail from '../components/ProductRail.jsx';
 import ProductReviews from '../components/ProductReviews.jsx';
-import Lightbox from '../components/Lightbox.jsx';
+import ImageViewer from '../components/ImageViewer.jsx';
 import { Heart, Minus, Plus, Whatsapp, Truck } from '../components/Icons.jsx';
 
 /* ── collapsible accordion ── */
@@ -168,6 +168,9 @@ export default function ProductDetail() {
                     <span className="pdp__count">{activeImg + 1} / {product.images.length}</span>
                   </>
                 )}
+                <span className="pdp__zoom-hint" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21M10.5 7.8v5.4M7.8 10.5h5.4" /></svg>
+                </span>
               </div>
 
               {product.images.length > 1 && (
@@ -324,7 +327,13 @@ export default function ProductDetail() {
       )}
 
       {zoom && (
-        <Lightbox src={product.images[activeImg]} alt={product.name} onClose={() => setZoom(false)} />
+        <ImageViewer
+          images={product.images}
+          index={activeImg}
+          alt={product.name}
+          onChange={setActiveImg}
+          onClose={() => setZoom(false)}
+        />
       )}
 
       {/* ── Sticky bottom bar (mobile only) ── */}
