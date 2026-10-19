@@ -60,7 +60,6 @@ function Terms() {
       <p>These terms are governed by the laws of India, and any disputes are subject to the jurisdiction of the courts of Lucknow, Uttar Pradesh.</p>
       <h2>Contact</h2>
       <p>Questions about these terms? Email <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a>.</p>
-      <p className="policy__fine">This is a general template and should be reviewed by a legal professional before final use.</p>
     </>
   );
 }
@@ -77,7 +76,6 @@ function Disclaimer() {
       <p>Our website may contain links to third-party sites. We are not responsible for the content or practices of those sites.</p>
       <h2>Contact</h2>
       <p>For any clarification, email <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a>.</p>
-      <p className="policy__fine">This is a general template and should be reviewed by a legal professional before final use.</p>
     </>
   );
 }
