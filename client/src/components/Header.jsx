@@ -149,7 +149,7 @@ const NAV_RIGHT = [
           title: 'From the journal',
           links: [
             { label: "Sutaara Edits", to: '/story' },
-            { label: 'Care & keeping', to: '/#care' },
+            { label: 'Care & keeping', to: '/story#care' },
             { label: 'New arrivals', to: '/shop?sort=newest' },
           ],
         },
@@ -170,7 +170,7 @@ const NAV_RIGHT = [
           title: 'Sutaara',
           links: [
             { label: 'Our story', action: 'about' },
-            { label: 'Care & keeping', to: '/#care' },
+            { label: 'Care & keeping', to: '/story#care' },
           ],
         },
         {

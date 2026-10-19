@@ -351,7 +351,7 @@ export default function Home() {
                 <span className="eyebrow">Fabric care</span>
                 <h3>How to keep your saree new</h3>
                 <p>Store jewellery and sarees apart, fold along the grain, and let handloom breathe.</p>
-                <Link to="/story" className="link-underline">Read the guide</Link>
+                <Link to="/story#care-fabric" className="link-underline">Read the guide</Link>
               </div>
             </article>
             <article className="journal__card">
@@ -360,7 +360,7 @@ export default function Home() {
                 <span className="eyebrow">Styling</span>
                 <h3>One saree, three ways to drape</h3>
                 <p>From the classic Nivi to a modern pant-drape — small changes, whole new looks.</p>
-                <Link to="/story" className="link-underline">Read the guide</Link>
+                <Link to="/story#care-styling" className="link-underline">Read the guide</Link>
               </div>
             </article>
           </div>

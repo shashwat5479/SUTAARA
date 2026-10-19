@@ -78,6 +78,49 @@ export default function Story() {
         </div>
       </section>
 
+      {/* Care & keeping — "Read the guide" links on the homepage land here */}
+      <section className="story-care" id="care">
+        <div className="container">
+          <div className="story-care__head">
+            <span className="story-care__kicker">Chapter IV — Keeping the Story</span>
+            <h2>Care &amp; keeping</h2>
+            <p>A handloom saree can last generations. A little care goes a long way.</p>
+          </div>
+
+          <div className="story-care__grid">
+            <article className="story-care__card" id="care-fabric">
+              <span className="story-care__eyebrow">Fabric care</span>
+              <h3>How to keep your saree new</h3>
+              <ul>
+                <li><strong>Store with space.</strong> Keep sarees folded along the grain, wrapped in soft cotton or muslin — never plastic. Store jewellery and sarees apart so zari and stones don't snag the weave.</li>
+                <li><strong>Refold every few months.</strong> Changing the fold lines stops permanent creases and weak spots from forming, especially on silk and zari borders.</li>
+                <li><strong>Let it breathe.</strong> Air each saree in the shade every few months. Neem leaves or lavender sachets are gentler than mothballs.</li>
+                <li><strong>Wash with care.</strong> Dry-clean silk, tissue, organza and anything with heavy zari. Cotton, linen and modal can be hand-washed cold with a mild detergent — don't wring, and dry in the shade.</li>
+                <li><strong>Iron gently.</strong> Iron on the reverse, at low to medium heat, with a thin cloth between iron and fabric. Never press directly on zari.</li>
+                <li><strong>Perfume first.</strong> Spray perfume before you dress, not after — sprays and sweat can stain delicate fabrics.</li>
+              </ul>
+            </article>
+
+            <article className="story-care__card" id="care-styling">
+              <span className="story-care__eyebrow">Styling</span>
+              <h3>One saree, three ways to drape</h3>
+              <ol>
+                <li>
+                  <strong>The classic Nivi.</strong> Tuck the plain end into your petticoat, wrap once around, then gather pleats and tuck them at the navel. Take the pallu over your left shoulder and let it fall behind.
+                </li>
+                <li>
+                  <strong>The modern pant-drape.</strong> Pair the saree with tailored trousers instead of a petticoat. Tuck the pleats into the waistband, drape the pallu over the shoulder and pin it for an easy, polished look.
+                </li>
+                <li>
+                  <strong>Seedha pallu.</strong> Bring the pallu around from the back to the front over your right shoulder and spread it across the chest to show off the border and weave.
+                </li>
+              </ol>
+              <p className="story-care__note">Small changes in drape, blouse and jewellery can make the same saree feel entirely new.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section className="story-outro">
         <div className="container">
           <h2>Find the piece that's yours</h2>
