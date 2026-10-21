@@ -547,3 +547,32 @@ model CuratedEdit {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ── Site analytics ───────────────────────────────────────────────────────────
+// One row per visitor per day (IST), so "unique visitors" for any day is just
+// the row count, and for a month/year it is COUNT(DISTINCT visitorId). The
+// visitorId is a random id the browser generates — no personal data is stored.
+// `views` counts browsing sessions that day.
+model SiteVisit {
+  id        String   @id @default(uuid())
+  day       String   // YYYY-MM-DD, India time
+  visitorId String
+  views     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@unique([day, visitorId])
+  @@index([day])
+}
+
+// Shopper actions on a product: view | wishlist_add | wishlist_remove | cart_add.
+// No foreign key on purpose, so history survives a product being deleted.
+model ProductEvent {
+  id        String   @id @default(uuid())
+  productId String
+  type      String
+  visitorId String
+  createdAt DateTime @default(now())
+
+  @@index([productId, type])
+  @@index([type, createdAt])
+}

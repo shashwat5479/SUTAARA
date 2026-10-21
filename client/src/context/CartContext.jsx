@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { api } from '../api/client.js';
 import { useToast } from './ToastContext.jsx';
+import { trackProductEvent } from '../utils/track.js';
 
 const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
@@ -35,6 +36,7 @@ export function CartProvider({ children }) {
   // this cart previously had zero awareness of stock at all, so it was
   // possible to add e.g. 4 of something with only 1 unit in stock.
   const add = useCallback((product, qty = 1) => {
+    trackProductEvent(product._id, 'cart_add');
     const stock = product.stock ?? Infinity;
     let result = 'ok';
     setItems((cur) => {

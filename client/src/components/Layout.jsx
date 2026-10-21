@@ -7,6 +7,7 @@ import CartDrawer from './CartDrawer.jsx';
 import WhatsAppFloat from './WhatsAppFloat.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import useScrollReveal from '../hooks/useScrollReveal.js';
+import { trackVisit } from '../utils/track.js';
 
 export function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -31,6 +32,7 @@ export function ScrollToTop() {
 
 export default function Layout() {
   useScrollReveal();
+  useEffect(() => { trackVisit(); }, []);
   return (
     <>
       <ScrollToTop />

@@ -8,6 +8,7 @@ import { inr, discountPct, WHATSAPP_NUMBER } from '../utils/format.js';
 import ProductRail from '../components/ProductRail.jsx';
 import ProductReviews from '../components/ProductReviews.jsx';
 import ImageViewer from '../components/ImageViewer.jsx';
+import { trackProductEvent } from '../utils/track.js';
 import { Heart, Minus, Plus, Whatsapp, Truck } from '../components/Icons.jsx';
 
 /* ── collapsible accordion ── */
@@ -46,7 +47,7 @@ export default function ProductDetail() {
     setQty(1);
     api
       .getProduct(slug)
-      .then((res) => { setProduct(res.product); setRelated(res.related); })
+      .then((res) => { setProduct(res.product); setRelated(res.related); trackProductEvent(res.product?._id, 'view'); })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [slug]);

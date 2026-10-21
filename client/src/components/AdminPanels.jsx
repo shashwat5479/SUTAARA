@@ -735,6 +735,46 @@ function CategoryTileEditor({ tile, onSaved }) {
 }
 
 /* ---------------- Analytics tab (admin + super admin) ---------------- */
+const num = (n) => Number(n || 0).toLocaleString('en-IN');
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monthLabel = (ym) => `${MONTH_NAMES[Number(ym.slice(5, 7)) - 1]} ${ym.slice(2, 4)}`;
+
+// "+12%" / "-5%" versus the previous period of the same length.
+function Delta({ now, before }) {
+  if (before === null || before === undefined) return null;
+  if (before === 0) return now > 0 ? <span className="analytics-delta is-up">new</span> : null;
+  const pct = Math.round(((now - before) / before) * 100);
+  if (pct === 0) return <span className="analytics-delta">no change</span>;
+  return <span className={`analytics-delta ${pct > 0 ? 'is-up' : 'is-down'}`}>{pct > 0 ? '▲' : '▼'} {Math.abs(pct)}% vs previous</span>;
+}
+
+function Kpi({ label, value, now, before, note }) {
+  return (
+    <div className="analytics-kpi">
+      <span className="analytics-kpi__label">{label}</span>
+      <span className="analytics-kpi__value">{value}</span>
+      {now !== undefined ? <Delta now={now} before={before} /> : note ? <span className="analytics-delta">{note}</span> : null}
+    </div>
+  );
+}
+
+// Simple CSS bar chart (no chart library) — `rows` = [{ label, value, title }].
+function Bars({ rows, empty }) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  if (!rows.length || rows.every((r) => r.value === 0)) return <p className="admin-empty-note">{empty}</p>;
+  const every = rows.length > 31 ? Math.ceil(rows.length / 12) : 1; // thin out crowded labels
+  return (
+    <div className="analytics-bars">
+      {rows.map((r, i) => (
+        <div className="analytics-bar" key={r.label + i} title={r.title}>
+          <div className="analytics-bar__fill" style={{ height: `${Math.max(r.value ? 4 : 0, (r.value / max) * 100)}%` }} />
+          <span className="analytics-bar__label">{i % every === 0 ? r.label : '\u00a0'}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AnalyticsTab() {
   const toast = useToast();
   const [days, setDays] = useState(30);
@@ -749,8 +789,7 @@ export function AnalyticsTab() {
   useEffect(() => {
     load(false);
     // Light auto-refresh while this tab is open, so numbers stay current
-    // without needing a manual reload — not full push/websocket real-time,
-    // but close enough for a dashboard someone glances at.
+    // without needing a manual reload.
     const t = setInterval(() => load(true), 30_000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -758,47 +797,114 @@ export function AnalyticsTab() {
 
   if (loading || !data) return <div className="loader"><div className="spinner" /></div>;
 
-  const maxDayRevenue = Math.max(1, ...data.revenueByDay.map((d) => d.total));
+  const v = data.visitors;
+  const eng = data.engagement;
   const maxQtySold = Math.max(1, ...data.topProducts.map((p) => p.qtySold));
+  const RANGES = [[7, '7 days'], [30, '30 days'], [90, '90 days'], [365, '1 year']];
   const STATUS_LABEL = {
     pending: 'Pending', confirmed: 'Confirmed', processing: 'Processing', packed: 'Packed',
     shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
   };
+  const rangeLabel = RANGES.find(([n]) => n === data.days)?.[1] || `${data.days} days`;
+  const totalReactions = eng ? eng.totals.likes + eng.totals.unlikes : 0;
 
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
-        <span className="shop__count">Last {data.days} days</span>
+        <span className="shop__count">Last {rangeLabel}</span>
         <div className="filter-opt-row">
-          {[7, 30, 90].map((n) => (
-            <button
-              key={n}
-              className={`btn btn--sm ${days === n ? 'btn--primary' : 'btn--ghost'}`}
-              onClick={() => setDays(n)}
-            >
-              {n} days
+          {RANGES.map(([n, label]) => (
+            <button key={n} className={`btn btn--sm ${days === n ? 'btn--primary' : 'btn--ghost'}`} onClick={() => setDays(n)}>
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* KPI cards */}
+      {/* Headline numbers, each compared with the previous period of equal length */}
       <div className="analytics-kpis">
-        <div className="analytics-kpi">
-          <span className="analytics-kpi__label">Revenue</span>
-          <span className="analytics-kpi__value">{inr(data.revenue)}</span>
+        <Kpi label="Revenue" value={inr(data.revenue)} now={data.revenue} before={data.prev.revenue} />
+        <Kpi label="Orders" value={num(data.totalOrders)} now={data.totalOrders} before={data.prev.totalOrders} />
+        <Kpi label="Avg. order value" value={inr(data.avgOrderValue)} now={data.avgOrderValue} before={data.prev.avgOrderValue} />
+        <Kpi label="Visitors" value={v ? num(v.window) : '—'} now={v ? v.window : undefined} before={data.prev.visitors} note={v ? undefined : 'Tracking not set up yet'} />
+        <Kpi label="New customers" value={num(data.customers.new)} now={data.customers.new} before={data.prev.newCustomers} />
+        <Kpi label="Visit → order" value={data.conversionRate === null ? '—' : `${data.conversionRate}%`} note="Orders ÷ unique visitors" />
+      </div>
+
+      {!data.trackingReady && (
+        <p className="admin-empty-note" style={{ marginBottom: 20 }}>
+          Visitor and product-engagement tracking switches on once the database update has been applied
+          (<code>npx prisma migrate deploy</code>). Revenue and orders below work already.
+        </p>
+      )}
+
+      {/* Daily / monthly / yearly at a glance */}
+      <div className="analytics-panel" style={{ marginBottom: 24 }}>
+        <h3>Today, this month, this year</h3>
+        <div className="analytics-table-wrap">
+          <table className="analytics-table">
+            <thead>
+              <tr><th>Period</th><th>Unique visitors</th><th>Revenue</th><th>Orders</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Today</td><td>{v ? num(v.today) : '—'}</td><td>{inr(data.periods.today.revenue)}</td><td>{num(data.periods.today.orders)}</td></tr>
+              <tr><td>This month</td><td>{v ? num(v.month) : '—'}</td><td>{inr(data.periods.month.revenue)}</td><td>{num(data.periods.month.orders)}</td></tr>
+              <tr><td>This year</td><td>{v ? num(v.year) : '—'}</td><td>{inr(data.periods.year.revenue)}</td><td>{num(data.periods.year.orders)}</td></tr>
+              <tr><td>All time</td><td>—</td><td>{inr(data.periods.allTime.revenue)}</td><td>{num(data.periods.allTime.orders)}</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div className="analytics-kpi">
-          <span className="analytics-kpi__label">Orders</span>
-          <span className="analytics-kpi__value">{data.totalOrders}</span>
+        <p className="analytics-footnote">Unique visitors = different browsers; the same person returning on another day counts once for the month and year.</p>
+      </div>
+
+      {/* Visitors charts */}
+      {v && (
+        <div className="analytics-grid analytics-grid--even" style={{ marginBottom: 24 }}>
+          <div className="analytics-panel">
+            <h3>{v.daily.length ? 'Visitors by day' : 'Visitors by month'}</h3>
+            <Bars
+              empty="No visits recorded in this window yet."
+              rows={v.daily.length
+                ? v.daily.map((d) => ({ label: d.date.slice(5), value: d.visitors, title: `${d.date}: ${d.visitors} visitors` }))
+                : v.monthly.map((m) => ({ label: monthLabel(m.month), value: m.visitors, title: `${monthLabel(m.month)}: ${m.visitors} visitors` }))}
+            />
+          </div>
+          <div className="analytics-panel">
+            <h3>Visitors by month</h3>
+            <Bars
+              empty="No visits recorded yet."
+              rows={v.monthly.map((m) => ({ label: monthLabel(m.month), value: m.visitors, title: `${monthLabel(m.month)}: ${m.visitors} visitors` }))}
+            />
+            {v.yearly.length > 0 && (
+              <div className="analytics-year-row">
+                {v.yearly.map((y) => (
+                  <span key={y.year} className="analytics-status-pill">{y.year}: {num(y.visitors)} visitors</span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="analytics-kpi">
-          <span className="analytics-kpi__label">Avg. order value</span>
-          <span className="analytics-kpi__value">{inr(data.avgOrderValue)}</span>
+      )}
+
+      {/* Revenue charts */}
+      <div className="analytics-grid analytics-grid--even" style={{ marginBottom: 24 }}>
+        <div className="analytics-panel">
+          <h3>Revenue by day</h3>
+          <Bars
+            empty="No revenue in this window yet."
+            rows={data.revenueByDay.map((d) => ({ label: d.date.slice(5), value: d.total, title: `${d.date}: ${inr(d.total)}` }))}
+          />
+        </div>
+        <div className="analytics-panel">
+          <h3>Revenue by month</h3>
+          <Bars
+            empty="No revenue yet."
+            rows={data.revenueByMonth.map((m) => ({ label: monthLabel(m.month), value: m.total, title: `${monthLabel(m.month)}: ${inr(m.total)} · ${m.orders} orders` }))}
+          />
         </div>
       </div>
 
-      {/* Status breakdown */}
+      {/* Order status */}
       <div className="analytics-status-row">
         {Object.entries(data.statusCounts).map(([status, count]) => (
           <span key={status} className={`analytics-status-pill analytics-status-pill--${status}`}>
@@ -808,53 +914,97 @@ export function AnalyticsTab() {
         {Object.keys(data.statusCounts).length === 0 && <span className="admin-empty-note">No orders in this window yet.</span>}
       </div>
 
-      <div className="analytics-grid">
-        {/* Revenue by day */}
-        <div className="analytics-panel">
-          <h3>Revenue by day</h3>
-          {data.revenueByDay.length === 0 ? (
-            <p className="admin-empty-note">No revenue in this window yet.</p>
-          ) : (
-            <div className="analytics-bars">
-              {data.revenueByDay.map((d) => (
-                <div className="analytics-bar" key={d.date} title={`${d.date}: ${inr(d.total)}`}>
-                  <div className="analytics-bar__fill" style={{ height: `${Math.max(4, (d.total / maxDayRevenue) * 100)}%` }} />
-                  <span className="analytics-bar__label">{d.date.slice(5)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Payments / cancellations / returns / customers */}
+      <div className="analytics-kpis">
+        <Kpi label="Online payments" value={inr(data.payment.online.revenue)} note={`${num(data.payment.online.orders)} orders`} />
+        <Kpi label="Cash on delivery" value={inr(data.payment.cod.revenue)} note={`${num(data.payment.cod.orders)} orders`} />
+        <Kpi label="Cancelled" value={`${data.cancelRate}%`} note={`${num(data.cancelledCount)} orders`} />
+        <Kpi label="Return requests" value={num(data.returnsCount)} />
+        <Kpi label="Total customers" value={num(data.customers.total)} />
+        <Kpi label="New subscribers" value={num(data.customers.newSubscribers)} />
+      </div>
 
-        {/* Top-selling products */}
-        <div className="analytics-panel">
-          <h3>Top-selling products</h3>
-          {data.topProducts.length === 0 ? (
-            <p className="admin-empty-note">No sales in this window yet.</p>
-          ) : (
-            <div className="analytics-top-list">
-              {data.topProducts.map((p) => (
-                <div className="analytics-top-item" key={p.productId}>
-                  {p.image ? <img src={p.image} alt="" /> : <div className="analytics-top-item__noimg" />}
-                  <div className="analytics-top-item__body">
-                    <div className="analytics-top-item__row">
-                      <span className="analytics-top-item__name">{p.name}</span>
-                      <span className="analytics-top-item__qty">{p.qtySold} sold</span>
-                    </div>
-                    <div className="analytics-top-item__bar">
-                      <div style={{ width: `${Math.max(4, (p.qtySold / maxQtySold) * 100)}%` }} />
-                    </div>
-                    {p.currentStock !== null && (
-                      <span className={`analytics-top-item__stock ${p.currentStock === 0 ? 'is-out' : p.currentStock <= 5 ? 'is-low' : ''}`}>
-                        {p.currentStock === 0 ? 'Out of stock' : `${p.currentStock} in stock`}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+      {/* Likes, dislikes and product engagement */}
+      <div className="analytics-panel" style={{ marginBottom: 24 }}>
+        <h3>Shopper reactions</h3>
+        {eng ? (
+          <>
+            <div className="analytics-kpis analytics-kpis--tight">
+              <Kpi label="Product views" value={num(eng.totals.views)} />
+              <Kpi label="Likes (saved to wishlist)" value={num(eng.totals.likes)} />
+              <Kpi label="Unliked (removed)" value={num(eng.totals.unlikes)} note={totalReactions ? `${Math.round((eng.totals.unlikes / totalReactions) * 100)}% of reactions` : undefined} />
+              <Kpi label="Added to bag" value={num(eng.totals.cartAdds)} />
             </div>
-          )}
-        </div>
+            <div className="analytics-kpis analytics-kpis--tight">
+              <Kpi label="Avg. review rating" value={data.reviews.avg ? `${data.reviews.avg} ★` : '—'} note={`${num(data.reviews.count)} reviews`} />
+              <Kpi label="Positive reviews" value={num(data.reviews.positive)} note="4–5 stars" />
+              <Kpi label="Neutral" value={num(data.reviews.neutral)} note="3 stars" />
+              <Kpi label="Negative reviews" value={num(data.reviews.negative)} note="1–2 stars" />
+            </div>
+            {eng.products.length === 0 ? (
+              <p className="admin-empty-note">No product activity recorded in this window yet.</p>
+            ) : (
+              <div className="analytics-table-wrap">
+                <table className="analytics-table">
+                  <thead>
+                    <tr><th>Product</th><th>Views</th><th>Likes</th><th>Unliked</th><th>In bag</th><th>Sold</th><th>Rating</th></tr>
+                  </thead>
+                  <tbody>
+                    {eng.products.map((p) => (
+                      <tr key={p.productId}>
+                        <td>
+                          <span className="analytics-prod">
+                            {p.image ? <img src={p.image} alt="" /> : <span className="analytics-top-item__noimg" />}
+                            {p.name}
+                          </span>
+                        </td>
+                        <td>{num(p.views)}</td>
+                        <td>{num(p.likes)}</td>
+                        <td>{num(p.unlikes)}</td>
+                        <td>{num(p.cartAdds)}</td>
+                        <td>{num(p.sold)}</td>
+                        <td>{p.avgRating ? `${p.avgRating} ★ (${p.reviews})` : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="analytics-footnote">A “like” is a product saved to the wishlist; “unliked” is a wishlist removal. Reviews are counted separately (4–5★ positive, 1–2★ negative).</p>
+          </>
+        ) : (
+          <p className="admin-empty-note">Engagement tracking starts once the database update is applied.</p>
+        )}
+      </div>
+
+      {/* Top-selling products */}
+      <div className="analytics-panel">
+        <h3>Top-selling products</h3>
+        {data.topProducts.length === 0 ? (
+          <p className="admin-empty-note">No sales in this window yet.</p>
+        ) : (
+          <div className="analytics-top-list">
+            {data.topProducts.map((p) => (
+              <div className="analytics-top-item" key={p.productId}>
+                {p.image ? <img src={p.image} alt="" /> : <div className="analytics-top-item__noimg" />}
+                <div className="analytics-top-item__body">
+                  <div className="analytics-top-item__row">
+                    <span className="analytics-top-item__name">{p.name}</span>
+                    <span className="analytics-top-item__qty">{p.qtySold} sold</span>
+                  </div>
+                  <div className="analytics-top-item__bar">
+                    <div style={{ width: `${Math.max(4, (p.qtySold / maxQtySold) * 100)}%` }} />
+                  </div>
+                  {p.currentStock !== null && (
+                    <span className={`analytics-top-item__stock ${p.currentStock === 0 ? 'is-out' : p.currentStock <= 5 ? 'is-low' : ''}`}>
+                      {p.currentStock === 0 ? 'Out of stock' : `${p.currentStock} in stock`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
