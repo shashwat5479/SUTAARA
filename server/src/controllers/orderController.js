@@ -9,15 +9,43 @@ const SHIPPING_FREE_ABOVE = 4999;
 const SHIPPING_FLAT = 100;
 const GST_RATE = Number(process.env.GST_RATE || 0); // e.g. 0.05 for 5% — leave 0 until GST-registered
 
+// Order and invoice numbers come from a counter that only ever goes up, kept
+// in the AppKV table. They used to be "how many orders exist + 1", which breaks
+// the moment an order is deleted (the next number would collide with an existing
+// one, or re-use a deleted one — bad for invoices). The counter is always at
+// least the highest number already in use, so existing data keeps working.
+const trailingNumber = (s) => {
+  const m = String(s || '').match(/(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+};
+
+async function nextSeq(tx, key, highestInUse) {
+  const row = await tx.appKV.findUnique({ where: { key } });
+  const stored = row ? parseInt(row.value, 10) || 0 : 0;
+  const next = Math.max(stored, highestInUse) + 1;
+  await tx.appKV.upsert({
+    where: { key },
+    update: { value: String(next) },
+    create: { key, value: String(next) },
+  });
+  return next;
+}
+
 const nextOrderNumber = async (tx) => {
-  const count = await tx.order.count();
-  return `SUT-${String(count + 1).padStart(6, '0')}`;
+  const last = await tx.order.findFirst({ orderBy: { orderNumber: 'desc' }, select: { orderNumber: true } });
+  const n = await nextSeq(tx, 'seq:order', trailingNumber(last?.orderNumber));
+  return `SUT-${String(n).padStart(6, '0')}`;
 };
 
 export const nextInvoiceNumber = async (tx) => {
-  const count = await tx.order.count({ where: { invoiceNumber: { not: null } } });
+  const last = await tx.order.findFirst({
+    where: { invoiceNumber: { not: null } },
+    orderBy: { invoiceNumber: 'desc' },
+    select: { invoiceNumber: true },
+  });
+  const n = await nextSeq(tx, 'seq:invoice', trailingNumber(last?.invoiceNumber));
   const year = new Date().getFullYear();
-  return `INV-${year}-${String(count + 1).padStart(6, '0')}`;
+  return `INV-${year}-${String(n).padStart(6, '0')}`;
 };
 
 // ---------------------------------------------------------------------
@@ -304,7 +332,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     console.error('[order] notification error:', err.message);
   }
 
-  res.status(201).json(withMongoStyleId(order));
+  res.status(201).json(withMongoStyleId(await withItemLinks(order)));
 });
 
 // Adds what the order pages need to link each line back to its product:
@@ -323,7 +351,7 @@ async function withItemLinks(orders) {
       })
     : [];
   const byId = new Map(products.map((p) => [p.id, p]));
-  const decorate = (o) => ({
+  const decorate = (o) => (!o || !Array.isArray(o.items) ? o : {
     ...o,
     items: (o.items || []).map((i) => {
       const p = byId.get(i.productId);
@@ -425,7 +453,7 @@ export const exportOrders = asyncHandler(async (req, res) => {
     city: o.city,
     state: o.state,
     pincode: o.pincode,
-    items: o.items.map((i) => `${i.name} × ${i.qty}`).join('\n'),
+    items: o.items.map((i) => `${prod.get(i.productId)?.sku ? `[${prod.get(i.productId).sku}] ` : ''}${i.name} × ${i.qty}`).join('\n'),
     qty: o.items.reduce((n, i) => n + i.qty, 0),
     itemsPrice: o.itemsPrice,
     shipping: o.shippingPrice,
@@ -590,7 +618,7 @@ export async function applyStatusChange(orderId, status, note = '') {
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
   const updated = await applyStatusChange(req.params.id, status, note);
-  res.json(withMongoStyleId(updated));
+  res.json(withMongoStyleId(await withItemLinks(updated)));
 });
 
 // PATCH /api/orders/:id/return-eligibility (admin/staff)
@@ -609,7 +637,7 @@ export const setReturnEligibility = asyncHandler(async (req, res) => {
     data: { returnEligible: eligible },
     include: { items: true, user: { select: { id: true, name: true, email: true } } },
   });
-  res.json(withMongoStyleId(updated));
+  res.json(withMongoStyleId(await withItemLinks(updated)));
 });
 
 // POST /api/orders/:id/request-return (customer, owns the order)
@@ -641,7 +669,7 @@ export const requestReturn = asyncHandler(async (req, res) => {
     'return_requested',
     reason ? `Customer request: ${reason}` : 'Requested by customer'
   );
-  res.json(withMongoStyleId(updated));
+  res.json(withMongoStyleId(await withItemLinks(updated)));
 });
 
 // GET /api/orders/shiprocket/status — tells the frontend whether Shiprocket
@@ -680,7 +708,7 @@ export const shipWithShiprocket = asyncHandler(async (req, res) => {
 
   try { await notifyCustomerStatus(updated, 'shipped'); } catch (err) { console.error('[ship] notify error:', err.message); }
 
-  res.json(withMongoStyleId(updated));
+  res.json(withMongoStyleId(await withItemLinks(updated)));
 });
 
 // POST /api/orders/:id/ship/manual (admin/staff)
@@ -713,7 +741,7 @@ export const shipManually = asyncHandler(async (req, res) => {
 
   try { await notifyCustomerStatus(updated, 'shipped'); } catch (err) { console.error('[ship] notify error:', err.message); }
 
-  res.json(withMongoStyleId(updated));
+  res.json(withMongoStyleId(await withItemLinks(updated)));
 });
 
 // POST /api/orders/:id/ship/label (admin/staff)
@@ -725,4 +753,40 @@ export const getShippingLabelUrl = asyncHandler(async (req, res) => {
   const labelUrl = await getShiprocketLabel(order.shiprocketShipmentId);
   if (!labelUrl) { res.status(404); throw new Error('Label not yet generated — try again in a few seconds'); }
   res.json({ labelUrl });
+});
+
+// ---------------------------------------------------------------------
+// Admin: permanently delete dummy / old orders.
+// Items, status history, payment attempts and return requests go with the
+// order (database cascade). Stock and coupon usage are NOT touched. Orders
+// that were actually paid are skipped unless the admin explicitly confirms
+// (force) — that is the only guard against deleting a real sale by accident.
+// Order/invoice numbers are never re-used (see nextSeq above).
+// ---------------------------------------------------------------------
+const isPaidOrder = (o) => o.isPaid || o.paymentStatus === 'paid';
+
+export const deleteOrders = asyncHandler(async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? [...new Set(req.body.ids.map(String))] : [];
+  const force = req.body?.force === true;
+  if (!ids.length) {
+    res.status(400);
+    throw new Error('Select at least one order to delete');
+  }
+  if (ids.length > 500) {
+    res.status(400);
+    throw new Error('Too many orders at once — delete up to 500 at a time');
+  }
+  const found = await prisma.order.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, orderNumber: true, isPaid: true, paymentStatus: true },
+  });
+  const skipped = force ? [] : found.filter(isPaidOrder);
+  const skipSet = new Set(skipped.map((o) => o.id));
+  const toDelete = found.filter((o) => !skipSet.has(o.id)).map((o) => o.id);
+  if (toDelete.length) await prisma.order.deleteMany({ where: { id: { in: toDelete } } });
+  res.json({
+    deleted: toDelete,
+    skippedPaid: skipped.map((o) => o.orderNumber),
+    notFound: ids.length - found.length,
+  });
 });

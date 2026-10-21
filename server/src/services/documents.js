@@ -4,6 +4,7 @@
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 import { PDFDocument as PDFLib } from 'pdf-lib';
+import { attachSkus } from '../utils/orderSku.js';
 
 const STORE = {
   name: 'Sutaara',
@@ -159,8 +160,8 @@ function drawTable(doc, cols, rows) {
   rows.forEach((row) => {
     let rh = 34;
     cols.forEach((c, i) => {
-      if (c.bold) {
-        doc.font('Helvetica-Bold').fontSize(9.5);
+      if (c.bold || c.mono) {
+        doc.font(c.mono ? 'Courier-Bold' : 'Helvetica-Bold').fontSize(c.mono ? 9 : 9.5);
         rh = Math.max(rh, doc.heightOfString(String(row[i]), { width: widths[i] - 16 }) + 22);
       }
     });
@@ -174,7 +175,7 @@ function drawTable(doc, cols, rows) {
         doc.rect(x + widths[i] / 2 - 5, y + rh / 2 - 5, 10, 10).strokeColor(C.soft).lineWidth(1).stroke();
       } else {
         const align = c.align || 'center';
-        doc.font(c.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(c.bold ? 9.5 : 9).fillColor(C.ink);
+        doc.font(c.mono ? 'Courier-Bold' : c.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(c.mono ? 9 : c.bold ? 9.5 : 9).fillColor(c.mono ? C.rose : C.ink);
         const th = doc.heightOfString(String(cell), { width: widths[i] - 16 });
         doc.text(String(cell), x + 8, y + (rh - th) / 2, { width: widths[i] - 16, align });
       }
@@ -203,6 +204,7 @@ function returnsBlock(doc, closing) {
 }
 
 export async function buildInvoicePDF(order) {
+  await attachSkus(order);
   const doc = new PDFDocument({ size: 'A4', margin: 40 });
   banner(doc, 'INVOICE', [order.invoiceNumber || '', STORE.gstin ? `GSTIN: ${STORE.gstin}` : ''].filter(Boolean));
 
@@ -228,13 +230,14 @@ export async function buildInvoicePDF(order) {
   drawTable(
     doc,
     [
-      { label: 'No', w: 40 },
-      { label: 'Item', w: 235, align: 'left', headAlign: 'left', bold: true },
-      { label: 'Qty', w: 50 },
-      { label: 'Price', w: 95, align: 'right', headAlign: 'right' },
-      { label: 'Amount', w: 95, align: 'right', headAlign: 'right' },
+      { label: 'No', w: 32 },
+      { label: 'Item', w: 188, align: 'left', headAlign: 'left', bold: true },
+      { label: 'SKU', w: 82, mono: true },
+      { label: 'Qty', w: 40 },
+      { label: 'Price', w: 85, align: 'right', headAlign: 'right' },
+      { label: 'Amount', w: 85, align: 'right', headAlign: 'right' },
     ],
-    order.items.map((it, i) => [i + 1, it.name, it.qty, inr(it.price), inr(it.price * it.qty)])
+    order.items.map((it, i) => [i + 1, it.name, it.sku || '-', it.qty, inr(it.price), inr(it.price * it.qty)])
   );
 
   // Totals (right-aligned block)
@@ -267,6 +270,7 @@ export async function buildInvoicePDF(order) {
 }
 
 export async function buildPackingSlipPDF(order) {
+  await attachSkus(order);
   const doc = new PDFDocument({ size: 'A4', margin: 40 });
   banner(doc, 'PACKING SLIP', ['Not a tax invoice']);
 
@@ -292,12 +296,13 @@ export async function buildPackingSlipPDF(order) {
   drawTable(
     doc,
     [
-      { label: 'No', w: 60 },
-      { label: 'Item', w: 180, align: 'left', headAlign: 'left', bold: true },
-      { label: 'Qty', w: 90 },
-      { label: 'Packed', w: 90 },
+      { label: 'No', w: 40 },
+      { label: 'Item', w: 170, align: 'left', headAlign: 'left', bold: true },
+      { label: 'SKU', w: 90, mono: true },
+      { label: 'Qty', w: 55 },
+      { label: 'Packed', w: 70 },
     ],
-    order.items.map((it, i) => [i + 1, it.name, it.qty, { box: true }])
+    order.items.map((it, i) => [i + 1, it.name, it.sku || '-', it.qty, { box: true }])
   );
 
   returnsBlock(doc, 'Thank you for choosing Sutaara');
@@ -305,6 +310,7 @@ export async function buildPackingSlipPDF(order) {
 }
 
 export async function buildShippingLabelPDF(order) {
+  await attachSkus(order);
   const doc = new PDFDocument({ size: [288, 432], margin: 14 }); // 4in x 6in label
 
   doc.font('Helvetica-Bold').fontSize(13).text('SUTAARA', { align: 'left' });
@@ -329,19 +335,41 @@ export async function buildShippingLabelPDF(order) {
   } else {
     doc.font('Helvetica-Bold').text('PREPAID');
   }
-  doc.moveDown(0.6);
+  doc.moveDown(0.5);
+
+  // Items in this parcel, SKU first so the packer/courier can verify at a glance.
+  // Capped so the QR code below always fits on the 4x6 label.
+  const labelItems = order.items || [];
+  const MAX_LABEL_ITEMS = 6;
+  doc.font('Helvetica-Bold').fontSize(8).fillColor('#000').text('ITEMS', 14, doc.y, { width: 260, lineBreak: false });
+  doc.y += 11;
+  labelItems.slice(0, MAX_LABEL_ITEMS).forEach((it) => {
+    const nm = String(it.name || '');
+    const short = nm.length > 24 ? `${nm.slice(0, 23)}…` : nm;
+    const y = doc.y;
+    doc.font('Courier-Bold').fontSize(9).fillColor('#000').text(`${it.sku || 'NO-SKU'} x${it.qty}`, 14, y, { width: 130, lineBreak: false });
+    doc.font('Helvetica').fontSize(7).text(short, 146, y + 1.5, { width: 128, lineBreak: false });
+    doc.y = y + 12;
+  });
+  if (labelItems.length > MAX_LABEL_ITEMS) {
+    doc.font('Helvetica-Oblique').fontSize(7).text(`+ ${labelItems.length - MAX_LABEL_ITEMS} more - see packing slip`, 14, doc.y, { width: 260, lineBreak: false });
+    doc.y += 10;
+  }
+  doc.y += 6;
 
   // QR code encodes the order number + AWB so a handheld scanner can look it up
   const qrData = `SUTAARA|${order.orderNumber}|${order.awbNumber || ''}`;
   const qrPng = await QRCode.toBuffer(qrData, { margin: 0, width: 110 });
-  doc.image(qrPng, 14, doc.y, { width: 90 });
-  doc.font('Helvetica').fontSize(7).text('Return address: ' + STORE.address, 110, doc.y, { width: 160 });
+  const qrY = doc.y;
+  doc.image(qrPng, 14, qrY, { width: 90 });
+  doc.font('Helvetica').fontSize(7).text('Return address: ' + STORE.address, 110, qrY, { width: 160 });
 
   return pdfToBuffer(doc);
 }
 
 // Merge invoice + label + packing slip into one PDF for the admin "Print All" button.
 export async function buildPrintAllPDF(order) {
+  await attachSkus(order);
   const [invoiceBuf, labelBuf, slipBuf] = await Promise.all([
     buildInvoicePDF(order),
     buildShippingLabelPDF(order),

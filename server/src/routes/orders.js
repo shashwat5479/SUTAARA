@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   createOrder, getMyOrders, getOrderById, getAllOrders, exportOrders,
   updateOrderStatus, setReturnEligibility, requestReturn,
-  getShiprocketStatus, shipWithShiprocket, shipManually, getShippingLabelUrl,
+  getShiprocketStatus, shipWithShiprocket, shipManually, getShippingLabelUrl, deleteOrders,
 } from '../controllers/orderController.js';
 import { getInvoice, getPackingSlip, getShippingLabel, getPrintAll } from '../controllers/documentController.js';
 import { protect, admin, staffOrAbove } from '../middleware/auth.js';
@@ -15,6 +15,7 @@ router.get('/mine', protect, getMyOrders);
 router.get('/shiprocket/status', protect, staffOrAbove, getShiprocketStatus);
 router.get('/', protect, staffOrAbove, getAllOrders);
 router.get('/export', protect, admin, exportOrders);
+router.post('/delete', protect, admin, deleteOrders);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, staffOrAbove, updateOrderStatus);
 router.patch('/:id/return-eligibility', protect, staffOrAbove, setReturnEligibility);

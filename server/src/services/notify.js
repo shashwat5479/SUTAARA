@@ -9,6 +9,7 @@
 // carry on — a notification failure must never break placing/updating an order.
 import { prisma } from '../config/db.js';
 import { sendSms } from './sms.js';
+import { attachSkus } from '../utils/orderSku.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const MAIL_FROM = process.env.MAIL_FROM || 'Sutaara <onboarding@resend.dev>';
@@ -144,9 +145,13 @@ export async function notifyOwnerNewAppointment(appointment) {
   );
 }
 
+const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+// Item table used in every order e-mail. Each line shows the product SKU
+// (callers run attachSkus first so it is always filled in).
 function orderItemsHtml(order) {
   const rows = (order.items || [])
-    .map((i) => `<tr><td style="padding:4px 8px">${i.name}</td><td style="padding:4px 8px">×${i.qty}</td><td style="padding:4px 8px">${money(i.price)}</td></tr>`)
+    .map((i) => `<tr><td style="padding:4px 8px">${esc(i.name)}${i.sku ? `<br><span style="font-family:Consolas,Menlo,monospace;font-size:12px;color:#8a1f26">SKU: ${esc(i.sku)}</span>` : ''}</td><td style="padding:4px 8px;vertical-align:top">×${i.qty}</td><td style="padding:4px 8px;vertical-align:top">${money(i.price)}</td></tr>`)
     .join('');
   return `<table style="border-collapse:collapse;margin:12px 0">${rows}</table>`;
 }
@@ -155,6 +160,7 @@ function orderItemsHtml(order) {
 export async function notifyCustomerStatus(order, status) {
   const copy = STATUS_COPY[status];
   if (!copy) return;
+  await attachSkus(order);
   const email = order.user?.email;
   const track = order.trackingUrl ? `<p>Track your parcel: <a href="${order.trackingUrl}">${order.trackingUrl}</a></p>` : '';
   if (email) {
@@ -182,6 +188,7 @@ export async function notifyCustomerStatus(order, status) {
 export async function notifyOwnerNewOrder(order) {
   const s = await getSettings();
   if (!s.emailEnabled) return;
+  await attachSkus(order);
   const html = `
     <div style="font-family:Arial,sans-serif;color:#2b211c;max-width:520px">
       <h2>New order received</h2>
@@ -221,6 +228,7 @@ export async function notifyOwnerPaymentFailed(order, reason) {
 export async function sendInvoiceEmail(order) {
   const email = order.user?.email;
   if (!email) return;
+  await attachSkus(order);
   const { buildInvoicePDF } = await import('./documents.js');
   const pdf = await buildInvoicePDF(order);
   const html = `

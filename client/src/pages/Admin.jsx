@@ -732,6 +732,9 @@ function ManualShipForm({ onCancel, onSubmit, busy }) {
 
 function OrdersTab() {
   const toast = useToast();
+  const { isContentAdmin } = useAuth(); // only admins / super-admins may delete orders
+  const [selected, setSelected] = useState(() => new Set());
+  const [deleting, setDeleting] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -822,6 +825,39 @@ function OrdersTab() {
     }
   };
 
+  const toggleSel = (id) => setSelected((cur) => {
+    const next = new Set(cur);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const deleteSelected = async () => {
+    const chosen = orders.filter((o) => selected.has(o._id));
+    if (!chosen.length) return;
+    const paid = chosen.filter((o) => o.isPaid || o.paymentStatus === 'paid');
+    let msg = `Permanently delete ${chosen.length} order${chosen.length > 1 ? 's' : ''}?\n\nThis cannot be undone. Stock is not changed. Tip: download the Excel of your orders first if you may need the records.`;
+    if (!window.confirm(msg)) return;
+    let force = false;
+    if (paid.length) {
+      force = window.confirm(`${paid.length} of the selected orders were PAID (${paid.slice(0, 5).map((o) => o.orderNumber).join(', ')}${paid.length > 5 ? '…' : ''}).\n\nPress OK to delete them too, or Cancel to delete only the unpaid ones.`);
+    }
+    setDeleting(true);
+    try {
+      const res = await api.deleteOrders(chosen.map((o) => o._id), force);
+      const gone = new Set(res.deleted);
+      setOrders((cur) => cur.filter((o) => !gone.has(o._id)));
+      setSelected((cur) => new Set([...cur].filter((id) => !gone.has(id))));
+      setViewing((v) => (v && gone.has(v._id) ? null : v));
+      toast(res.skippedPaid?.length
+        ? `Deleted ${res.deleted.length}. Kept ${res.skippedPaid.length} paid order(s).`
+        : `Deleted ${res.deleted.length} order${res.deleted.length === 1 ? '' : 's'}`);
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div className="loader"><div className="spinner" /></div>;
   if (orders.length === 0) return <div className="empty"><h3>No orders yet</h3></div>;
 
@@ -865,9 +901,34 @@ function OrdersTab() {
         ))}
       </div>
 
+      {isContentAdmin && (
+        <div className="adm-bulk">
+          <label className="adm-bulk__all">
+            <input
+              type="checkbox"
+              checked={visibleOrders.length > 0 && visibleOrders.every((o) => selected.has(o._id))}
+              onChange={(e) => setSelected(e.target.checked ? new Set(visibleOrders.map((o) => o._id)) : new Set())}
+            />
+            Select all shown ({visibleOrders.length})
+          </label>
+          {selected.size > 0 && (
+            <>
+              <span className="adm-bulk__count">{selected.size} selected</span>
+              <button type="button" className="btn btn--ghost adm-bulk__del" onClick={deleteSelected} disabled={deleting}>
+                {deleting ? 'Deleting…' : `Delete ${selected.size} order${selected.size > 1 ? 's' : ''}`}
+              </button>
+              <button type="button" className="link-underline" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setSelected(new Set())}>
+                Clear
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       <table className="table">
         <thead>
           <tr>
+            {isContentAdmin && <th style={{ width: 28 }} />}
             <th>Order</th>
             <th>Customer</th>
             <th>Items ordered</th>
@@ -885,6 +946,11 @@ function OrdersTab() {
             return (
               <Fragment key={o._id}>
                 <tr>
+                  {isContentAdmin && (
+                    <td>
+                      <input type="checkbox" checked={selected.has(o._id)} onChange={() => toggleSel(o._id)} aria-label={`Select order ${o.orderNumber || ''}`} />
+                    </td>
+                  )}
                   <td style={{ fontFamily: 'monospace' }}>{o.orderNumber || `#${o._id.slice(-8)}`}</td>
                   <td>{o.user?.name || '—'}<br /><span style={{ color: 'var(--ink-soft)', fontSize: '0.78rem' }}>{o.user?.email}</span></td>
                   <td>
@@ -899,6 +965,9 @@ function OrdersTab() {
                       </div>
                       <div className="adm-items__text">
                         <span className="adm-items__name">{o.items[0]?.name}</span>
+                        {o.items.some((i) => i.sku) && (
+                          <span className="adm-items__sku">{o.items.map((i) => i.sku).filter(Boolean).join(' · ')}</span>
+                        )}
                         {o.items.length > 1 && <span className="adm-items__more">+ {o.items.length - 1} more</span>}
                       </div>
                       <button type="button" className="adm-items__view" onClick={() => setViewing(o)}>
@@ -1038,7 +1107,7 @@ function OrdersTab() {
                 </tr>
                 {isExpanded && (
                   <tr key={o._id + '-attempts'}>
-                    <td colSpan={9} style={{ background: 'var(--paper-2)', padding: '12px 16px' }}>
+                    <td colSpan={isContentAdmin ? 10 : 9} style={{ background: 'var(--paper-2)', padding: '12px 16px' }}>
                       <table className="table" style={{ margin: 0 }}>
                         <thead>
                           <tr>
@@ -1435,7 +1504,10 @@ function ReturnsTab() {
                     <strong style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem' }}>Order items</strong>
                     {order.items.map((item, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0', borderBottom: '1px solid var(--line)' }}>
-                        <span>{item.name} × {item.qty}</span>
+                        <span>
+                          {item.name} × {item.qty}
+                          {item.sku && <b style={{ display: 'block', fontFamily: 'monospace', fontSize: '0.74rem', color: 'var(--ink-soft)' }}>SKU: {item.sku}</b>}
+                        </span>
                         <span>₹{(item.price / 100).toLocaleString('en-IN')}</span>
                       </div>
                     ))}

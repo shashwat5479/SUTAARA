@@ -1,6 +1,7 @@
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
+import { attachSkusMany } from '../utils/orderSku.js';
 import { applyStatusChange } from './orderController.js';
 import Razorpay from 'razorpay';
 
@@ -63,6 +64,7 @@ export const listReturnRequests = asyncHandler(async (req, res) => {
     include: { order: { include: { user: { select: { id: true, name: true, email: true } }, items: true } } },
     orderBy: { createdAt: 'desc' },
   });
+  await attachSkusMany(requests.map((r) => r.order).filter(Boolean));
   res.json(withMongoStyleId(requests));
 });
 

@@ -60,6 +60,7 @@ export const api = {
   getProduct: (slug) => request(`/products/${slug}`),
   createProduct: (body) => request('/products', { method: 'POST', body, auth: true }),
   updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body, auth: true }),
+  deleteOrders: (ids, force = false) => request('/orders/delete', { method: 'POST', body: { ids, force }, auth: true }),
   deleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE', auth: true }),
 
   // auth

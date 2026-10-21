@@ -85,6 +85,7 @@ export function OrderItemRow({ item }) {
         ) : (
           <span className="ord-item__name">{item.name}</span>
         )}
+        {item.sku && <div className="ord-item__sku">SKU: <b>{item.sku}</b></div>}
         <div className="ord-item__meta">
           Qty: {item.qty} · {inr(item.price)} each
         </div>

@@ -13,6 +13,7 @@
 //   SHIPROCKET_PICKUP_LOCATION — pickup location name from your Shiprocket account (default "Primary")
 
 import { prisma } from '../config/db.js';
+import { attachSkus } from '../utils/orderSku.js';
 
 const SR_EMAIL    = process.env.SHIPROCKET_EMAIL    || '';
 const SR_PASSWORD = process.env.SHIPROCKET_PASSWORD || '';
@@ -95,6 +96,7 @@ export async function createShipment(order) {
 
   const token = await getToken();
   const pickupLocation = await resolvePickupLocation(token);
+  await attachSkus(order);
 
   // Build the Shiprocket order payload from our Order object.
   // NOTE: the address is stored FLAT on the order (fullName, phone, line1,
@@ -124,7 +126,7 @@ export async function createShipment(order) {
     shipping_is_billing: true,
     order_items: (order.items || []).map((item) => ({
       name: item.name,
-      sku: item.slug || item.id,
+      sku: item.sku || item.slug || item.id,
       units: item.qty,
       selling_price: item.price,
     })),
