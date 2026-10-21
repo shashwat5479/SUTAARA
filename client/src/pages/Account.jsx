@@ -272,7 +272,7 @@ function ProfileTab() {
       </div>
       <div className="field">
         <label>New password (leave blank to keep)</label>
-        <input type="password" value={form.password} onChange={set('password')} minLength={6} />
+        <input type="password" value={form.password} onChange={set('password')} minLength={8} />
       </div>
       <button className="btn btn--primary" disabled={busy}>
         {busy ? 'Saving…' : 'Save changes'}

@@ -33,6 +33,16 @@ export function errorHandler(err, req, res, next) {
     message = 'Invalid id or field in request';
   }
 
+  // Never leak internals (database errors, file paths, third-party responses)
+  // to the public on a server error. Staff and admins still see the real
+  // message — that is how a failed Shiprocket call explains itself — and the
+  // full detail always goes to the server log.
+  const isStaff = req.user && ['staff', 'admin', 'superadmin'].includes(req.user.role);
+  if (status >= 500) {
+    console.error('[error]', req.method, req.originalUrl, err);
+    if (process.env.NODE_ENV === 'production' && !isStaff) message = 'Something went wrong. Please try again.';
+  }
+
   res.status(status).json({
     message,
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,

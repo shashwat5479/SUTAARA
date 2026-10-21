@@ -18,19 +18,20 @@ import {
   deleteAddress,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
+import { limits } from '../middleware/rateLimitDb.js';
 
 const router = Router();
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', limits.register, register);
+router.post('/login', ...limits.login, login);
 router.post('/google', googleLogin);
 router.get('/yahoo', yahooAuthUrl);
 router.get('/yahoo/callback', yahooCallback);
 router.get('/outlook', outlookAuthUrl);
 router.get('/outlook/callback', outlookCallback);
-router.post('/demo-login', demoLogin);
-router.post('/verify-email', verifyEmail);
-router.post('/resend-code', resendCode);
+router.post('/demo-login', limits.demo, demoLogin);
+router.post('/verify-email', limits.verifyCode, verifyEmail);
+router.post('/resend-code', ...limits.sendCode, resendCode);
 router.get('/me', protect, getMe);
 router.put('/me', protect, updateMe);
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { api } from '../api/client.js';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drmpijecc';
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'sutaara_unsigned';
@@ -70,12 +71,28 @@ async function compressImage(file, targetMB = 0.8) {
 // server). Reports progress via onProgress. `resourceType` is 'image' or
 // 'video' — Cloudinary's /auto/ endpoint detects it, but being explicit lets
 // us keep separate size limits.
-function uploadToCloudinary(file, { onProgress } = {}) {
+async function uploadToCloudinary(file, { onProgress } = {}) {
+  // Preferred: a one-time signature from our server (staff only), so nobody
+  // else can upload to the account. Falls back to the old unsigned preset only
+  // if the server can't sign (not configured yet) — switch that preset off in
+  // Cloudinary once signed uploads are confirmed working.
+  let sig = null;
+  try { sig = await api.getUploadSignature(); } catch { sig = null; }
+
   return new Promise((resolve, reject) => {
-    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+    const cloud = (sig && sig.cloudName) || CLOUD_NAME;
+    const url = `https://api.cloudinary.com/v1_1/${cloud}/auto/upload`;
     const form = new FormData();
     form.append('file', file);
-    form.append('upload_preset', UPLOAD_PRESET);
+    if (sig && sig.signature) {
+      form.append('api_key', sig.apiKey);
+      form.append('timestamp', String(sig.timestamp));
+      form.append('folder', sig.folder);
+      form.append('allowed_formats', sig.allowedFormats);
+      form.append('signature', sig.signature);
+    } else {
+      form.append('upload_preset', UPLOAD_PRESET);
+    }
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', url);

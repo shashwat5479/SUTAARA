@@ -148,7 +148,7 @@ export default function Register() {
                     value={form.password}
                     onChange={set('password')}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                 </div>
                 <button className="btn btn--primary btn--block" disabled={busy}>

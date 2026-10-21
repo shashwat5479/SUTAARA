@@ -3,6 +3,7 @@ import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { withMongoStyleId } from '../utils/serialize.js';
 import { rankOf } from '../middleware/auth.js';
+import { passwordProblem, BCRYPT_COST } from '../utils/password.js';
 
 // Fields safe to return — NEVER include password.
 const SAFE = { id: true, name: true, email: true, role: true, phone: true, emailVerified: true, authProvider: true, createdAt: true };
@@ -51,7 +52,12 @@ export const createStaff = asyncHandler(async (req, res) => {
     res.status(409);
     throw new Error('A user with that email already exists');
   }
-  const hashed = await bcrypt.hash(password, 10);
+  const pwProblem = passwordProblem(password, { email, name: req.body.name });
+  if (pwProblem) {
+    res.status(400);
+    throw new Error(pwProblem);
+  }
+  const hashed = await bcrypt.hash(password, BCRYPT_COST);
   const user = await prisma.user.create({
     data: {
       name: name.trim(),
@@ -102,11 +108,12 @@ export const changeRole = asyncHandler(async (req, res) => {
 export const resetPassword = asyncHandler(async (req, res) => {
   const target = await loadManageableTarget(req, res);
   const { password } = req.body;
-  if (!password || password.length < 8) {
+  const pwProblem = passwordProblem(password);
+  if (pwProblem) {
     res.status(400);
-    throw new Error('New password must be at least 8 characters');
+    throw new Error(pwProblem);
   }
-  const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, BCRYPT_COST);
   await prisma.user.update({ where: { id: target.id }, data: { password: hashed } });
   res.json({ message: 'Password reset' });
 });

@@ -11,6 +11,7 @@ import {
   getUploadUrl,
 } from '../controllers/returnController.js';
 import { protect, staffOrAbove } from '../middleware/auth.js';
+import { limits } from '../middleware/rateLimitDb.js';
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get('/upload-url', protect, getUploadUrl);
 router.get('/', protect, staffOrAbove, listReturnRequests);
 
 // Customer — submit a return request for their order
-router.post('/:orderId', protect, submitReturnRequest);
+router.post('/:orderId', protect, limits.returnRequest, submitReturnRequest);
 
 // Customer or admin — view the return request for an order
 router.get('/:orderId', protect, getReturnRequest);

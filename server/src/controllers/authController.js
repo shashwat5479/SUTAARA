@@ -7,6 +7,7 @@ import { withMongoStyleId } from '../utils/serialize.js';
 import { sendOtpEmail, isConfigured as mailerConfigured } from '../services/mailer.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { passwordProblem, BCRYPT_COST } from '../utils/password.js';
 
 const OTP_TTL_MIN = 10;
 const OTP_MAX_ATTEMPTS = 5;
@@ -113,9 +114,14 @@ export const register = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Name, email and password are required');
   }
-  if (password.length < 6) {
+  if ([name, email, password].some((v) => typeof v !== 'string') || name.length > 100 || email.length > 254) {
     res.status(400);
-    throw new Error('Password must be at least 6 characters');
+    throw new Error('Invalid details');
+  }
+  const pwProblem = passwordProblem(password, { email, name });
+  if (pwProblem) {
+    res.status(400);
+    throw new Error(pwProblem);
   }
   const normalizedEmail = email.toLowerCase().trim();
   const exists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -138,7 +144,7 @@ export const register = asyncHandler(async (req, res) => {
     throw new Error('Email sign-up is temporarily unavailable — please continue with Google');
   }
 
-  const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, BCRYPT_COST);
   // upsert rather than create: the claimable-unverified case above falls
   // through to here and replaces the placeholder account's details.
   const user = await prisma.user.upsert({
@@ -250,7 +256,11 @@ export const resendCode = asyncHandler(async (req, res) => {
 // POST /api/auth/login
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email: (email || '').toLowerCase().trim() } });
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    res.status(400);
+    throw new Error('Email and password are required');
+  }
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
   // Bug fix carried over from the Mongo version: always run bcrypt.compare even
   // when no user is found, so login timing doesn't leak whether an email exists.
   const hash = user?.password || '$2a$10$invalidsaltinvalidsaltinvalidsalu';
@@ -558,11 +568,12 @@ export const updateMe = asyncHandler(async (req, res) => {
     data.email = email;
   }
   if (req.body.password) {
-    if (req.body.password.length < 6) {
+    const pwProblem = passwordProblem(req.body.password, { email: req.user.email, name: req.user.name });
+    if (pwProblem) {
       res.status(400);
-      throw new Error('Password must be at least 6 characters');
+      throw new Error(pwProblem);
     }
-    data.password = await bcrypt.hash(req.body.password, 10);
+    data.password = await bcrypt.hash(req.body.password, BCRYPT_COST);
   }
   const user = await prisma.user.update({ where: { id: req.user.id }, data });
   res.json({ user: publicUser(user) });

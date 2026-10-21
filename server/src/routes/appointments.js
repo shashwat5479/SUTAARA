@@ -7,6 +7,7 @@ import {
   updateAppointmentStatus,
 } from '../controllers/appointmentController.js';
 import { protect, admin } from '../middleware/auth.js';
+import { limits } from '../middleware/rateLimitDb.js';
 
 const router = Router();
 
@@ -17,7 +18,7 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-router.post('/', optionalAuth, createAppointment);
+router.post('/', optionalAuth, limits.appointment, createAppointment);
 router.get('/mine', protect, getMyAppointments);
 router.get('/export', protect, admin, exportAppointments);
 router.get('/', protect, admin, getAllAppointments);

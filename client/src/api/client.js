@@ -210,6 +210,7 @@ export const api = {
   createCoupon: (body) => request('/coupons', { method: 'POST', body, auth: true }),
   updateCoupon: (id, body) => request(`/coupons/${id}`, { method: 'PUT', body, auth: true }),
   deleteCoupon: (id) => request(`/coupons/${id}`, { method: 'DELETE', auth: true }),
+  getUploadSignature: () => request('/uploads/sign', { method: 'POST', auth: true }),
   trackVisit: (visitorId) => request('/track/visit', { method: 'POST', body: { visitorId } }),
   trackEvent: (payload) => request('/track/event', { method: 'POST', body: payload }),
   subscribe: (email) => request('/subscribe', { method: 'POST', body: { email } }),

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { prisma } from '../config/db.js';
 import { asyncHandler } from '../middleware/error.js';
 import { applyStatusChange } from './orderController.js';
@@ -49,7 +50,9 @@ export const handleShippingWebhook = asyncHandler(async (req, res) => {
     res.status(503);
     throw new Error('Delivery-partner webhook is not configured — set SHIPPING_WEBHOOK_SECRET');
   }
-  if (req.headers['x-webhook-secret'] !== secret) {
+  const given = Buffer.from(String(req.headers['x-webhook-secret'] || ''));
+  const want = Buffer.from(secret);
+  if (given.length !== want.length || !crypto.timingSafeEqual(given, want)) {
     res.status(401);
     throw new Error('Invalid webhook secret');
   }
