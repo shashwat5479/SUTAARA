@@ -4,6 +4,7 @@ import { useWishlist } from '../context/WishlistContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { inr, discountPct } from '../utils/format.js';
 import { Heart } from './Icons.jsx';
+import { cdn } from '../utils/cdn.js';
 
 export default function ProductCard({ product }) {
   const { add } = useCart();
@@ -17,7 +18,7 @@ export default function ProductCard({ product }) {
     <article className={`card ${outOfStock ? 'card--oos' : ''}`}>
       <div className="card__media">
         <Link to={`/product/${product.slug}`}>
-          <img src={product.images?.[0]} alt={product.name} loading="lazy" />
+          <img src={cdn(product.images?.[0], 700)} alt={product.name} loading="lazy" />
         </Link>
         {outOfStock ? (
           <span className="card__tag card__tag--oos">Sold out</span>

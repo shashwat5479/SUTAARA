@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { cdn } from '../utils/cdn.js';
 
 // Tilfi-style sliding hero carousel with:
 // - translateX sliding animation (not opacity fade)
@@ -133,7 +134,7 @@ export default function HeroCarousel({ slides = [], interval = 4800, heroRef, on
                 onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/product/${slide.slug}`); }}
                 aria-label={`View ${slide.title}`}
               >
-                <img src={src} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
+                <img src={cdn(src, 1600)} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
               </div>
             ))}
           </div>

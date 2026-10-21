@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteText, Rich } from '../utils/siteText.jsx';
+import { cdn } from '../utils/cdn.js';
 
 // Scroll-driven "A Saree's Story" sequence, styled after the reference video:
 // a "Discover / Our Story" split card, then alternating chapters that slide in
@@ -50,7 +51,7 @@ function Chapter({ data, flip }) {
   return (
     <div ref={ref} className={`saree-chapter ${flip ? 'saree-chapter--flip' : ''}`}>
       <div className="saree-chapter__media">
-        <img src={data.image} alt={String(data.title).replace(/\*/g, '')} loading="lazy" />
+        <img src={cdn(data.image, 1200)} alt={String(data.title).replace(/\*/g, '')} loading="lazy" />
       </div>
       <div className="saree-chapter__body">
         <span className="saree-chapter__kicker">{data.kicker}</span>
@@ -78,7 +79,7 @@ export default function SareeStory() {
       {/* Discover / Our Story split card */}
       <div ref={introRef} className="saree-intro">
         <div className="saree-intro__media">
-          <img src={intro.image} alt="Sutaara story" loading="lazy" />
+          <img src={cdn(intro.image, 1200)} alt="Sutaara story" loading="lazy" />
         </div>
         <div className="saree-intro__card">
           <span className="saree-intro__kicker">{intro.kicker}</span>

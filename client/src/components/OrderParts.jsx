@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { api } from '../api/client.js';
 import { payForOrder } from '../utils/razorpay.js';
 import { inr } from '../utils/format.js';
+import { cdn } from '../utils/cdn.js';
 
 export const fmtDate = (d) =>
   d
@@ -70,7 +71,7 @@ export function ProgressTrack({ status }) {
 // since been removed from the shop.
 export function OrderItemRow({ item }) {
   const available = item.available !== false;
-  const img = item.image ? <img src={item.image} alt={item.name} /> : <div className="ord-item__noimg" />;
+  const img = item.image ? <img src={cdn(item.image, 200)} alt={item.name} /> : <div className="ord-item__noimg" />;
   return (
     <div className="ord-item">
       {available ? (

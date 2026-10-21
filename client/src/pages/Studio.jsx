@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../api/client.js';
 import { Check } from '../components/Icons.jsx';
+import { cdn } from '../utils/cdn.js';
 
 const SERVICES = [
   {
@@ -136,7 +137,7 @@ export default function Studio() {
             <div
               key={src}
               className={`studio-hero__layer ${i === bgIndex ? 'is-active' : ''}`}
-              style={{ backgroundImage: `url(${event?.heroImage && i === 0 ? event.heroImage : src})` }}
+              style={{ backgroundImage: `url(${cdn(event?.heroImage && i === 0 ? event.heroImage : src, 1600)})` }}
             />
           ))}
           <div className="studio-hero__scrim" />

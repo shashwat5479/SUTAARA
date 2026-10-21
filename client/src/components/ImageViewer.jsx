@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Close } from './Icons.jsx';
+import { cdn } from '../utils/cdn.js';
 
 /*
  * Fullscreen product photo viewer (Myntra-style).
@@ -69,7 +70,7 @@ export default function ImageViewer({ images = [], index = 0, alt = '', onChange
 
   // warm the neighbours so swiping feels instant
   useEffect(() => {
-    [i - 1, i + 1].forEach((k) => { if (images[k]) new Image().src = images[k]; });
+    [i - 1, i + 1].forEach((k) => { if (images[k]) new Image().src = cdn(images[k], 1800); });
   }, [i, images]);
 
   const toggleZoom = (clientX, clientY) => {
@@ -216,7 +217,7 @@ export default function ImageViewer({ images = [], index = 0, alt = '', onChange
       >
         <img
           key={images[i]}
-          src={images[i]}
+          src={cdn(images[i], 1800)}
           alt={alt}
           draggable="false"
           className="imgviewer__img"

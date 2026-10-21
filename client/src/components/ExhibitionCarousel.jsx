@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { cdn } from '../utils/cdn.js';
 
 // Coverflow-style exhibition carousel: a large centre card in sharp focus,
 // flanking cards shrunk + rotated into perspective, and a blurred, zoomed
@@ -68,7 +69,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
       <div
         className="exhibit__bg"
         key={active}
-        style={{ backgroundImage: `url(${activeSlide.img})` }}
+        style={{ backgroundImage: `url(${cdn(activeSlide.img, 1600)})` }}
       />
       <div className="exhibit__bg-scrim" />
 
@@ -98,7 +99,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
               key={s.id ?? i}
               onClick={() => (off === 0 ? null : jump(i))}
             >
-              <img src={s.img} alt={s.title || 'Exhibition piece'} draggable="false" />
+              <img src={cdn(s.img, 500)} alt={s.title || 'Exhibition piece'} draggable="false" />
               {off === 0 && (
                 <div className="exhibit__caption">
                   <h3>{s.title}</h3>
@@ -152,7 +153,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
             ‹
           </button>
           <figure onClick={(e) => e.stopPropagation()}>
-            <img src={activeSlide.img} alt={activeSlide.title || 'Exhibition piece'} />
+            <img src={cdn(activeSlide.img, 1400)} alt={activeSlide.title || 'Exhibition piece'} />
             <figcaption>
               <h3>{activeSlide.title}</h3>
               {activeSlide.subtitle && <p>{activeSlide.subtitle}</p>}

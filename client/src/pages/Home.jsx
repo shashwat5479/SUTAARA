@@ -7,6 +7,7 @@ import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
 import DiaryBook from '../components/DiaryBook.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useSiteText, Rich } from '../utils/siteText.jsx';
+import { cdn } from '../utils/cdn.js';
 
 // Pieces shown in the exhibition coverflow. Each points at a real product
 // image; the `to` link opens that piece (falls back to the shop otherwise).
@@ -168,7 +169,7 @@ export default function Home() {
           <div className="cats">
             {categories.map((c) => (
               <Link to={`/shop?category=${c.key}`} className="cat" key={c.key}>
-                <img src={c.img} alt={c.label} />
+                <img src={cdn(c.img, 800)} alt={c.label} />
                 <div className="cat__label">
                   <span>{c.note}</span>
                   <h3>{c.label}</h3>

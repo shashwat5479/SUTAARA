@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { inr } from '../utils/format.js';
 import { Close, Minus, Plus, Bag, Trash } from './Icons.jsx';
+import { cdn } from '../utils/cdn.js';
 
 export default function CartDrawer() {
   const { open, setOpen, items, setQty, remove, subtotal, shipping, total, freeShipAbove } =
@@ -39,7 +40,7 @@ export default function CartDrawer() {
                     className="line-item__img"
                     onClick={() => setOpen(false)}
                   >
-                    <img src={i.image} alt={i.name} />
+                    <img src={cdn(i.image, 200)} alt={i.name} />
                   </Link>
                   <div>
                     <div className="line-item__name">{i.name}</div>

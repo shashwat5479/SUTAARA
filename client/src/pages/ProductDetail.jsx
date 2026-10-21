@@ -144,7 +144,7 @@ export default function ProductDetail() {
                 {product.images.map((src, i) => (
                   <img
                     key={src}
-                    src={src}
+                    src={cdn(src, 1100)}
                     alt={i === activeImg ? product.name : ''}
                     className={`pdp__slide ${i === activeImg ? 'is-active' : ''}`}
                     loading={i === 0 ? 'eager' : 'lazy'}
@@ -179,7 +179,7 @@ export default function ProductDetail() {
                   {product.images.map((src, i) => (
                     <button key={src} className={`pdp__thumb ${i === activeImg ? 'active' : ''}`}
                       onClick={() => setActiveImg(i)}>
-                      <img src={src} alt={`${product.name} ${i + 1}`} />
+                      <img src={cdn(src, 240)} alt={`${product.name} ${i + 1}`} />
                     </button>
                   ))}
                 </div>
@@ -356,3 +356,5 @@ export default function ProductDetail() {
     </>
   );
 }
+
+import { cdn } from '../utils/cdn.js';

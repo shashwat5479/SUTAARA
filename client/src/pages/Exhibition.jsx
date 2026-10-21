@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ExhibitionCarousel from '../components/ExhibitionCarousel.jsx';
+import { cdn } from '../utils/cdn.js';
 
 // Fallback slides if the admin hasn't added any yet (mirrors the homepage).
 const FALLBACK = [
@@ -55,7 +56,7 @@ export default function Exhibition() {
             {list.map((s) => (
               <Link key={s.id} to={s.to} className="exhibition-card">
                 <div className="exhibition-card__img">
-                  <img src={s.img} alt={s.title} loading="lazy" />
+                  <img src={cdn(s.img, 900)} alt={s.title} loading="lazy" />
                 </div>
                 <div className="exhibition-card__body">
                   {s.subtitle && <span className="exhibition-card__kicker">{s.subtitle}</span>}

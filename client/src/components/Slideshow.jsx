@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { cdn } from '../utils/cdn.js';
 
 // Two modes:
 //   images = ['a.jpg', 'b.jpg']            → cross-fade one image at a time
@@ -31,7 +32,7 @@ export default function Slideshow({ images, interval = 4500, className = '' }) {
           {group.map((src, j) => (
             <img
               key={src}
-              src={src}
+              src={cdn(src, 1400)}
               alt=""
               loading={i === 0 && j === 0 ? 'eager' : 'lazy'}
             />

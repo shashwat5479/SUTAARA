@@ -4,6 +4,7 @@ import SareeStory from '../components/SareeStory.jsx';
 import { api } from '../api/client.js';
 import { editPath } from '../utils/format.js';
 import { useSiteText, Rich } from '../utils/siteText.jsx';
+import { cdn } from '../utils/cdn.js';
 
 // Full "A Saree's Story" experience on a dark, cinematic theme. Reached from
 // the homepage "Discover the Story" button and the Stories menu.
@@ -51,11 +52,11 @@ export default function Story() {
                   {edit.products?.length > 0 ? (
                     <div className="edit-card__products">
                       {edit.products.slice(0, 4).map((p) => (
-                        <div key={p._id || p.id} className="edit-card__product" style={{ backgroundImage: `url(${p.images?.[0] || edit.image})` }} />
+                        <div key={p._id || p.id} className="edit-card__product" style={{ backgroundImage: `url(${cdn(p.images?.[0] || edit.image, 800)})` }} />
                       ))}
                     </div>
                   ) : edit.image && (
-                    <div className="edit-card__img" style={{ backgroundImage: `url(${edit.image})` }} />
+                    <div className="edit-card__img" style={{ backgroundImage: `url(${cdn(edit.image, 1000)})` }} />
                   )}
                   <div className="edit-card__body">
                     <h3>{edit.title}</h3>

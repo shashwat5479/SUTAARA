@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { cdn } from '../utils/cdn.js';
 
 function Stars({ n = 5 }) {
   return (
@@ -87,7 +88,7 @@ export default function DiaryBook({ reviews = [], auto = true, interval = 5200 }
       <div className="diary-book__book">
         {/* Left leaf — product photo */}
         <div className="diary-leaf diary-leaf--left">
-          <img src={imgOf(leftReview)} alt={leftReview.product?.name || 'Sutaara piece'} draggable="false" />
+          <img src={cdn(imgOf(leftReview), 700)} alt={leftReview.product?.name || 'Sutaara piece'} draggable="false" />
           <div className="diary-leaf__edge--left" aria-hidden="true" />
         </div>
 
@@ -103,7 +104,7 @@ export default function DiaryBook({ reviews = [], auto = true, interval = 5200 }
               <Entry review={frontReview} />
             </div>
             <div className="diary-turn__face diary-turn__face--back">
-              <img src={imgOf(backReview)} alt={backReview.product?.name || 'Sutaara piece'} draggable="false" />
+              <img src={cdn(imgOf(backReview), 700)} alt={backReview.product?.name || 'Sutaara piece'} draggable="false" />
             </div>
           </div>
         )}
