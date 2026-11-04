@@ -45,7 +45,7 @@ export function HeroSlidesTab() {
           <tbody>
             {slides.map((s) => (
               <tr key={s._id}>
-                <td><img src={s.images?.[0]} alt="" /></td>
+                <td><img loading="lazy" decoding="async" src={s.images?.[0]} alt="" /></td>
                 <td>{s.title || '—'}</td>
                 <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{s.slug || '—'}</td>
                 <td>{s.order}</td>
@@ -154,7 +154,7 @@ export function ExhibitionTab() {
           <tbody>
             {slides.map((s) => (
               <tr key={s._id}>
-                <td><img src={s.image} alt="" /></td>
+                <td><img loading="lazy" decoding="async" src={s.image} alt="" /></td>
                 <td>{s.title || '—'}</td>
                 <td>{s.subtitle || '—'}</td>
                 <td>{s.order}</td>
@@ -256,7 +256,7 @@ export function EditsTab() {
           <tbody>
             {edits.map((e) => (
               <tr key={e._id}>
-                <td>{e.image ? <img src={e.image} alt="" /> : '—'}</td>
+                <td>{e.image ? <img loading="lazy" decoding="async" src={e.image} alt="" /> : '—'}</td>
                 <td>{e.title || '—'}</td>
                 <td style={{ maxWidth: 260 }}>{e.description || '—'}</td>
                 <td>{e.products?.length ? `${e.products.length} product${e.products.length === 1 ? '' : 's'}` : '—'}</td>
@@ -316,7 +316,7 @@ function ProductPicker({ selected, onChange }) {
               disabled={isSelected(p)}
               onClick={() => add(p)}
             >
-              {p.images?.[0] && <img src={p.images[0]} alt="" />}
+              {p.images?.[0] && <img loading="lazy" decoding="async" src={p.images[0]} alt="" />}
               <span className="picker__result-name">{p.name}</span>
               <span className="picker__add">{isSelected(p) ? 'Added' : '+ Add'}</span>
             </button>
@@ -327,7 +327,7 @@ function ProductPicker({ selected, onChange }) {
         <div className="picker__selected">
           {selected.map((p) => (
             <div key={p._id || p.id} className="picker__chip">
-              {p.images?.[0] && <img src={p.images[0]} alt="" />}
+              {p.images?.[0] && <img loading="lazy" decoding="async" src={p.images[0]} alt="" />}
               <span>{p.name}</span>
               <button type="button" aria-label={`Remove ${p.name}`} onClick={() => remove(p._id || p.id)}>×</button>
             </div>
@@ -954,7 +954,7 @@ export function AnalyticsTab() {
                       <tr key={p.productId}>
                         <td>
                           <span className="analytics-prod">
-                            {p.image ? <img src={p.image} alt="" /> : <span className="analytics-top-item__noimg" />}
+                            {p.image ? <img loading="lazy" decoding="async" src={p.image} alt="" /> : <span className="analytics-top-item__noimg" />}
                             {p.name}
                           </span>
                         </td>
@@ -986,7 +986,7 @@ export function AnalyticsTab() {
           <div className="analytics-top-list">
             {data.topProducts.map((p) => (
               <div className="analytics-top-item" key={p.productId}>
-                {p.image ? <img src={p.image} alt="" /> : <div className="analytics-top-item__noimg" />}
+                {p.image ? <img loading="lazy" decoding="async" src={p.image} alt="" /> : <div className="analytics-top-item__noimg" />}
                 <div className="analytics-top-item__body">
                   <div className="analytics-top-item__row">
                     <span className="analytics-top-item__name">{p.name}</span>

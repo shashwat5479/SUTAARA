@@ -34,7 +34,7 @@ function RankedList({ title, items, onPick }) {
           <li key={item.label}>
             <Link to={item.to} onClick={onPick}>
               <span className={`search-page__rank ${item.rank <= 3 ? 'is-hot' : ''}`}>{item.rank}</span>
-              <img src={cdn(item.img, 160)} alt="" />
+              <img loading="lazy" decoding="async" src={cdn(item.img, 160)} alt="" />
               <span className="search-page__name">{item.label}</span>
             </Link>
           </li>

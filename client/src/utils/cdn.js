@@ -11,3 +11,11 @@ export function cdn(url, width) {
   if (/^[a-z]{1,3}_[^/]+\//.test(tail)) return url; // already has a transformation — leave it alone
   return `${head}/image/upload/f_auto,q_auto${width ? `,w_${width},c_limit` : ''}/${tail}`;
 }
+
+// Responsive set: lets phones download a small copy and retina/desktop screens
+// a larger one, instead of everyone pulling the same big file.
+//   <img src={cdn(u, 700)} srcSet={cdnSet(u, [350, 700, 1000])} sizes="..." />
+export function cdnSet(url, widths) {
+  if (typeof url !== 'string' || !url.includes('res.cloudinary.com') || !url.includes('/image/upload/')) return undefined;
+  return widths.map((w) => `${cdn(url, w)} ${w}w`).join(', ');
+}

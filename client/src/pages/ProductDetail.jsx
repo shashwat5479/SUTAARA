@@ -148,6 +148,8 @@ export default function ProductDetail() {
                     alt={i === activeImg ? product.name : ''}
                     className={`pdp__slide ${i === activeImg ? 'is-active' : ''}`}
                     loading={i === 0 ? 'eager' : 'lazy'}
+                    fetchpriority={i === 0 ? 'high' : 'auto'}
+                    decoding="async"
                     draggable="false"
                   />
                 ))}
@@ -179,7 +181,7 @@ export default function ProductDetail() {
                   {product.images.map((src, i) => (
                     <button key={src} className={`pdp__thumb ${i === activeImg ? 'active' : ''}`}
                       onClick={() => setActiveImg(i)}>
-                      <img src={cdn(src, 240)} alt={`${product.name} ${i + 1}`} />
+                      <img src={cdn(src, 240)} alt={`${product.name} ${i + 1}`} loading="lazy" decoding="async" />
                     </button>
                   ))}
                 </div>

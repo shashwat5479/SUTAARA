@@ -63,7 +63,7 @@ export default function MegaMenu({ menu, onLinkClick, onAction }) {
                 onAction={onAction}
                 className="mega__featured-card"
               >
-                <img src={f.img} alt={f.label} />
+                <img loading="lazy" decoding="async" src={f.img} alt={f.label} />
                 <span>{f.label}</span>
               </MegaLink>
             ))}
@@ -126,7 +126,7 @@ function FlyoutMenu({ menu, onLinkClick }) {
           <div className="mega__featured">
             {menu.featured.map((f) => (
               <Link key={f.label} to={f.to} className="mega__featured-card">
-                <img src={f.img} alt={f.label} />
+                <img loading="lazy" decoding="async" src={f.img} alt={f.label} />
                 <span>{f.label}</span>
               </Link>
             ))}

@@ -169,7 +169,7 @@ export default function Home() {
           <div className="cats">
             {categories.map((c) => (
               <Link to={`/shop?category=${c.key}`} className="cat" key={c.key}>
-                <img src={cdn(c.img, 800)} alt={c.label} />
+                <img loading="lazy" decoding="async" src={cdn(c.img, 800)} alt={c.label} />
                 <div className="cat__label">
                   <span>{c.note}</span>
                   <h3>{c.label}</h3>
@@ -273,7 +273,7 @@ export default function Home() {
         <div className="container">
           <div className="editorial reveal-item">
             <div className="editorial__media">
-              <img className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Maroon Patola ikat saree, styled" />
+              <img loading="lazy" decoding="async" className="sepia" src="/products/maroon-patola-ikat-1.jpg" alt="Maroon Patola ikat saree, styled" />
             </div>
             <div className="editorial__body">
               <div className="chapter-mark">{storyText.chapter}</div>
@@ -347,7 +347,7 @@ export default function Home() {
           </div>
           <div className="journal">
             <article className="journal__card">
-              <img src="/products/lavender-bird-chiffon-2.jpg" alt="Saree care" />
+              <img loading="lazy" decoding="async" src="/products/lavender-bird-chiffon-2.jpg" alt="Saree care" />
               <div className="journal__body">
                 <span className="eyebrow">Fabric care</span>
                 <h3>How to keep your saree new</h3>
@@ -356,7 +356,7 @@ export default function Home() {
               </div>
             </article>
             <article className="journal__card">
-              <img src="/products/mustard-elephant-chanderi-1.jpg" alt="Draping a saree" />
+              <img loading="lazy" decoding="async" src="/products/mustard-elephant-chanderi-1.jpg" alt="Draping a saree" />
               <div className="journal__body">
                 <span className="eyebrow">Styling</span>
                 <h3>One saree, three ways to drape</h3>

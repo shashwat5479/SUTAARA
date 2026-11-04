@@ -7279,3 +7279,13 @@ a.aom__name:hover {
 .analytics-prod img, .analytics-prod .analytics-top-item__noimg { width: 36px; height: 44px; object-fit: cover; border-radius: 3px; flex: none; }
 .analytics-footnote { margin: 12px 0 0; font-size: 0.75rem; color: var(--ink-soft); }
 .analytics-year-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+
+/* ── Image loading polish ──
+   A soft warm tone shows while a photo downloads (instead of a white hole),
+   and photos fade in once decoded. Pure CSS, no layout shift. */
+.card__media, .pdp__main, .pdp__thumb, .hero-carousel__img { background-color: #efe7dd; }
+img { background-color: rgba(239, 231, 221, 0.6); }
+img[loading="lazy"] { animation: img-fade .35s ease both; }
+@keyframes img-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { img[loading="lazy"] { animation: none; } }

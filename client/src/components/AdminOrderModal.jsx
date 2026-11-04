@@ -59,7 +59,7 @@ export default function AdminOrderModal({ order: o, onClose }) {
           <div className="aom__items">
             {o.items.map((i) => (
               <div className="aom__item" key={i.id || i._id || i.slug + i.name}>
-                <div className="aom__img">{i.image ? <img src={i.image} alt={i.name} /> : null}</div>
+                <div className="aom__img">{i.image ? <img loading="lazy" decoding="async" src={i.image} alt={i.name} /> : null}</div>
                 <div className="aom__info">
                   {i.available !== false ? (
                     <a href={`/product/${i.slug}`} target="_blank" rel="noreferrer" className="aom__name">{i.name}</a>

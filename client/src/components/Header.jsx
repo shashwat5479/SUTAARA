@@ -491,7 +491,7 @@ export default function Header() {
                     {SEARCH_OCCASIONS.map((item, i) => (
                       <Link key={item.label} to={item.to} className="search-row" onClick={() => setSearchOpen(false)}>
                         <span className="search-row__num">{i + 1}</span>
-                        <img src={item.img} alt="" />
+                        <img loading="lazy" decoding="async" src={item.img} alt="" />
                         <span>{item.label}</span>
                       </Link>
                     ))}
@@ -503,7 +503,7 @@ export default function Header() {
                     {SEARCH_TRENDING.map((item, i) => (
                       <Link key={item.label} to={item.to} className="search-row" onClick={() => setSearchOpen(false)}>
                         <span className="search-row__num">{i + 1}</span>
-                        <img src={item.img} alt="" />
+                        <img loading="lazy" decoding="async" src={item.img} alt="" />
                         <span>{item.label}</span>
                       </Link>
                     ))}

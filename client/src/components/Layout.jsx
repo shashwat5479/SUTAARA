@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
@@ -39,7 +39,9 @@ export default function Layout() {
       <Header />
       <BackNav />
       <main>
-        <Outlet />
+        <Suspense fallback={<div style={{ minHeight: '60vh' }} aria-busy="true" />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
       <CartDrawer />

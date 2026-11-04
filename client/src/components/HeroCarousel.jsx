@@ -134,7 +134,7 @@ export default function HeroCarousel({ slides = [], interval = 4800, heroRef, on
                 onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/product/${slide.slug}`); }}
                 aria-label={`View ${slide.title}`}
               >
-                <img src={cdn(src, 1600)} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} draggable="false" />
+                <img src={cdn(src, 1600)} alt={slide.title} loading={i === 0 && j === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 && j === 0 ? 'high' : 'auto'} decoding="async" draggable="false" />
               </div>
             ))}
           </div>

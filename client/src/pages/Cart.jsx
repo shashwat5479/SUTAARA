@@ -37,7 +37,7 @@ export default function Cart() {
                 {items.map((i) => (
                   <div className="line-item" key={i._id}>
                     <Link to={`/product/${i.slug}`} className="line-item__img">
-                      <img src={cdn(i.image, 200)} alt={i.name} />
+                      <img loading="lazy" decoding="async" src={cdn(i.image, 200)} alt={i.name} />
                     </Link>
                     <div>
                       <Link to={`/product/${i.slug}`} className="line-item__name">{i.name}</Link>

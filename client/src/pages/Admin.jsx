@@ -623,7 +623,7 @@ function ProductsTab() {
           <tbody>
             {visible.map((p) => (
               <tr key={p._id}>
-                <td><img src={p.images?.[0]} alt="" /></td>
+                <td><img loading="lazy" decoding="async" src={p.images?.[0]} alt="" /></td>
                 <td>
                   {p.name}
                   {p.archived && <span className="badge-archived">Archived</span>}
@@ -958,7 +958,7 @@ function OrdersTab() {
                       <div className="adm-items__thumbs">
                         {o.items.slice(0, 3).map((i) => (
                           <div className="adm-items__thumb" key={i.id || i.slug + i.name} title={`${i.name} × ${i.qty}`}>
-                            {i.image && <img src={i.image} alt="" />}
+                            {i.image && <img loading="lazy" decoding="async" src={i.image} alt="" />}
                             {i.qty > 1 && <span>×{i.qty}</span>}
                           </div>
                         ))}

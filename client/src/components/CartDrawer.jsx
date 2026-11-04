@@ -40,7 +40,7 @@ export default function CartDrawer() {
                     className="line-item__img"
                     onClick={() => setOpen(false)}
                   >
-                    <img src={cdn(i.image, 200)} alt={i.name} />
+                    <img loading="lazy" decoding="async" src={cdn(i.image, 200)} alt={i.name} />
                   </Link>
                   <div>
                     <div className="line-item__name">{i.name}</div>

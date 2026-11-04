@@ -99,7 +99,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
               key={s.id ?? i}
               onClick={() => (off === 0 ? null : jump(i))}
             >
-              <img src={cdn(s.img, 500)} alt={s.title || 'Exhibition piece'} draggable="false" />
+              <img loading="lazy" decoding="async" src={cdn(s.img, 500)} alt={s.title || 'Exhibition piece'} draggable="false" />
               {off === 0 && (
                 <div className="exhibit__caption">
                   <h3>{s.title}</h3>
@@ -153,7 +153,7 @@ export default function ExhibitionCarousel({ slides = [], interval = 3200 }) {
             ‹
           </button>
           <figure onClick={(e) => e.stopPropagation()}>
-            <img src={cdn(activeSlide.img, 1400)} alt={activeSlide.title || 'Exhibition piece'} />
+            <img loading="lazy" decoding="async" src={cdn(activeSlide.img, 1400)} alt={activeSlide.title || 'Exhibition piece'} />
             <figcaption>
               <h3>{activeSlide.title}</h3>
               {activeSlide.subtitle && <p>{activeSlide.subtitle}</p>}

@@ -56,7 +56,7 @@ export default function Exhibition() {
             {list.map((s) => (
               <Link key={s.id} to={s.to} className="exhibition-card">
                 <div className="exhibition-card__img">
-                  <img src={cdn(s.img, 900)} alt={s.title} loading="lazy" />
+                  <img src={cdn(s.img, 900)} alt={s.title} decoding="async" loading="lazy" />
                 </div>
                 <div className="exhibition-card__body">
                   {s.subtitle && <span className="exhibition-card__kicker">{s.subtitle}</span>}

@@ -71,7 +71,7 @@ export function ProgressTrack({ status }) {
 // since been removed from the shop.
 export function OrderItemRow({ item }) {
   const available = item.available !== false;
-  const img = item.image ? <img src={cdn(item.image, 200)} alt={item.name} /> : <div className="ord-item__noimg" />;
+  const img = item.image ? <img loading="lazy" decoding="async" src={cdn(item.image, 200)} alt={item.name} /> : <div className="ord-item__noimg" />;
   return (
     <div className="ord-item">
       {available ? (
