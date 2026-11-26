@@ -39,11 +39,13 @@ export default function ProductDetail() {
   const { has, toggle } = useWishlist();
   const toast = useToast();
   const galleryRef = useRef(null);
+  const seenImgs = useRef(new Set([0]));
   const touchRef = useRef({ startX: 0, startY: 0, locked: false, horizontal: false });
 
   useEffect(() => {
     setLoading(true);
     setActiveImg(0);
+    seenImgs.current = new Set([0]);
     setQty(1);
     api
       .getProduct(slug)
@@ -141,18 +143,28 @@ export default function ProductDetail() {
             {/* ── Gallery ── */}
             <div className="pdp__gallery">
               <div className="pdp__main" ref={galleryRef} onClick={() => setZoom(true)}>
-                {product.images.map((src, i) => (
-                  <img
-                    key={src}
-                    src={cdn(src, 1100)}
-                    alt={i === activeImg ? product.name : ''}
-                    className={`pdp__slide ${i === activeImg ? 'is-active' : ''}`}
-                    loading={i === 0 ? 'eager' : 'lazy'}
-                    fetchpriority={i === 0 ? 'high' : 'auto'}
-                    decoding="async"
-                    draggable="false"
-                  />
-                ))}
+                {product.images.map((src, i) => {
+                  // Mount only the current photo, its neighbours and ones already viewed —
+                  // not every photo at once (that was hammering the connection).
+                  const n = product.images.length;
+                  const near = i === activeImg || (i - activeImg + n) % n === 1 || (activeImg - i + n) % n === 1;
+                  if (!near && !seenImgs.current.has(i)) return null;
+                  seenImgs.current.add(i);
+                  return (
+                    <img
+                      key={src}
+                      src={cdn(src, 900)}
+                      srcSet={cdnSet(src, [500, 900, 1300])}
+                      sizes="(max-width: 900px) 100vw, 560px"
+                      alt={i === activeImg ? product.name : ''}
+                      className={`pdp__slide ${i === activeImg ? 'is-active' : ''}`}
+                      loading="eager"
+                      fetchpriority={i === activeImg ? 'high' : 'low'}
+                      decoding="async"
+                      draggable="false"
+                    />
+                  );
+                })}
 
                 {product.images.length > 1 && (
                   <>
@@ -359,4 +371,4 @@ export default function ProductDetail() {
   );
 }
 
-import { cdn } from '../utils/cdn.js';
+import { cdn, cdnSet } from '../utils/cdn.js';

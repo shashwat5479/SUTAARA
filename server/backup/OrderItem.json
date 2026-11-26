@@ -1,0 +1,22 @@
+[
+  {
+    "id": "b16a8c49-f2cc-4869-a72b-da4c3854ccbc",
+    "orderId": "e55817a9-754a-4b91-adca-67fb24597aef",
+    "productId": "c52e518e-151f-444c-b850-1544192d04de",
+    "name": "Teal Gulzar Crepe Embroidered Suit Suit",
+    "slug": "teal-gulzar-crepe-embroidered-suit-suit",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1791061764/gtue0xgmiylinhxfhnqa.jpg",
+    "price": 9200,
+    "qty": 1
+  },
+  {
+    "id": "94b0e889-73ca-4d47-a5df-f629043676f7",
+    "orderId": "c853cd26-24a8-45c2-957c-58bc0aa9abc5",
+    "productId": "12c5f4f4-7e48-4c24-97e5-ecbc40199829",
+    "name": "Mustard Maheshwari Saree",
+    "slug": "mustard-maheshwari-saree",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1790869711/ldvhvcgxccwkst3nxfk6.jpg",
+    "price": 4200,
+    "qty": 1
+  }
+]

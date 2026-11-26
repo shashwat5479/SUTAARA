@@ -1,0 +1,124 @@
+[
+  {
+    "id": "d1833d57-b1cc-4e49-a3f6-78069a606ce4",
+    "title": "Styling Edit",
+    "description": "One of Sutaara's most personal touches — thoughtful styling ideas shaped by a founder with a natural eye for putting a look together.",
+    "image": "",
+    "link": "/story#styling-edit",
+    "productIds": [],
+    "order": 6,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-09-15T13:11:01.812Z"
+  },
+  {
+    "id": "a24289d0-304e-48cf-b936-196b539936b8",
+    "title": "Sutaara Gifting",
+    "description": "Curated hampers for weddings, festivities and everything in between — personal, thoughtful and easy to customise.",
+    "image": "",
+    "link": "/shop?edit=sutaara-gifting",
+    "productIds": [
+      "2c2e42bf-9bde-4e02-af7f-6458a17b1c24",
+      "de7d3df0-c286-4d67-8fca-5a0e2a2233a4",
+      "1b30d9d8-5de6-43f5-8389-6524c9430ce2",
+      "57a3662f-c64c-4952-a561-f72df21abf48",
+      "08ff6bcb-cde5-44c1-92ce-d5eccf8105d9"
+    ],
+    "order": 5,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-10-18T17:30:13.263Z"
+  },
+  {
+    "id": "ea6ef47f-e38b-4ee2-bebc-8ef44e9b6bcd",
+    "title": "Sutaara Favourites",
+    "description": "The pieces our customers love coming back to.",
+    "image": "",
+    "link": "/shop?edit=sutaara-favourites",
+    "productIds": [
+      "df6fe708-8e40-45ec-b6a2-58534cb05b0c",
+      "1ac695b1-a23b-4b63-9688-3d5196e66176",
+      "c825fffb-1e06-434a-909a-ff4401c9d542",
+      "b1b12c60-ace5-40a7-a5aa-08fb5e1315b8",
+      "d6fc0103-3ae1-4446-ad1e-639575a229be",
+      "a49ae311-969b-4605-bb88-0bc8057340db"
+    ],
+    "order": 4,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-10-19T10:10:27.598Z"
+  },
+  {
+    "id": "ef19c1c4-a2ed-4938-9d94-23780b6d2d0c",
+    "title": "Everyday Sutaara",
+    "description": "Easy pieces, made for often.",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1791641975/ygf99upxtpf4bjtyflnd.webp",
+    "link": "/shop?edit=everyday-sutaara",
+    "productIds": [
+      "47b871d0-ac83-4a34-a852-4719b08f0ec3",
+      "d0bb1498-4590-45b2-ad07-3eb8b868444e",
+      "45881c5a-61c2-4b1f-a30e-056734b2c2e4",
+      "626a73ca-95e1-4f6f-97bd-9c98ac11c5a3",
+      "92892311-fd62-4a83-adab-bbf3739fcaf7"
+    ],
+    "order": 1,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-11-02T06:16:23.892Z"
+  },
+  {
+    "id": "9b3bcbc7-db09-4716-a474-b222be7edb20",
+    "title": "Understated Occasion",
+    "description": "Quiet pieces that still say something.",
+    "image": "",
+    "link": "/shop?edit=understated-occasion",
+    "productIds": [
+      "690b7653-181a-49db-b554-ab385ac0aa3e",
+      "03f9eed5-4324-40b8-857f-92feff9f305b",
+      "9d8bf208-82ab-4911-8f9c-6d1ed34cd435",
+      "ca8bb858-1d99-4155-80f7-69d72b85a995",
+      "c0565bd8-d317-4e18-9779-bb17c5deafa5"
+    ],
+    "order": 3,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-11-02T06:37:27.256Z"
+  },
+  {
+    "id": "3c392ff3-1f97-4f07-9846-c2fbab7b944f",
+    "title": "Statement Pieces",
+    "description": "For when you want to be noticed.",
+    "image": "",
+    "link": "/shop?edit=statement-pieces",
+    "productIds": [
+      "a4607af3-696d-466d-b004-dfa364db86c5",
+      "e7613ea6-ff4f-4dbd-88a8-cc46783eec1a",
+      "86cafd99-2c39-4c93-9f15-e2946b8a58fc",
+      "803cb4b5-ab77-462f-a485-4061d6281444",
+      "f7f397e5-ec35-4d7c-a6e2-62f48cb785a3",
+      "dec280cb-923a-49cd-9876-fa365cd749fb",
+      "47b7dbf3-0e78-4c8a-908e-ec7bcaf5463b"
+    ],
+    "order": 1,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-11-02T06:49:40.198Z"
+  },
+  {
+    "id": "ee54d127-e6bc-4860-8918-a408773235aa",
+    "title": "Founder's picks",
+    "description": "The pieces we'd reach for first.",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1791641574/p01lrxk0lqquqz4lopxd.webp",
+    "link": "",
+    "productIds": [
+      "642780ae-9c6e-4d3b-9c3e-d1eea9d4f7ed",
+      "8ec38bba-ae54-488c-bec1-70a119138859",
+      "1eaeefa9-8e7b-4327-8d58-f1ef633e8d37",
+      "514d5fb0-052c-495e-95c3-0243eb7e4b40"
+    ],
+    "order": 0,
+    "active": true,
+    "createdAt": "2026-09-15T13:11:01.812Z",
+    "updatedAt": "2026-10-18T17:22:38.991Z"
+  }
+]

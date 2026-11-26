@@ -1,0 +1,482 @@
+[
+  {
+    "key": "site_text",
+    "value": "{\"home_story\":{\"eyebrow\":\"A curated shopping experience\",\"title\":\"For Your Kind of *Sutaara*\",\"body\":\"The pieces we love, the ones you keep coming back for, and a few we think deserve your attention. From everyday dressing to special occasions, discover Sutaara's handpicked edits, curated to make finding your next favourite a little easier.\"},\"edits_hero\":{\"title\":\"Thoughtfully picked,\\n*Easy to make your own*\",\"body\":\"Not every wardrobe needs the same things. Some days call for comfort, others for a little extra, and sometimes you just want something that feels like you.\\n\\nThe Sutaara Edit brings together our favourite finds, organised around how you like to dress. From pieces we personally love to those you keep coming back for, there's something here for every kind of day.\"},\"story_intro\":{\"title\":\"BEHIND THE SUTAARA EDIT\",\"body\":\"A little thought behind every pick.\\nWe come across beautiful textiles all the time, but not everything finds its way to Sutaara.\\nSometimes it's the weave that catches our attention. Sometimes it's an unusual colour, a lovely drape or simply a piece we know we'd enjoy wearing ourselves.\\nEvery edit brings together pieces we genuinely like, with the hope that you'll find something you love too.\\n\",\"linkLabel\":\" DISCOVER MORE ABOUT SUTAARA\"},\"story_cloth\":{\"kicker\":\"Styled with You\",\"title\":\"THE SUTAARA STYLING EDIT\",\"body\":\"Not sure what to pick? Need a little help putting it all together.\\nFound something you love but not sure how to style it? From choosing the right blouse to pairing colours, mixing textures or finding something for a particular occasion, we're here to help.\\nSometimes, all it takes is a second opinion.\\n\\n\",\"linkLabel\":\"CHAT WITH SUTAARA →\",\"link\":\"https://api.whatsapp.com/send/?phone=919569005501&text=Hi%20Sutaara%21%20I%20need%20a%20little%20help%20styling%20an%20outfit.%20Could%20you%20help%20me%20choose%20the%20right%20look%3F&type=phone_number&app_absent=0\"},\"story_hand\":{\"kicker\":\"Beyond the Look\",\"title\":\"THE LITTLE THINGS THAT MATTER\",\"body\":\"Because how it feels matters just as much as how it looks.\\nIs it lightweight? Will it drape easily? Can you wear it comfortably all day? And how would you style it?\\n\\nThese are the little things we'd talk you through if you were shopping with us at the Sutaara studio.\\n\\nThat's why every product comes with a Sutaara Styling Note — our little take on how a piece feels, wears and can be styled. A personal suggestion from us to you, helping you choose something you'll truly enjoy wearing.\\n\",\"linkLabel\":\"Explore the Collection\"},\"story_wardrobe\":{\"title\":\"WORN YOUR WAY\",\"body\":\"We love seeing how you make it yours.\\n\\nA saree worn to work, a favourite suit brought out again for a celebration, or a blouse paired in a way we hadn't thought of.\\n\\nSome of our favourite styling ideas come from you. Because once a piece leaves Sutaara, it's how you wear it that makes it your own.\\n\\nShare your Sutaara moments with us. We'd love to see them.\\n\",\"linkLabel\":\"FOLLOW OUR INSTAGRAM\",\"link\":\"https://www.instagram.com/sutaara.lko?igsi=MXZtdWljb3hqeDl5Nw%3D%3D&utm_source=qr\"}}",
+    "expiresAt": null,
+    "updatedAt": "2026-10-14T03:26:27.990Z"
+  },
+  {
+    "key": "shiprocket_token",
+    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyMjU1NjA0LCJzb3VyY2UiOiJzci1hdXRoLWludCIsImV4cCI6MTc5MzE4OTYxMSwianRpIjoiUjJ0akY3NzdxTjN1T3p3QiIsImlhdCI6MTc5MjMyNTYxMSwiaXNzIjoiaHR0cHM6Ly9zci1hdXRoLnNoaXByb2NrZXQuaW4vYXV0aG9yaXplL3VzZXIiLCJuYmYiOjE3OTIzMjU2MTEsImNpZCI6MTE1NTk0OTcsInRjIjozNjAsInZlcmJvc2UiOmZhbHNlLCJ2ZW5kb3JfaWQiOjAsInZlbmRvcl9jb2RlIjoiIn0.bXkDiu5lPdi0U4sVGJizvN-zQRvkw_ZmuiDOkNEZ92o",
+    "expiresAt": "2026-10-27T12:13:31.918Z",
+    "updatedAt": "2026-10-18T12:13:31.919Z"
+  },
+  {
+    "key": "rl:trk-event:223.177.137.151",
+    "value": "25",
+    "expiresAt": "2026-11-04T15:25:13.795Z",
+    "updatedAt": "2026-11-04T15:06:24.707Z"
+  },
+  {
+    "key": "rl:trk-visit:204.101.161.15",
+    "value": "1",
+    "expiresAt": "2026-11-04T21:10:50.848Z",
+    "updatedAt": "2026-11-04T20:10:51.512Z"
+  },
+  {
+    "key": "rl:trk-visit:74.125.215.9",
+    "value": "1",
+    "expiresAt": "2026-11-05T01:29:39.625Z",
+    "updatedAt": "2026-11-05T00:29:40.237Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.193",
+    "value": "1",
+    "expiresAt": "2026-11-05T03:56:53.664Z",
+    "updatedAt": "2026-11-05T02:56:54.258Z"
+  },
+  {
+    "key": "rl:trk-event:152.163.213.193",
+    "value": "1",
+    "expiresAt": "2026-11-05T03:56:54.969Z",
+    "updatedAt": "2026-11-05T02:56:55.079Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.171",
+    "value": "1",
+    "expiresAt": "2026-11-05T07:39:31.370Z",
+    "updatedAt": "2026-11-05T06:39:32.094Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.195",
+    "value": "1",
+    "expiresAt": "2026-11-05T07:39:33.191Z",
+    "updatedAt": "2026-11-05T06:39:33.300Z"
+  },
+  {
+    "key": "rl:trk-event:66.249.67.37",
+    "value": "1",
+    "expiresAt": "2026-11-05T08:18:12.392Z",
+    "updatedAt": "2026-11-05T07:18:12.432Z"
+  },
+  {
+    "key": "rl:trk-visit:45.145.130.240",
+    "value": "1",
+    "expiresAt": "2026-11-05T14:42:33.569Z",
+    "updatedAt": "2026-11-05T13:42:34.278Z"
+  },
+  {
+    "key": "rl:trk-event:45.145.130.240",
+    "value": "1",
+    "expiresAt": "2026-11-05T14:42:36.149Z",
+    "updatedAt": "2026-11-05T13:42:36.258Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.12.196",
+    "value": "1",
+    "expiresAt": "2026-11-05T16:07:58.965Z",
+    "updatedAt": "2026-11-05T15:07:59.564Z"
+  },
+  {
+    "key": "rl:trk-visit:49.36.215.208",
+    "value": "1",
+    "expiresAt": "2026-11-05T18:30:20.356Z",
+    "updatedAt": "2026-11-05T17:30:21.045Z"
+  },
+  {
+    "key": "rl:trk-visit:193.189.100.201",
+    "value": "1",
+    "expiresAt": "2026-11-04T01:55:07.900Z",
+    "updatedAt": "2026-11-04T00:55:08.632Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.188",
+    "value": "1",
+    "expiresAt": "2026-11-04T02:04:06.615Z",
+    "updatedAt": "2026-11-04T01:04:06.725Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.252",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:18:52.282Z",
+    "updatedAt": "2026-11-04T02:18:53.054Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.13",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:34:18.427Z",
+    "updatedAt": "2026-11-04T02:34:19.136Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.175",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:34:19.792Z",
+    "updatedAt": "2026-11-04T02:34:19.911Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.226",
+    "value": "1",
+    "expiresAt": "2026-11-04T04:15:17.189Z",
+    "updatedAt": "2026-11-04T03:15:17.829Z"
+  },
+  {
+    "key": "rl:trk-visit:114.12.34.134",
+    "value": "1",
+    "expiresAt": "2026-11-04T05:09:02.276Z",
+    "updatedAt": "2026-11-04T04:09:02.880Z"
+  },
+  {
+    "key": "rl:trk-visit:110.226.180.72",
+    "value": "2",
+    "expiresAt": "2026-11-04T07:40:37.652Z",
+    "updatedAt": "2026-11-04T07:02:37.846Z"
+  },
+  {
+    "key": "rl:subscribe:185.246.188.74",
+    "value": "1",
+    "expiresAt": "2026-11-04T08:54:13.398Z",
+    "updatedAt": "2026-11-04T07:54:13.998Z"
+  },
+  {
+    "key": "rl:trk-visit:152.59.176.63",
+    "value": "2",
+    "expiresAt": "2026-11-04T11:09:31.721Z",
+    "updatedAt": "2026-11-04T10:10:14.161Z"
+  },
+  {
+    "key": "rl:trk-event:157.49.9.90",
+    "value": "1",
+    "expiresAt": "2026-11-04T11:15:51.415Z",
+    "updatedAt": "2026-11-04T10:15:51.525Z"
+  },
+  {
+    "key": "rl:trk-visit:223.184.157.197",
+    "value": "1",
+    "expiresAt": "2026-11-04T14:03:28.146Z",
+    "updatedAt": "2026-11-04T13:03:28.875Z"
+  },
+  {
+    "key": "rl:trk-visit:103.253.174.9",
+    "value": "1",
+    "expiresAt": "2026-11-04T14:13:11.480Z",
+    "updatedAt": "2026-11-04T13:13:12.030Z"
+  },
+  {
+    "key": "rl:login-id:47.15.12.150:sutaara@gmail.com",
+    "value": "1",
+    "expiresAt": "2026-11-04T14:31:49.596Z",
+    "updatedAt": "2026-11-04T14:16:49.840Z"
+  },
+  {
+    "key": "rl:login-ip:47.15.12.150",
+    "value": "1",
+    "expiresAt": "2026-11-04T14:31:49.882Z",
+    "updatedAt": "2026-11-04T14:16:49.919Z"
+  },
+  {
+    "key": "rl:trk-event:47.15.1.182",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:20:44.045Z",
+    "updatedAt": "2026-11-04T14:20:44.159Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.122",
+    "value": "1",
+    "expiresAt": "2026-11-05T20:12:30.186Z",
+    "updatedAt": "2026-11-05T19:12:30.295Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.24",
+    "value": "1",
+    "expiresAt": "2026-11-06T04:09:28.991Z",
+    "updatedAt": "2026-11-06T03:09:29.584Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.67.37",
+    "value": "2",
+    "expiresAt": "2026-11-06T04:13:58.098Z",
+    "updatedAt": "2026-11-06T03:14:13.105Z"
+  },
+  {
+    "key": "rl:trk-event:66.249.67.38",
+    "value": "1",
+    "expiresAt": "2026-11-06T04:14:18.503Z",
+    "updatedAt": "2026-11-06T03:14:18.540Z"
+  },
+  {
+    "key": "rl:trk-event:66.249.66.97",
+    "value": "1",
+    "expiresAt": "2026-11-06T05:28:59.087Z",
+    "updatedAt": "2026-11-06T04:28:59.139Z"
+  },
+  {
+    "key": "rl:trk-visit:152.58.154.206",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:36:46.264Z",
+    "updatedAt": "2026-11-04T14:36:46.812Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.67.69",
+    "value": "2",
+    "expiresAt": "2026-11-06T05:28:57.388Z",
+    "updatedAt": "2026-11-06T04:39:12.005Z"
+  },
+  {
+    "key": "rl:trk-event:66.249.66.64",
+    "value": "1",
+    "expiresAt": "2026-11-06T05:39:12.753Z",
+    "updatedAt": "2026-11-06T04:39:12.790Z"
+  },
+  {
+    "key": "rl:trk-event:223.189.231.207",
+    "value": "2",
+    "expiresAt": "2026-11-06T06:49:50.990Z",
+    "updatedAt": "2026-11-06T05:50:52.548Z"
+  },
+  {
+    "key": "rl:trk-visit:98.83.210.185",
+    "value": "1",
+    "expiresAt": "2026-11-06T07:03:27.499Z",
+    "updatedAt": "2026-11-06T06:03:28.114Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.191",
+    "value": "1",
+    "expiresAt": "2026-11-04T21:52:21.310Z",
+    "updatedAt": "2026-11-04T20:52:21.900Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.92.1",
+    "value": "1",
+    "expiresAt": "2026-11-05T02:03:16.887Z",
+    "updatedAt": "2026-11-05T01:03:16.997Z"
+  },
+  {
+    "key": "rl:trk-event:66.249.92.1",
+    "value": "1",
+    "expiresAt": "2026-11-05T02:03:18.373Z",
+    "updatedAt": "2026-11-05T01:03:18.410Z"
+  },
+  {
+    "key": "rl:subscribe:193.189.100.201",
+    "value": "1",
+    "expiresAt": "2026-11-04T01:55:08.145Z",
+    "updatedAt": "2026-11-04T00:55:09.064Z"
+  },
+  {
+    "key": "rl:trk-event:45.9.156.156",
+    "value": "1",
+    "expiresAt": "2026-11-04T01:56:18.137Z",
+    "updatedAt": "2026-11-04T00:56:18.246Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.152",
+    "value": "1",
+    "expiresAt": "2026-11-04T02:23:40.106Z",
+    "updatedAt": "2026-11-04T01:23:40.803Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.134",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:18:53.878Z",
+    "updatedAt": "2026-11-04T02:18:54.417Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.12.186",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:42:25.433Z",
+    "updatedAt": "2026-11-04T02:42:26.021Z"
+  },
+  {
+    "key": "rl:trk-event:152.163.12.186",
+    "value": "1",
+    "expiresAt": "2026-11-04T03:42:26.464Z",
+    "updatedAt": "2026-11-04T02:42:26.501Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.169",
+    "value": "1",
+    "expiresAt": "2026-11-04T04:15:18.672Z",
+    "updatedAt": "2026-11-04T03:15:18.782Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.11",
+    "value": "1",
+    "expiresAt": "2026-11-04T06:53:58.321Z",
+    "updatedAt": "2026-11-04T05:53:58.919Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.128",
+    "value": "1",
+    "expiresAt": "2026-11-04T06:53:59.306Z",
+    "updatedAt": "2026-11-04T05:53:59.418Z"
+  },
+  {
+    "key": "rl:trk-visit:185.246.188.74",
+    "value": "1",
+    "expiresAt": "2026-11-04T08:54:13.281Z",
+    "updatedAt": "2026-11-04T07:54:13.876Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.188",
+    "value": "1",
+    "expiresAt": "2026-11-04T09:39:18.656Z",
+    "updatedAt": "2026-11-04T08:39:19.245Z"
+  },
+  {
+    "key": "rl:trk-visit:157.49.9.90",
+    "value": "1",
+    "expiresAt": "2026-11-04T11:15:35.576Z",
+    "updatedAt": "2026-11-04T10:15:36.188Z"
+  },
+  {
+    "key": "rl:trk-visit:223.184.165.125",
+    "value": "1",
+    "expiresAt": "2026-11-04T13:02:17.890Z",
+    "updatedAt": "2026-11-04T12:02:18.502Z"
+  },
+  {
+    "key": "rl:trk-event:223.184.157.197",
+    "value": "1",
+    "expiresAt": "2026-11-04T14:03:47.503Z",
+    "updatedAt": "2026-11-04T13:03:47.614Z"
+  },
+  {
+    "key": "rl:trk-visit:47.15.12.150",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:16:38.354Z",
+    "updatedAt": "2026-11-04T14:16:39.092Z"
+  },
+  {
+    "key": "rl:trk-event:47.15.12.150",
+    "value": "2",
+    "expiresAt": "2026-11-04T15:17:30.065Z",
+    "updatedAt": "2026-11-04T14:17:57.916Z"
+  },
+  {
+    "key": "rl:trk-visit:49.43.118.85",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:28:30.248Z",
+    "updatedAt": "2026-11-04T14:28:30.469Z"
+  },
+  {
+    "key": "rl:trk-visit:45.147.235.90",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:29:46.470Z",
+    "updatedAt": "2026-11-04T14:29:46.521Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.189",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:47:45.805Z",
+    "updatedAt": "2026-11-04T14:47:46.499Z"
+  },
+  {
+    "key": "rl:trk-event:152.163.213.189",
+    "value": "1",
+    "expiresAt": "2026-11-04T15:47:47.082Z",
+    "updatedAt": "2026-11-04T14:47:47.192Z"
+  },
+  {
+    "key": "rl:trk-visit:54.183.149.156",
+    "value": "2",
+    "expiresAt": "2026-11-04T15:48:45.786Z",
+    "updatedAt": "2026-11-04T14:48:47.455Z"
+  },
+  {
+    "key": "rl:trk-visit:223.177.137.151",
+    "value": "2",
+    "expiresAt": "2026-11-04T15:25:08.943Z",
+    "updatedAt": "2026-11-04T14:52:54.611Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.67.71",
+    "value": "1",
+    "expiresAt": "2026-11-05T05:49:36.501Z",
+    "updatedAt": "2026-11-05T04:49:37.177Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.195",
+    "value": "1",
+    "expiresAt": "2026-11-05T09:59:33.943Z",
+    "updatedAt": "2026-11-05T08:59:34.533Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.67.38",
+    "value": "1",
+    "expiresAt": "2026-11-05T13:53:35.808Z",
+    "updatedAt": "2026-11-05T12:53:36.591Z"
+  },
+  {
+    "key": "rl:trk-visit:223.191.85.85",
+    "value": "1",
+    "expiresAt": "2026-11-05T14:59:08.199Z",
+    "updatedAt": "2026-11-05T13:59:08.979Z"
+  },
+  {
+    "key": "rl:trk-event:152.163.12.196",
+    "value": "1",
+    "expiresAt": "2026-11-05T16:08:00.493Z",
+    "updatedAt": "2026-11-05T15:08:00.602Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.143",
+    "value": "1",
+    "expiresAt": "2026-11-05T20:12:28.904Z",
+    "updatedAt": "2026-11-05T19:12:29.663Z"
+  },
+  {
+    "key": "rl:trk-visit:66.249.67.39",
+    "value": "1",
+    "expiresAt": "2026-11-06T01:48:03.755Z",
+    "updatedAt": "2026-11-06T00:48:04.515Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.179",
+    "value": "1",
+    "expiresAt": "2026-11-06T02:24:43.710Z",
+    "updatedAt": "2026-11-06T01:24:44.383Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.238",
+    "value": "1",
+    "expiresAt": "2026-11-06T02:24:44.878Z",
+    "updatedAt": "2026-11-06T01:24:44.987Z"
+  },
+  {
+    "key": "rl:trk-visit:152.163.213.25",
+    "value": "1",
+    "expiresAt": "2026-11-06T04:19:03.849Z",
+    "updatedAt": "2026-11-06T03:19:04.392Z"
+  },
+  {
+    "key": "rl:trk-event:152.163.213.25",
+    "value": "1",
+    "expiresAt": "2026-11-06T04:19:05.258Z",
+    "updatedAt": "2026-11-06T03:19:05.365Z"
+  },
+  {
+    "key": "rl:trk-visit:16.216.88.165",
+    "value": "1",
+    "expiresAt": "2026-11-06T05:30:14.776Z",
+    "updatedAt": "2026-11-06T04:30:15.400Z"
+  },
+  {
+    "key": "rl:trk-event:16.216.88.20",
+    "value": "1",
+    "expiresAt": "2026-11-06T05:30:16.125Z",
+    "updatedAt": "2026-11-06T04:30:16.235Z"
+  },
+  {
+    "key": "rl:trk-visit:223.189.231.207",
+    "value": "1",
+    "expiresAt": "2026-11-06T06:49:30.314Z",
+    "updatedAt": "2026-11-06T05:49:31.080Z"
+  },
+  {
+    "key": "rl:trk-visit:152.59.185.251",
+    "value": "1",
+    "expiresAt": "2026-11-06T06:51:26.143Z",
+    "updatedAt": "2026-11-06T05:51:26.680Z"
+  }
+]

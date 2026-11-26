@@ -1,0 +1,41 @@
+[
+  {
+    "id": "5333e674-82dd-4a3f-88a8-13e68182926a",
+    "code": "WELCOME10",
+    "discountType": "percent",
+    "value": 10,
+    "minOrderValue": 1500,
+    "maxDiscount": 1000,
+    "usageLimit": null,
+    "timesUsed": 0,
+    "expiresAt": null,
+    "active": true,
+    "createdAt": "2026-08-28T14:38:18.160Z"
+  },
+  {
+    "id": "a8f36be6-da72-4157-80af-d3185682c30c",
+    "code": "FESTIVE500",
+    "discountType": "flat",
+    "value": 500,
+    "minOrderValue": 3500,
+    "maxDiscount": null,
+    "usageLimit": 200,
+    "timesUsed": 0,
+    "expiresAt": null,
+    "active": true,
+    "createdAt": "2026-08-28T14:38:18.160Z"
+  },
+  {
+    "id": "73313cf4-5c83-47f7-bcfd-59e2ea6f7297",
+    "code": "WELCOME50",
+    "discountType": "percent",
+    "value": 20,
+    "minOrderValue": 4999,
+    "maxDiscount": 1000,
+    "usageLimit": 1,
+    "timesUsed": 0,
+    "expiresAt": "2026-10-23T00:00:00.000Z",
+    "active": true,
+    "createdAt": "2026-10-13T12:32:39.657Z"
+  }
+]

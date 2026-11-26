@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ffcf14c2-7ef2-4ed1-b032-7e21dac2162a",
+    "key": "blouse",
+    "label": "Blouses",
+    "note": "Statement",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1790091903/gfxtj8ecurwrlp2iavsx.jpg",
+    "order": 2,
+    "active": true
+  },
+  {
+    "id": "0bfe631e-2fc7-4a88-a031-8e7addffd419",
+    "key": "potli",
+    "label": "Potlis & Bags",
+    "note": "Finish",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1790174312/w3ju2lhh2ssfosgq8o6u.jpg",
+    "order": 4,
+    "active": true
+  },
+  {
+    "id": "f9ad566a-a7ca-42d1-826f-529f4fe6acc3",
+    "key": "dupatta",
+    "label": "Dupattas",
+    "note": "Drape",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1791797071/abwq2ewnkvfbbuubiwx4.jpg",
+    "order": 3,
+    "active": true
+  },
+  {
+    "id": "533d02d0-3560-477e-9385-edd94bdfc930",
+    "key": "saree",
+    "label": "Sarees",
+    "note": "Drape",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1792755381/vmkxfkbooknvprwsgzib.jpg",
+    "order": 0,
+    "active": true
+  },
+  {
+    "id": "30a2a4ad-a107-4c41-8227-29f31f743150",
+    "key": "suit",
+    "label": "Suit Sets",
+    "note": "Everyday",
+    "image": "https://res.cloudinary.com/drmpijecc/image/upload/v1792849406/ahjtp02wd746glka7vgy.jpg",
+    "order": 1,
+    "active": true
+  }
+]

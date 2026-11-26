@@ -4,12 +4,24 @@ import { useEffect, useRef } from 'react';
 // it comes from a Google Cloud OAuth client, see README "API keys" section.
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+// Google's sign-in script is only needed on the login/register screens, so it
+// is injected on first use rather than loaded on every page.
+function ensureGsi() {
+  if (window.google?.accounts?.id || document.getElementById('gsi-script')) return;
+  const s = document.createElement('script');
+  s.id = 'gsi-script';
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true;
+  document.head.appendChild(s);
+}
+
 export default function GoogleButton({ onCredential, text = 'continue_with' }) {
   const ref = useRef(null);
 
   useEffect(() => {
     if (!CLIENT_ID) return; // not configured — component renders nothing (see fallback below)
 
+    ensureGsi();
     let cancelled = false;
 
     const render = () => {

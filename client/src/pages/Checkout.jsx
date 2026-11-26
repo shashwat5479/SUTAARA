@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../api/client.js';
-import { payForOrder } from '../utils/razorpay.js';
+import { payForOrder, loadRazorpay } from '../utils/razorpay.js';
 import { inr } from '../utils/format.js';
 import AddressFields from '../components/AddressFields.jsx';
 
@@ -15,6 +15,7 @@ export default function Checkout() {
 
   // Cash on delivery is only offered when EVERY item in the bag has COD
   // switched on by the admin. (The server enforces this too.)
+  useEffect(() => { loadRazorpay().catch(() => {}); }, []); // warm up the payment script
   useEffect(() => {
     sync(); // pick up price / stock / COD changes made since the bag was saved
   }, [sync]);

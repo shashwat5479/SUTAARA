@@ -1,22 +1,23 @@
 import { api } from '../api/client.js';
 
-// The script tag in index.html loads this async, so a fast click might beat
-// it — this waits for window.Razorpay instead of failing silently.
-function waitForRazorpay(timeoutMs = 8000) {
-  return new Promise((resolve, reject) => {
-    if (window.Razorpay) return resolve(window.Razorpay);
-    const start = Date.now();
-    const check = setInterval(() => {
-      if (window.Razorpay) {
-        clearInterval(check);
-        resolve(window.Razorpay);
-      } else if (Date.now() - start > timeoutMs) {
-        clearInterval(check);
-        reject(new Error('Payment gateway did not load — check your connection and try again'));
-      }
-    }, 150);
-  });
+// Razorpay's script is only needed at payment time, so it is loaded on demand
+// (and warmed up when the checkout page opens) instead of on every page view.
+let rzpPromise;
+export function loadRazorpay() {
+  if (window.Razorpay) return Promise.resolve(window.Razorpay);
+  if (!rzpPromise) {
+    rzpPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.async = true;
+      s.onload = () => resolve(window.Razorpay);
+      s.onerror = () => { rzpPromise = null; reject(new Error('Payment gateway did not load — check your connection and try again')); };
+      document.head.appendChild(s);
+    });
+  }
+  return rzpPromise;
 }
+const waitForRazorpay = () => loadRazorpay();
 
 // Creates a Razorpay order for an existing Sutaara order and opens the
 // Checkout modal. Used both at initial checkout and for a "retry payment"

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "da3392d2-aa72-47ac-b4eb-11be13807a57",
+    "productId": "8230bd8c-4166-492f-aa0a-4d059b8ad5f6",
+    "userId": "29a99172-82d5-433d-bf54-dfdddba66095",
+    "rating": 5,
+    "title": "Heirloom quality",
+    "body": "This is the kind of saree you pass down. The ikat work is flawless and the colour is so rich. Worth every rupee.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:23.687Z"
+  },
+  {
+    "id": "8b8186b2-aa6d-4923-9de8-6b921a7118bd",
+    "productId": "eafb61b2-56ef-4cf7-ab1f-b12a03c180c4",
+    "userId": "0426a3b9-c48e-4b5b-9ca6-170d61c741fb",
+    "rating": 5,
+    "title": "Absolutely radiant",
+    "body": "The green and gold together are magical under light. Lightweight, easy to carry all evening, and the zari border is gorgeous.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:24.764Z"
+  },
+  {
+    "id": "a5925af6-326c-40f1-b6f5-4d0ee48603fa",
+    "productId": "d6fc0103-3ae1-4446-ad1e-639575a229be",
+    "userId": "ee9100c3-1ce2-4c2e-96ff-9d45cbead352",
+    "rating": 5,
+    "title": "My new favourite",
+    "body": "So soft and airy. Perfect for a daytime function. The peach shade is exactly like the photos — delicate and elegant.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:25.835Z"
+  },
+  {
+    "id": "ad17c2bb-d0d1-4450-a16a-93c7a17fba2a",
+    "productId": "803b1cf3-7e33-456f-bf65-ded586e426b6",
+    "userId": "81c758eb-ff28-4a63-a281-8a55b67d505a",
+    "rating": 5,
+    "title": "Stitched to perfection",
+    "body": "The suit set fit beautifully and the colour combination is regal. Sutaara’s finishing is top-notch.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:26.892Z"
+  },
+  {
+    "id": "c1abb8ab-4dc8-498e-b745-2e76e942a2de",
+    "productId": "03b9c75c-524f-4e9a-8611-386f23ea7616",
+    "userId": "e6c48a1b-de2e-4c07-a035-816852fe5bd9",
+    "rating": 5,
+    "title": "Wearable art",
+    "body": "Every motif tells a story. I have never owned anything with this much detail. Felt special the moment I put it on.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:28.282Z"
+  },
+  {
+    "id": "c118b444-db42-4c19-96c1-125cd7fa53bc",
+    "productId": "0ec9a838-c155-4f46-ae3e-aad72b349344",
+    "userId": "1d168c10-728a-4e24-855f-1ce7cbf4ddfc",
+    "rating": 5,
+    "title": "Elegant beyond words",
+    "body": "Received it well-packed and on time. The rose and emerald pairing is stunning and the fabric feels premium.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:30.646Z"
+  },
+  {
+    "id": "b3a347e9-be9d-4838-8025-ded65599aea4",
+    "productId": "799f13c8-72ea-48f9-954b-bfa8388bc96a",
+    "userId": "f733ffc3-0e73-4929-87cb-9f5f7016d6b8",
+    "rating": 5,
+    "title": "A dream to drape",
+    "body": "The hand-painted peacocks are even more stunning in person. I wore it to my sister’s wedding and could not stop getting compliments. You can feel the craft in every inch.",
+    "verified": true,
+    "approved": true,
+    "createdAt": "2026-08-28T14:38:22.353Z"
+  }
+]
